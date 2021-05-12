@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="SimpleStateMachineEditor.IconControls.EventTypeIconControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SimpleStateMachineEditor.IconControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="61" d:DesignWidth="61">
+
+    <UserControl.Resources>
+
+        <Style x:Key="EventTypePathStyle" TargetType="Path">
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="Fill" Value="LightBlue"/>
+
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=local:EventTypeIconControl}, Path=IsDraggableShape}" Value="True"/>
+                        <Condition Binding="{Binding Path=DropState}" Value="Allowed"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Fill" Value="LightGreen"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=local:EventTypeIconControl}, Path=IsDraggableShape}" Value="True"/>
+                        <Condition Binding="{Binding Path=DropState}" Value="NotAllowed"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Fill" Value="Red"/>
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding Path=TriggerUsageState}" Value="Allowed">
+                    <Setter Property="Fill" Value="LightGreen"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=TriggerUsageState}" Value="NotAllowed">
+                    <Setter Property="Fill" Value="Red"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"  BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
+                <Grid x:Name="IconPanel">
+                    <Path x:Name="Path" Style="{StaticResource EventTypePathStyle}"
+                    Data="M0,60 L30,0 60,60 0,60"/>
+
+                    <Rectangle Width="56" Height="33" VerticalAlignment="Bottom" Margin="2,0,0,-5">
+                        <Rectangle.Fill>
+                            <VisualBrush>
+                                <VisualBrush.Visual>
+                                    <StackPanel>
+                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Background="Transparent" HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Grid>
+            </Border>
+
+            <UserControl Grid.Row="1" Template="{DynamicResource HoverTemplate}"/>
+        </Grid>
+    </Grid>
+</UserControl>

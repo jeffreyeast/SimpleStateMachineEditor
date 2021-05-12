@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>SFSA_Key.pfx</AssemblyOriginatorKeyFile>
+    <PackageLicenseFile>CPOL.htm</PackageLicenseFile>
+    <Copyright>Jeff East</Copyright>
+    <Company />
+    <Product>SimpleStateMachine</Product>
+    <Authors>Jeff East</Authors>
+    <Description>Simple State Machine runtime for use with .Net Core applications</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\CPOL.htm">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

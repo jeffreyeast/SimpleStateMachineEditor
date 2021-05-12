@@ -1,0 +1,127 @@
+﻿<UserControl x:Class="SimpleStateMachineEditor.DesignerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SimpleStateMachineEditor"
+             mc:Ignorable="d" 
+             AllowDrop="True"
+             Focusable="True"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+
+        <Style x:Key="EventTypeIconStyle" TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="HoverStyle" TargetType="Panel">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <ControlTemplate x:Key="HoverTemplate" TargetType="UserControl">
+            <Grid  Style="{StaticResource HoverStyle}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="{Binding Path=ReferencedObject.Name}" FontStyle="Italic" FontWeight="Bold"/>
+                <TextBlock Grid.Row="1" Text="{Binding Path=ReferencedObject.Description}" FontWeight="Light" Margin="15,0,0,0"/>
+            </Grid>
+        </ControlTemplate>
+
+        <Style x:Key="RegionIconStyle" TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SelectedObjectBorderStyle" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" >
+                        <Setter.Value>
+                            <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile">
+                                <DrawingBrush.Drawing>
+                                    <DrawingGroup>
+                                        <GeometryDrawing Brush="Black">
+                                            <GeometryDrawing.Geometry>
+                                                <GeometryGroup>
+                                                    <RectangleGeometry Rect="0,0,50,50" />
+                                                    <RectangleGeometry Rect="50,50,50,50" />
+                                                </GeometryGroup>
+                                            </GeometryDrawing.Geometry>
+                                        </GeometryDrawing>
+                                    </DrawingGroup>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Background" Value="{x:Null}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsSelected}" Value="False">
+                    <Setter Property="BorderBrush" Value="{x:Null}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsRegionHighlighted}" Value="True">
+                    <Setter Property="Background" Value="{Binding Path=HighlightedRegion.DisplayColors.Background.Brush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StateIconStyle" TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <Style x:Key="TransitionIconStyle" TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+    
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="IconSurface" Background="{x:Static SystemColors.WindowBrush}" Focusable="True"
+                MouseLeftButtonDown="MouseLeftButtonDownHandler"
+                MouseLeftButtonUp="MouseLeftButtonUpHandler"
+                MouseRightButtonUp="MouseRightButtonUpHandler">
+                <Grid.LayoutTransform>
+                    <ScaleTransform CenterX="0" CenterY="0" 
+                        ScaleX="{Binding ElementName=ZoomSlider, Path=Value}"
+                        ScaleY="{Binding ElementName=ZoomSlider, Path=Value}" />
+                </Grid.LayoutTransform>
+            </Grid>
+        </ScrollViewer>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                MouseWheel="ZoomSliderMouseWheel">
+            <Label Content="10%"/>
+            <Slider x:Name="ZoomSlider" Width="100" Minimum="0.1" Maximum="2" Value="1"
+                ToolTip="Zoom"
+                MouseDoubleClick="ZoomSliderDoubleClickHandler"/>
+            <Label Content="200%"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

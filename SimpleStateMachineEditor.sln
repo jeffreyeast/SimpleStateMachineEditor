@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStateMachineEditor", "SimpleStateMachineEditor\SimpleStateMachineEditor.csproj", "{B051D81B-D721-4396-AD2C-0B99B75F1AE1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{89BE225A-163F-4824-8264-275AB030ADA8} = {89BE225A-163F-4824-8264-275AB030ADA8}
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69} = {2ED28A77-BA97-4D1E-A709-423C709CAE69}
+		{1340B789-3B01-4CB0-8177-A1C873E185C5} = {1340B789-3B01-4CB0-8177-A1C873E185C5}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{478C7CFC-C811-4D5C-AEFF-BE057BB163BD}"
+	ProjectSection(SolutionItems) = preProject
+		CPOL.htm = CPOL.htm
+		Notes.txt = Notes.txt
+		ReadMe.md = ReadMe.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SfsaItemTemplate", "SfsaItemTemplate\SfsaItemTemplate.csproj", "{89BE225A-163F-4824-8264-275AB030ADA8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69} = {2ED28A77-BA97-4D1E-A709-423C709CAE69}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleStateMachineCore", "SimpleStateMachineCore\SimpleStateMachineCore.csproj", "{1340B789-3B01-4CB0-8177-A1C873E185C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStateMachine", "SimpleStateMachine\SimpleStateMachine.csproj", "{2ED28A77-BA97-4D1E-A709-423C709CAE69}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B051D81B-D721-4396-AD2C-0B99B75F1AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B051D81B-D721-4396-AD2C-0B99B75F1AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B051D81B-D721-4396-AD2C-0B99B75F1AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B051D81B-D721-4396-AD2C-0B99B75F1AE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89BE225A-163F-4824-8264-275AB030ADA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89BE225A-163F-4824-8264-275AB030ADA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89BE225A-163F-4824-8264-275AB030ADA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89BE225A-163F-4824-8264-275AB030ADA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1340B789-3B01-4CB0-8177-A1C873E185C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1340B789-3B01-4CB0-8177-A1C873E185C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1340B789-3B01-4CB0-8177-A1C873E185C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1340B789-3B01-4CB0-8177-A1C873E185C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7F07846-1943-49D6-AD77-54EB52059ABC}
+	EndGlobalSection
+EndGlobal

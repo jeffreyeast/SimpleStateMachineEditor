@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<StateMachine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="-1" StartStateId="2">
+  <EventTypes>
+    <EventType Id="1" Name="*">
+      <Description>Wildcard matches any event type</Description>
+      <LeftTopPosition>
+        <X>86.5</X>
+        <Y>269.5</Y>
+      </LeftTopPosition>
+    </EventType>
+  </EventTypes>
+  <States>
+    <State Id="2" Name="Start">
+      <LeftTopPosition>
+        <X>124.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Normal</StateType>
+    </State>
+  </States>
+  <Transitions />
+  <GeneratedClassName>StateMachine</GeneratedClassName>
+  <IgnoreUnmatchedEvents>false</IgnoreUnmatchedEvents>
+  <ReturnValue>void</ReturnValue>
+  <RequireCompleteEventCoverage>false</RequireCompleteEventCoverage>
+</StateMachine>

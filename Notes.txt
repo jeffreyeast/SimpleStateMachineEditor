@@ -1,0 +1,209 @@
+4/22/2021
+
+- Changing/setting the name of a state doesn't show up in the GUI, but it does show up in the text window
+	FIXED
+- When opening the editorpane, we're not loading existing states
+	FIXED
+- Position attribute isn't used yet to position a state icon
+	FIXED
+
+4/23/2021
+
+- Add a state, switch to the text window, and it shows up. Switch back to the GUI window, and you've got two of them.
+  FIXED
+- If the user edits the text window, it's possible the NextId will be wrong, producing duplicates
+  FIXED
+- Need a way for the GUI to show something is selected
+  FIXED
+- When you create a new state, it's selected, but so is another one:-(
+  FIXED
+- We're completely rebuilding the icon tree on every character typed into the text panel!
+- The property window will let you change the States collection in the StateMachine. Changes aren't reflected either
+  in the UI or the text window (although if you did another change in the UI, it might be reflected in the text window)
+
+4/24/2021
+
+- Multiple selection/drag is a little wierd -- if you select 2 icons and move them, then click on one, it'll get deselected,
+  which is rather counter-intuitive. Yet if you don't move them, you want to deselect it.  Need to think about the paradigm here.
+
+4/27/2021
+
+- If you create two state machines in the same project, they both default to class "StateMachine1", they should default to the filename1
+  FIXED
+- We need to check for duplicate transitions from a state (that makes a non-deterministic FSA, which we don't support)
+  FIXED
+- Undo doesn't work for operations done in the GUI
+
+4/28/2021
+
+- Use different icons for error and finish states
+  FIXED
+- Consider adding the alignment commands for icons
+  DONE
+- notes from sample app:
+	- Namespace is same as class name. Seems redundant. Misuing info from IDE?
+	  FIXED
+	- We need the enumerated event types for readability
+	  FIXED
+	- Need ability to move a transition to another (end) state
+	  FIXED
+	- Be nice to move a transition to another state (anchoring at it's dest state, rather than source, as above)
+	  DONE
+	- Should we allow an event type to be marked as the starting event, and automagically post it?
+
+4/29/2021
+
+- Consider selection rectangles (dragging the mouse to select multiple icons)
+  DONE
+- Drag/drop of a transition should abort if <esc> is pressed
+
+4/30/3021
+
+- Hovering over an icon should display it's name and description
+  DONE
+- Need to detect multiple transitions with the same trigger and same source
+  ALREADY DOES THIS
+- If you have a bunch of icons selected, then click on one to move it, you shouldn't deselect them first!
+  FIXED
+- Need a way to tell what trigger events remain to be handled on a state
+  DONE - HIGHLIGHTING
+- Long names are illegible on icons. Tried wrapping them, but we need something better.
+- Rename internal/external events as high and normal priority
+  DONE
+- maybe lighten up the weight of events and transitions, then hovering over a transition could highlight it
+  DONE
+- with a lot of transitions, it's hard to tell which go which way. Fixed by prior fix.
+  DONE
+
+5/1/2021 
+
+- Getting a lot of resource dictionary warnings when we drop a dragging object
+- Setting new start/end state doesn't test to see if there's another transition with the same trigger
+  FIXED
+- Drawing transition after setting new start/end state overlays existing transitions
+  FIXED
+- Setting actions is a little awkward; nice to have copy/paste
+- A little hard to read the list of actions on a transition
+  SOME IMPOROVEMENTS. SEE HOW IT WORKS OUT.
+- Context menus show up in upper left corner?
+  THIS LOOKS LIKE A VS BUG IN SHOWCONTEXTMENU -- IT HAPPENS WHEN THE WINDOW IS ONE A MULTI-MONITOR SYSTEM, AND THE WINDOW
+  IS ON A MONITOR TO THE LEFT OF THE PRIMARY (SO THE COORDINATES ARE NEGATIVE). BUT DOESN'T HAPPEN ALL THE TIME -- SEEMS TO START 
+  OUT OK THEN THE MENU STARTS SHOWING UP IN THE UPPER LEFT CORNER. WONDER IF IT'S RELATED TO KEYBOARD OR MOUSE FOCUS?
+- Dropping an event sometimes drops on the non-obvious transition when two are close. Maybe highlight the current choice?
+  FIXED - HIGHLIGHTING DROP CANDIDATE
+- Consider an combined Post & Execute method, right now you have to Post then Execute. Or should external Posts always execute? 
+  DONE
+
+5/2/2021
+
+- After editting an action, the transaction text doesn't get centered
+- Be nice to be able to scale the UI pane
+  DONE
+- Is the custom build action getting set? Had an exception on the SFSA VSIX project itself
+  SEEMS TO BE SET.
+- Find in files loops forever
+  NO REPRO
+- It's clearing event type on changing endpoint too often. LIke it's checking destination state, instead of source
+  NO REPRO
+- Add 'copy action' command
+- <esc> doesn't stop drag
+  FIXED
+- why is intellisence initializing for the gui pane?
+- The Core vs 4.7.2 sources aren't automagically in sync
+  NOT CLEAR HOW TO FIX THIS.
+- We only want the SFSA tools commands to show if we're in a SFSA window
+- Some transitions are vibrating, some sort of event hysteresis
+
+5/5/2021
+
+- Icons in New Window panes don't see changes made to other EditorPanes
+- Rollback of LeftTopPosition isn't reflected in the icon
+  FIXED
+- Changes to LeftTopPosition by dragging aren't relfected in the properties pane (unless you select another object and then select the moved object). Same for the Name property.
+  FIXED
+- Delete a transition icon, undo and redo. Results in an exception.
+  FIXED
+- Don't log undo/redo on dragging icons
+  WE DON'T.
+
+5/6/2021
+
+- The undoredo module expects to deal with actionnames, but the transitions module expects actions, and actually generates property changed records for them. need to agree on one technique. Probably actionnames.
+  FIXED 
+
+5/7/2021
+ 
+- Undo of actions is a little wierd UI experience -- they edit the actions in a dialog box, click OK. Seems like one atomic operation to them. But it shows up in the undo/redo as one action for
+  each action, plus one to clear the list.  Consider changing actions [somehow -- into a comma-separated list?].
+- If the .sfsa XML file isn't parsable when first opened, you get a null object reference because Model.StateMachine is null
+- Lex: Moved start state, and most (but not all) transitions didn't follow the icon
+  FIXED
+- Need "Any" wildcard event
+  DONE
+- Consider sorting event type icons
+- When you have a lot of states, you're probably only working on a subset at any one time. Nice to be able to "hide" the others...otherwise, it's too crowded. Something like regions.
+  DONE
+- In tight situations, when dropping an event type, the highlighted transition isn't always the one that it gets bound to
+- Alighnment operations should group everything into a block
+  DONE
+- Did a "close solution" and lost a ton of updates
+  FIXED
+- Consider "lock" icon position
+- Hovering sometimes stops working...when this happens, transitions are "shivering"
+  FIXED
+
+5/9/2021
+
+- It'd be nice if DisplayColor (especially the set color drop down) showed the actual colors, rather than just the names of the colors
+- Delete only deletes the first selected icon, not all selected icons
+  DONE
+- Editing the lexical analyzer demo, doing a show all icons causes a bunch of cruft in the upper left corner of the IconSurface. Moving PossibleEndOfBlock2 clears it up, as does zooming. Sounds like it could be a WPF issue.
+- You shouldn't be able to drop a region onto itself
+  FIXED
+
+5/10/2021
+
+- Need to put the project under source control
+- Move strings into resource file
+- consider: you’ve got hidden icons. Would layers be better. Should there be a visual remnant or trace of the hidden icon. Should a hidden region be marked visibly? 
+- why is deletion of the start state so slow. Can we use performance monitor.
+  NO REPRO
+- finish lexical analyzer
+
+5/11/2021
+
+- write readme.md
+- Add toolbar, so we don't have to use context menus so much
+  DONE
+- Consider explicit separation, in addition to, distribution 
+- why is hover taking seconds?
+  FIXED
+- Tools menu still shows  State Machine submenu, even when not in .sfsa window
+  FIXED
+- You can invoke that menu and it runs the default command handler in the package
+  FIXED
+- Toolbar doesn't show up by default
+  FIXED
+- Tracking of active pane by focus isn't working well...
+  FIXED
+- Should new objects have a default (manufactured) name (e.g., State1 or S1, EventType1, E1, etc)?
+  DONE
+- Need to implement Add Event Type general command, plus commands for all the other toolbar operators. BTW, you can get at the selection list through the Window object, if you want.
+  DONE
+- What happens if you're in the code pane and click on a SFSA toolbar button?
+  NOTHING.
+- The default state and event aren't showing up from the template, just an empty state machine
+  FIXED
+
+5/12/2021
+
+- CancelTransitionDrag doesn't call OnRemoving for AddTransition, resulting in an orphan transition object hanging off the source state
+  FIXED
+- It'd be nice to not display the toolbar when looking at the code file for an SFSA file.
+- Nice to be able to search the sfsa diagram
+- Maybe add icon size to options page?
+- Consider: should we have a list of actions?
+- We don't detect duplicate state names
+- It would be nice to disable commands in context menus that can't be executed on multiple selections (e.g., Add Transition)
+- What happens if there's a blank line in the list of actions for a transition?
+- State machine trace depth should be configurable

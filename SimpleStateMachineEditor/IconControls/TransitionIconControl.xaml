@@ -1,0 +1,102 @@
+﻿<UserControl x:Class="SimpleStateMachineEditor.IconControls.TransitionIconControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SimpleStateMachineEditor.IconControls"
+             xmlns:global="clr-namespace:SimpleStateMachineEditor"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+
+        <Style x:Key="TransitionNameStyle" TargetType="Label">
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.EventNameFontSize}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
+                    <Setter Property="Foreground" Value="LightGreen"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+            </Style.Triggers>    
+        </Style>
+
+        <Style x:Key="TransitionActionsStyle" TargetType="Label">
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.ActionFontSize}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
+                    <Setter Property="Foreground" Value="LightGreen"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.HideActionNames}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TransitionPathStyle" TargetType="Path">
+            <Setter Property="Visibility" Value="{Binding Path=Body.Visibility}"/>
+            <Setter Property="Stroke" Value="Black"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
+                    <Setter Property="StrokeThickness" Value="3"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
+                    <Setter Property="Stroke" Value="LightGreen"/>
+                    <Setter Property="StrokeThickness" Value="3"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                    <Setter Property="StrokeThickness" Value="3"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+    </UserControl.Resources>
+    
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid x:Name="TextGrid" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.RenderTransform>
+                <RotateTransform 
+                        Angle="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextRotationAngle}"  
+                        CenterX="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.X}"             
+                        CenterY="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.Y}" />
+            </Grid.RenderTransform>
+
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Label x:Name="TriggerEventName" Grid.Row="0" HorizontalAlignment="Center"  Style="{StaticResource TransitionNameStyle}"
+                   Content="{Binding Path=ReferencedObject.TriggerEvent.Name}" FontStyle="Italic" />
+                <Grid x:Name="PositioningGrid" Grid.Row="1" >
+                    <Grid x:Name="PositioningGridCenter" Width="1" Height="1" HorizontalAlignment="Center" VerticalAlignment="Center" />   
+                </Grid>
+            </Grid>
+
+            <Label Grid.Row="1" HorizontalAlignment="Center" Style="{StaticResource TransitionActionsStyle}"
+                   Content="{Binding Path=ReferencedObject.ActionNames}"  />
+
+        </Grid>
+
+        <Path x:Name="ConnectorPath" Style="{StaticResource TransitionPathStyle}"/>
+        
+    </Grid>
+</UserControl>

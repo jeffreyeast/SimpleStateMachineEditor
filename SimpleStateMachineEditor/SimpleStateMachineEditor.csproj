@@ -1,0 +1,249 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{B051D81B-D721-4396-AD2C-0B99B75F1AE1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SimpleStateMachineEditor</RootNamespace>
+    <AssemblyName>SimpleStateMachineEditor</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <UseCodebase>true</UseCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>VSTHRD010</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Label="TemplateBuilder">
+    <TemplateBuilderTargets Condition=" '$(TemplateBuilderTargets)'=='' ">$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\..\packages\TemplateBuilder.1.1.6.1\tools\ligershark.templates.targets ))</TemplateBuilderTargets>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Commands\AddRegionCommand.cs" />
+    <Compile Include="Commands\AddTransitionCommand.cs" />
+    <Compile Include="Commands\AlignmentCommand.cs" />
+    <Compile Include="Commands\DeleteCommand.cs" />
+    <Compile Include="Commands\AddStateCommand.cs" />
+    <Compile Include="DesignerControl.xaml.cs">
+      <DependentUpon>DesignerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditorFactory.cs" />
+    <Compile Include="EditorPane.cs" />
+    <Compile Include="Commands\AddEventTypeCommand.cs" />
+    <Compile Include="Generators\SfsaGenerator.cs" />
+    <Compile Include="IconControls\EventTypeIconControl.xaml.cs">
+      <DependentUpon>EventTypeIconControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="IconControls\OptionsPropertiesPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="IconControls\RegionIconControl.xaml.cs">
+      <DependentUpon>RegionIconControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="IconControls\SelectionBox.xaml.cs">
+      <DependentUpon>SelectionBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="IconControls\StateIconControl.xaml.cs">
+      <DependentUpon>StateIconControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="IconControls\TransitionIconControl.xaml.cs">
+      <DependentUpon>TransitionIconControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Icons\PositionableIcon.cs" />
+    <Compile Include="Icons\RegionIcon.cs" />
+    <Compile Include="Icons\SelectionBoxIcon.cs" />
+    <Compile Include="Icons\TransitionIcon.cs" />
+    <Compile Include="Icons\IconBase.cs" />
+    <Compile Include="Icons\IDraggableIcon.cs" />
+    <Compile Include="Icons\EventTypeIcon.cs" />
+    <Compile Include="Icons\DraggableIcon.cs" />
+    <Compile Include="Icons\StateIcon.cs" />
+    <Compile Include="MouseStateMachine\DesignerMouseSelectionImplementation.cs" />
+    <Compile Include="MouseStateMachine\MouseSelection1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MouseSelection.sfsa</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectModel\IPositionableObject.cs" />
+    <Compile Include="SimpleStateMachineEditorPackage1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SimpleStateMachineEditorPackage.vsct</DependentUpon>
+    </Compile>
+    <Compile Include="Toolbox\EventToolboxControl.xaml.cs">
+      <DependentUpon>EventToolboxControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Toolbox\ProvideToolboxControlAttribute.cs" />
+    <Compile Include="Toolbox\StateToolboxControl.xaml.cs">
+      <DependentUpon>StateToolboxControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Toolbox\ToolboxItemData.cs" />
+    <Compile Include="Toolbox\TransitionToolboxControl.xaml.cs">
+      <DependentUpon>TransitionToolboxControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UndoRedo\Action.cs" />
+    <Compile Include="UndoRedo\DontLogBlock.cs" />
+    <Compile Include="UndoRedo\AtomicBlock.cs" />
+    <Compile Include="Utility\BrushesToList.cs" />
+    <Compile Include="Utility\DrawingAids.cs" />
+    <Compile Include="Utility\IVsTextLinesReader.cs" />
+    <Compile Include="ObjectModel\NamedObject.cs" />
+    <Compile Include="ObjectModel\TrackableObject.cs" />
+    <Compile Include="Properties\Guids.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleStateMachineEditorPackage.cs" />
+    <Compile Include="TextViewChangedListener.cs" />
+    <Compile Include="Utility\OleAutomation.cs" />
+    <Compile Include="ViewModelCoordinator.cs" />
+    <Compile Include="ViewModel\EventType.cs" />
+    <Compile Include="ObjectModel\PositionableObject.cs" />
+    <Compile Include="ViewModel\Region.cs" />
+    <Compile Include="ViewModel\State.cs" />
+    <Compile Include="ViewModel\StateMachine.cs" />
+    <Compile Include="ViewModel\Transition.cs" />
+    <Compile Include="ViewModel\ViewModelController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MouseStateMachine\MouseSelection.sfsa">
+      <Generator>SfsaGenerator</Generator>
+      <LastGenOutput>MouseSelection1.cs</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Properties\template-builder.props" />
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="SimpleStateMachine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SimpleStateMachine\bin\Debug\SimpleStateMachine.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="TemplateBuilder, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TemplateBuilder.1.1.6.1\lib\TemplateBuilder.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CPOL.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\Command1.png" />
+    <Content Include="Resources\SampleContextCommand.png" />
+    <Content Include="StateMachineEditor_16x.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <VSCTCompile Include="SimpleStateMachineEditorPackage.vsct">
+      <Generator>VsctGenerator</Generator>
+      <ResourceName>Menus.ctmenu</ResourceName>
+      <LastGenOutput>SimpleStateMachineEditorPackage1.cs</LastGenOutput>
+    </VSCTCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DesignerPackage.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="DesignerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\EventTypeIconControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\RegionIconControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\SelectionBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\StateIconControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\TransitionIconControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Toolbox\EventToolboxControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Toolbox\StateToolboxControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Toolbox\TransitionToolboxControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SfsaItemTemplate\SfsaItemTemplate.csproj">
+      <Project>{89BE225A-163F-4824-8264-275AB030ADA8}</Project>
+      <Name>SfsaItemTemplate</Name>
+      <VSIXSubPath>ItemTemplates</VSIXSubPath>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <IncludeOutputGroupsInVSIX>TemplateProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(TemplateBuilderTargets)" Condition="Exists('$(TemplateBuilderTargets)')" Label="TemplateBuilder" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
