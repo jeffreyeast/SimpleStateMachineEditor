@@ -80,6 +80,42 @@ namespace SimpleStateMachineEditor.IconControls
             Unloaded += TransitionIconControl_UnloadedHandler;
         }
 
+        private void DragEnter_Handler(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
+            {
+                Icons.ToolWindowActionIcon icon = e.Data.GetData(typeof(Icons.ToolWindowActionIcon)) as Icons.ToolWindowActionIcon;
+                if (icon.Action.Controller == Designer.Model)
+                {
+                    e.Effects = DragDropEffects.Copy;
+                    (DataContext as Icons.TransitionIcon).IsDropCandidate = true;
+                }
+            }
+            e.Handled = true;
+        }
+
+        private void DragLeave_Handler(object sender, DragEventArgs e)
+        {
+            (DataContext as Icons.TransitionIcon).IsDropCandidate = false;
+        }
+
+        private void DragOver_Handler(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
+            {
+                Icons.ToolWindowActionIcon icon = e.Data.GetData(typeof(Icons.ToolWindowActionIcon)) as Icons.ToolWindowActionIcon;
+                if (icon.Action.Controller == Designer.Model)
+                {
+                    e.Effects = DragDropEffects.Copy;
+                }
+            }
+            e.Handled = true;
+        }
+
         internal void Draw()
         {
             if (Transition.SourceState == null || Transition.DestinationState == null)
@@ -170,6 +206,19 @@ namespace SimpleStateMachineEditor.IconControls
             ConnectorPath.Data = pathGeometry;
         }
 
+        private void Drop_Handler(object sender, DragEventArgs e)
+        {
+            Icons.ToolWindowActionIcon action = e.Data.GetData(typeof(Icons.ToolWindowActionIcon).ToString()) as Icons.ToolWindowActionIcon;
+
+            if (action != null && action.Action.Controller == Designer.Model)
+            {
+                ViewModel.State originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
+                (DataContext as Icons.TransitionIcon).ProcessDroppedAction(action.Action, originState, e.GetPosition(Designer.LoadedIcons[originState].Body));
+                e.Handled = true;
+            }
+            (DataContext as Icons.TransitionIcon).IsDropCandidate = false;
+        }
+
         private void EndpointChangedHandler(object sender, EventArgs e)
         {
             if (Transition.SourceState != null && Transition.DestinationState != null)
@@ -236,6 +285,14 @@ namespace SimpleStateMachineEditor.IconControls
         private void TriggerEventName_SizeChangedHandler(object sender, SizeChangedEventArgs e)
         {
             PositionText();
+        }
+
+        private void ActionIconLoadedHandler(object sender, RoutedEventArgs e)
+        {
+            if (sender is ListBoxItem listBoxItem && listBoxItem.Content is Icons.ActionIcon actionIcon)
+            {
+                actionIcon.ListBoxItem = listBoxItem;
+            }
         }
     }
 }

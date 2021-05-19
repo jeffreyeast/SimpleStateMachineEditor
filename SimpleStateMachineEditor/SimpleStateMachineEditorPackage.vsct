@@ -16,12 +16,12 @@
         defining some of the constants that we will use inside the file. -->
 
   <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
-  <Extern href="stdidcmd.h"/>
+  <Extern href="stdidcmd.h" />
 
   <!--This header contains the command ids for the menus provided by the shell. -->
-  <Extern href="vsshlids.h"/>
+  <Extern href="vsshlids.h" />
 
-  <Include href="KnownImageIds.vsct"/>
+  <Include href="KnownImageIds.vsct" />
 
   <!--The Commands section is where commands, menus, and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
@@ -35,8 +35,7 @@
     with command ids defined by other packages. -->
 
     <Menus>
-        <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId"
-            type="Toolbar" >
+        <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" type="Toolbar">
           <CommandFlag>DefaultDocked</CommandFlag>
           <Strings>
             <ButtonText>Simple State Machine Editor Toolbar</ButtonText>
@@ -44,7 +43,7 @@
           </Strings>
         </Menu>
 
-      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" type="Context">
+      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" type="Menu">
         <Strings>
           <MenuText>Alignment</MenuText>
           <ButtonText>Alignment</ButtonText>
@@ -116,18 +115,18 @@
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
     <Groups>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId" priority="0xffff"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xffff"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" priority="0x0600"/>
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" priority="0x0600"/>
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId" priority="0xffff" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xffff" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" priority="0x0600" />
     </Groups>
 
     <!--Buttons section. -->
@@ -142,7 +141,7 @@
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddEventTypeCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AddEvent"/>
+        <Icon guid="ImageCatalogGuid" id="AddEvent" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Add new event type</ButtonText>
@@ -151,7 +150,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AddGroup"/>
+        <Icon guid="ImageCatalogGuid" id="AddGroup" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Add new region</ButtonText>
@@ -160,7 +159,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddStateCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AddState"/>
+        <Icon guid="ImageCatalogGuid" id="AddState" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Add new state</ButtonText>
@@ -169,8 +168,9 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddTransitionCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AddTransition"/>
+        <Icon guid="ImageCatalogGuid" id="AddTransition" />
         <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Add transition</ButtonText>
           <ToolTipText>Add new transition to selected state</ToolTipText>
@@ -178,7 +178,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignBottomCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AlignBottom"/>
+        <Icon guid="ImageCatalogGuid" id="AlignBottom" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Bottom</ButtonText>
@@ -187,7 +187,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignHorizontalCenterCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="CenterHorizontally"/>
+        <Icon guid="ImageCatalogGuid" id="CenterHorizontally" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Center</ButtonText>
@@ -196,7 +196,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignLeftCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AlignLeft"/>
+        <Icon guid="ImageCatalogGuid" id="AlignLeft" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Left</ButtonText>
@@ -205,7 +205,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignRightCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AlignRight"/>
+        <Icon guid="ImageCatalogGuid" id="AlignRight" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Right</ButtonText>
@@ -214,7 +214,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignTopCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AlignTop"/>
+        <Icon guid="ImageCatalogGuid" id="AlignTop" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Top</ButtonText>
@@ -223,7 +223,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignVerticalCenterCommandId" priority="0x0100" type="Button">
-         <Icon guid="ImageCatalogGuid" id="CenterVertically"/>
+         <Icon guid="ImageCatalogGuid" id="CenterVertically" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Center</ButtonText>
@@ -232,7 +232,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="Remove"/>
+        <Icon guid="ImageCatalogGuid" id="Remove" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Remove</ButtonText>
@@ -241,7 +241,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="DistributeHorizontallyCommandId" priority="0x0100" type="Button">
-         <Icon guid="ImageCatalogGuid" id="IncreaseHorizontalSpacing"/>
+         <Icon guid="ImageCatalogGuid" id="IncreaseHorizontalSpacing" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Distribute</ButtonText>
@@ -250,7 +250,7 @@
       </Button>
 
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="DistributeVerticallyCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="IncreaseVerticalSpacing"/>
+        <Icon guid="ImageCatalogGuid" id="IncreaseVerticalSpacing" />
         <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Distribute</ButtonText>
@@ -300,11 +300,17 @@
         </Strings>
       </Button>
 
+      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="cmdidActionsToolWindowCommand" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Strings>
+          <ButtonText>ActionsToolWindow</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
 
     <Combos>
 
-      <Combo guid="guidSimpleStateMachineEditorPackageCmdSet" id="SetIconDisplayColorsComboId"  type="IndexCombo" defaultWidth="0"  idCommandList="SetIconDisplayColorsComboListId">
+      <Combo guid="guidSimpleStateMachineEditorPackageCmdSet" id="SetIconDisplayColorsComboId" type="IndexCombo" defaultWidth="0" idCommandList="SetIconDisplayColorsComboListId">
         <CommandFlag>IconAndText</CommandFlag>
         <CommandFlag>DefaultDisabled</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -318,15 +324,6 @@
 
     </Combos>
     
-    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
-    <Bitmaps>
-      <!--  The bitmap id is defined in a way that is a little bit different from the others:
-            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
-            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
-            inside a button definition. An important aspect of this declaration is that the element id
-            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\SampleContextCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
-    </Bitmaps>
     
   </Commands>
 
@@ -343,241 +340,241 @@
     <!-- Toolbar -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" priority="0x0000">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddStateCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddEventTypeCommandId" priority="0x0002">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddTransitionCommandId" priority="0x0003">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0004">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId" priority="0x0005">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" priority="0x0006">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" />
     </CommandPlacement>
 
     <!-- Tools menu Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId" priority="0xf000">
-      <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsSubmenuId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsSubmenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsSubmenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddEventTypeCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddStateCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
     <!-- View menu Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xf000">
-      <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_VIEW"/>
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_VIEW" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" />
     </CommandPlacement>
 
 
     <!-- State Machine Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineContextMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineContextMenuId" />
     </CommandPlacement>
 
     <!-- Event Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="SortCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- Region Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsButCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="SortCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- State Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddTransitionCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StartStateCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- Transition Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewDestinationCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewSourceCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- Alignment submenu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuMenuId" priority="0xf000">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuMenuId" priority="0xf000">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenuGroupId" />
     </CommandPlacement>
 
    
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuMenuId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignLeftCommandId" priority="1">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignHorizontalCenterCommandId" priority="2">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignRightCommandId" priority="3">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DistributeHorizontallyCommandId" priority="4">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" priority="0x0001">
-              <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuMenuId"/>
+              <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuMenuId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignTopCommandId" priority="1">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignVerticalCenterCommandId" priority="2">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignBottomCommandId" priority="3">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DistributeVerticallyCommandId" priority="4">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId"/>
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" />
     </CommandPlacement>
 
   </CommandPlacements>
 
   <VisibilityConstraints>
 
-    <VisibilityItem guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsSubmenuId" context="guidDesignControlCmdUIContext"/>
-    <VisibilityItem guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" context="guidDesignControlCmdUIContext"/>
+    <VisibilityItem guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsSubmenuId" context="guidDesignControlCmdUIContext" />
+    <VisibilityItem guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" context="guidDesignControlCmdUIContext" />
 
   </VisibilityConstraints>
   
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidSimpleStateMachineEditorPackage" value="{C846A7B8-B60E-488B-9362-E6F81D9FC027}" />
-    <GuidSymbol name="guidDesignControlCmdUIContext" value="{AAB25516-9070-4676-A93A-43B27637C36C}"/>
+    <GuidSymbol name="guidDesignControlCmdUIContext" value="{AAB25516-9070-4676-A93A-43B27637C36C}" />
     
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidSimpleStateMachineEditorPackageCmdSet" value="{676801A7-F00D-4E83-89EB-A85E3C47F64A}">
@@ -604,6 +601,8 @@
       <IDSymbol name="HorizontalAlignmentSubmenuGroupId" value="0x1035" />
       <IDSymbol name="VerticalAlignmentSubmenuGroupId" value="0x1056" />
       <IDSymbol name="SetIconDisplayColorsComboListId" value="0x1037" />
+      <IDSymbol name="ActionIconContextMenuId" value="0x1038" />
+      <IDSymbol name="ActionIconContextMenuGroupId" value="0x1039" />
 
       <IDSymbol name="AddEventTypeCommandId" value="0x0100" />
       <IDSymbol name="AddRegionCommandId" value="0x0101" />
@@ -626,15 +625,8 @@
       <IDSymbol name="ShowAllIconsCommandId" value="0x0112" />
       <IDSymbol name="SortCommandId" value="0x0113" />
       <IDSymbol name="StartStateCommandId" value="0x0114" />
+      <IDSymbol value="0x0115" name="cmdidActionsToolWindowCommand" />
     </GuidSymbol>
-    
-    <GuidSymbol name="guidImages" value="{F7517F9A-86CB-4E06-AD7C-FF616E240C2D}" >
-      <IDSymbol name="bmpPic1" value="1" />
-      <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
-      <IDSymbol name="bmpPicX" value="4" />
-      <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
-    </GuidSymbol>
+  
   </Symbols>
 </CommandTable>

@@ -207,7 +207,7 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         case PackageIds.SortCommandId:
                             prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED;
-                            if (Designer.SelectedIcons.Count > 1 || (Designer.SelectedIcons.Count == 1 && !Designer.SelectedIcons.ContainsKey(ReferencedObject)))
+                            if (Designer.SelectedIcons.Count > 1)
                             {
                                 prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)OLECMDF.OLECMDF_ENABLED;
                             }

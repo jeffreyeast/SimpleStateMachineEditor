@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TextTemplating.VSHost;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -52,9 +53,9 @@ namespace SimpleStateMachineEditor.Generators
 
             foreach (var t in transitions)
             {
-                foreach (string actionName in t.Actions)
+                foreach (ViewModel.Action action in t.Actions)
                 {
-                    rawActionNames.Add(actionName);
+                    rawActionNames.Add(action.Name);
                 }
             }
 
@@ -262,9 +263,9 @@ namespace {FileNamespace}
         {
             string transitionString = $@"
                     new Transition<Action>({sortedStates.IndexOf(transition.DestinationState)}, new Action[] {{ ";
-            foreach (string action in transition.Actions)
+            foreach (ViewModel.Action action in transition.Actions)
             {
-                transitionString += action + ", ";
+                transitionString += action.Name + ", ";
             }
             transitionString += $@"}}),";
             return transitionString;
@@ -351,6 +352,8 @@ namespace {FileNamespace}
                     break;
                 }
             }
+
+            Hashtable states = new Hashtable();
             foreach (var state in model.StateMachine.States)
             {
                 if (string.IsNullOrWhiteSpace(state.Name))
@@ -358,7 +361,16 @@ namespace {FileNamespace}
                     GeneratorErrorCallback(false, 1, "At least one state is unnamed", 0, 0);
                     break;
                 }
+                if (states.ContainsKey(state.Name))
+                {
+                    GeneratorErrorCallback(false, 1, $@"More than one  state is named {state.Name}", 0, 0);
+                }
+                else
+                {
+                    states.Add(state.Name, state);
+                }
             }
+
             if (model.StateMachine.RequireCompleteEventCoverage)
             {
                 foreach (var state in model.StateMachine.States)

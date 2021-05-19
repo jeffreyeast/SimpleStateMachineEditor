@@ -62,6 +62,23 @@ namespace SimpleStateMachineEditor.IconControls
         bool _hideActionNames;
 
         [Category("General")]
+        [DisplayName("Default action name")]
+        [Description("Root name for newly-created action methods")]
+        public string ActionRootName
+        {
+            get => _actionRootName;
+            set
+            {
+                if (_actionRootName != value)
+                {
+                    _actionRootName = value;
+                    OnPropertyChanged("ActionRootName");
+                }
+            }
+        }
+        string _actionRootName;
+
+        [Category("General")]
         [DisplayName("Default event type name")]
         [Description("Root name for newly-created event types")]
         public string EventTypeRootName
@@ -124,6 +141,7 @@ namespace SimpleStateMachineEditor.IconControls
             _actionFontSize = 10;
             _eventNameFontSize = 14;
             _hideActionNames = false;
+            _actionRootName = "DoSomething";
             _eventTypeRootName = "E";
             _regionRootName = "Region";
             _stateRootName = "S";

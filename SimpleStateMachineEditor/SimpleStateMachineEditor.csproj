@@ -32,7 +32,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUGUNDOREDO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>VSTHRD010</NoWarn>
@@ -61,6 +61,14 @@
     <Compile Include="EditorPane.cs" />
     <Compile Include="Commands\AddEventTypeCommand.cs" />
     <Compile Include="Generators\SfsaGenerator.cs" />
+    <Compile Include="IconControls\EditableStringConverter.cs" />
+    <Compile Include="Icons\ActionIcon.cs" />
+    <Compile Include="Icons\ToolWindowActionIcon.cs" />
+    <Compile Include="IconControls\ActionsToolWindow.cs" />
+    <Compile Include="IconControls\ActionsToolWindowCommand.cs" />
+    <Compile Include="IconControls\ActionsToolWindowControl.xaml.cs">
+      <DependentUpon>ActionsToolWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IconControls\EventTypeIconControl.xaml.cs">
       <DependentUpon>EventTypeIconControl.xaml</DependentUpon>
     </Compile>
@@ -94,7 +102,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MouseSelection.sfsa</DependentUpon>
     </Compile>
+    <Compile Include="ObjectModel\EditableString.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
+    <Compile Include="SearchTask.cs" />
     <Compile Include="SimpleStateMachineEditorPackage1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -125,6 +135,7 @@
     <Compile Include="TextViewChangedListener.cs" />
     <Compile Include="Utility\OleAutomation.cs" />
     <Compile Include="ViewModelCoordinator.cs" />
+    <Compile Include="ViewModel\Action.cs" />
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
     <Compile Include="ViewModel\Region.cs" />
@@ -158,6 +169,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -172,6 +184,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Images\HelloWorld_Code.jpg" />
+    <Content Include="Images\HelloWorld_Designer.jpg" />
+    <Content Include="Images\HelloWorld_Program.jpg" />
+    <Content Include="Images\MoreInfo.PNG" />
     <Content Include="Resources\Command1.png" />
     <Content Include="Resources\SampleContextCommand.png" />
     <Content Include="StateMachineEditor_16x.png">
@@ -191,6 +207,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="DesignerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\ActionsToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

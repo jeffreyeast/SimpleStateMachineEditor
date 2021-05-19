@@ -20,9 +20,6 @@ namespace SimpleStateMachineEditor
 
         public const string guidSimpleStateMachineEditorPackageCmdSetString = "676801a7-f00d-4e83-89eb-a85e3c47f64a";
         public static Guid guidSimpleStateMachineEditorPackageCmdSet = new Guid(guidSimpleStateMachineEditorPackageCmdSetString);
-
-        public const string guidImagesString = "f7517f9a-86cb-4e06-ad7c-ff616e240c2d";
-        public static Guid guidImages = new Guid(guidImagesString);
     }
     /// <summary>
     /// Helper class that encapsulates all CommandIDs uses across VS Package.
@@ -52,6 +49,8 @@ namespace SimpleStateMachineEditor
         public const int HorizontalAlignmentSubmenuGroupId = 0x1035;
         public const int VerticalAlignmentSubmenuGroupId = 0x1056;
         public const int SetIconDisplayColorsComboListId = 0x1037;
+        public const int ActionIconContextMenuId = 0x1038;
+        public const int ActionIconContextMenuGroupId = 0x1039;
         public const int AddEventTypeCommandId = 0x0100;
         public const int AddRegionCommandId = 0x0101;
         public const int AddStateCommandId = 0x0102;
@@ -73,11 +72,6 @@ namespace SimpleStateMachineEditor
         public const int ShowAllIconsCommandId = 0x0112;
         public const int SortCommandId = 0x0113;
         public const int StartStateCommandId = 0x0114;
-        public const int bmpPic1 = 0x0001;
-        public const int bmpPic2 = 0x0002;
-        public const int bmpPicSearch = 0x0003;
-        public const int bmpPicX = 0x0004;
-        public const int bmpPicArrows = 0x0005;
-        public const int bmpPicStrikethrough = 0x0006;
+        public const int cmdidActionsToolWindowCommand = 0x0115;
     }
 }

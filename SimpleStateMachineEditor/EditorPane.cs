@@ -37,7 +37,7 @@ namespace SimpleStateMachineEditor
     /// </summary>
 
     [ComVisible(true)]
-    public sealed class EditorPane : WindowPane, IOleComponent, IVsDeferredDocView, IVsLinkedUndoClient, IVsToolboxUser
+    public sealed class EditorPane : WindowPane, IOleComponent, IVsDeferredDocView, IVsLinkedUndoClient, IVsToolboxUser, IVsWindowSearch
     {
         #region Fields
         private SimpleStateMachineEditorPackage _thisPackage;
@@ -47,6 +47,8 @@ namespace SimpleStateMachineEditor
         private uint _componentId;
         private IOleUndoManager _undoManager;
         private ViewModel.ViewModelController _model;
+        private SearchTask _searchTask;
+
         #endregion
 
         #region "Window.Pane Overrides"
@@ -66,6 +68,11 @@ namespace SimpleStateMachineEditor
         protected override void OnClose()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_thisPackage.ActiveDesignerControl == Content)
+            {
+                _thisPackage.ActiveDesignerControl = null;
+            }
 
             ViewModelCoordinator.ReleaseViewModel(FileName);
 
@@ -546,6 +553,42 @@ namespace SimpleStateMachineEditor
         {
             return VSConstants.S_FALSE;
         }
+        #endregion
+
+        #region IVsWindowSearch
+
+        public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
+        {
+            _searchTask = null;
+            if (pSearchQuery == null || string.IsNullOrWhiteSpace(pSearchQuery.SearchString) || pSearchCallback == null)
+            {
+                return null;
+            }
+            _searchTask = new SearchTask(dwCookie, pSearchQuery, pSearchCallback, _vsDesignerControl);
+            return _searchTask;
+        }
+
+        public void ClearSearch()
+        {
+            _searchTask?.Reset();
+        }
+
+        public void ProvideSearchSettings(IVsUIDataSource pSearchSettings)
+        {
+        }
+
+        public bool OnNavigationKeyDown(uint dwNavigationKey, uint dwModifiers)
+        {
+            return false;
+        }
+
+        public bool SearchEnabled => true;
+
+        public Guid Category => _thisPackage.GetType().GUID;
+
+        public IVsEnumWindowSearchFilters SearchFiltersEnum => null;
+
+        public IVsEnumWindowSearchOptions SearchOptionsEnum => null;
 
 #endregion
     }

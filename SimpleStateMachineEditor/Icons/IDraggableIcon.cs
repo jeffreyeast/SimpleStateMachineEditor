@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.OLE.Interop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using System.Windows.Controls;
 
 namespace SimpleStateMachineEditor.Icons
 {
-    interface IDraggableIcon
+    interface IDraggableIcon : IOleCommandTarget
     {
         Control Body { get; }
         void CancelDrag();

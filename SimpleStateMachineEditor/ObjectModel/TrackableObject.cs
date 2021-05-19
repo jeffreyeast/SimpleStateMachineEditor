@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -83,12 +84,31 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         protected void OnPropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (PropertyChanged != null)
+            {
+                if (ThreadHelper.CheckAccess())
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                }
+                else
+                {
+                    ThreadHelper.Generic.BeginInvoke(new Action(() => {
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                    }));
+                }
+            }
         }
 
         internal virtual void OnRemoving()
         {
             Removing?.Invoke(this);
+        }
+
+        internal virtual void ResetSearch() { }
+
+        internal virtual uint Search(string searchString)
+        {
+            return 0;
         }
 
         internal virtual void SetProperty(string propertyName, string newValue)

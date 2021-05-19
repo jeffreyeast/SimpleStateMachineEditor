@@ -129,26 +129,67 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         int _triggerEventId = -1;
 
-        public ObservableCollection<string> Actions { get; private set; }
-        List<string> OldActions;
+        //  Previously, actions were simply string names of abstract methods. Now they're represented by the
+        //  Action object.
+        [Browsable(false)]
+        [XmlArray(ElementName = "Actions")]
+        public ObservableCollection<string> DeprecatedActions { get; private set; }
 
         [Browsable(false)]
-        public string ActionNames
+        [XmlIgnore]
+        public ObservableCollection<Action> Actions { get; private set; }
+
+        [Browsable(false)]
+        public List<int> ActionIds
         {
             get
             {
-                string actionNames = "";
-                string separator = "";
-
-                foreach (string actionName in Actions)
+                if (_actionIds == null)
                 {
-                    actionNames += separator + actionName;
-                    separator = ",";
+                    _actionIds = Actions.Select(m => m.Id).ToList();
                 }
-
-                return actionNames;
+                return _actionIds;
+            }
+            private set
+            {
+                _actionIds = value;
             }
         }
+        List<int> _actionIds;
+
+        List<string> OldActions;
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public bool WasActionFound
+        {
+            get => _wasActionFound;
+            set
+            {
+                if (_wasActionFound != value)
+                {
+                    _wasActionFound = value;
+                    OnPropertyChanged("WasActionFound");
+                }
+            }
+        }
+        bool _wasActionFound;
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public bool WasTriggerFound
+        {
+            get => _wasTriggerFound;
+            set
+            {
+                if (_wasTriggerFound != value)
+                {
+                    _wasTriggerFound = value;
+                    OnPropertyChanged("WasTriggerFound");
+                }
+            }
+        }
+        bool _wasTriggerFound;
 
         //  Events posted for use by the icon
 
@@ -161,9 +202,11 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public Transition()
         {
-            Actions = new ObservableCollection<string>();
+            DeprecatedActions = new ObservableCollection<string>();
             OldActions = new List<string>();
-            Actions.CollectionChanged += ActionNameCollectionChangedHandler;
+            Actions = new ObservableCollection<Action>();
+            Actions.CollectionChanged += Actions_CollectionChanged;
+            ActionIds = new List<int>();
         }
 
         //  Internal constructor for general use
@@ -172,12 +215,14 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                Actions = new ObservableCollection<string>();
-                Actions.CollectionChanged += ActionNameCollectionChangedHandler;
+                DeprecatedActions = new ObservableCollection<string>();
                 OldActions = new List<string>();
                 _sourceState = sourceState;
                 _sourceState.TransitionsFrom.Add(this);
                 _sourceState.PropertyChanged += EndpointPropertyChangedHandler;
+                Actions = new ObservableCollection<Action>();
+                Actions.CollectionChanged += Actions_CollectionChanged;
+                ActionIds = null;
             }
         }
 
@@ -190,14 +235,40 @@ namespace SimpleStateMachineEditor.ViewModel
                 SourceState = redoRecord.SourceStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.SourceStateId) as State;
                 DestinationState = redoRecord.DestinationStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.DestinationStateId) as State;
                 TriggerEvent = redoRecord.TriggerEventId == -1 ? null : Controller.StateMachine.Find(redoRecord.TriggerEventId) as EventType;
-                Actions = new ObservableCollection<string>(redoRecord.Actions);
-                Actions.CollectionChanged += ActionNameCollectionChangedHandler;
                 OldActions = new List<string>();
+                Actions = new ObservableCollection<Action>();
+                Actions.CollectionChanged += Actions_CollectionChanged;
+                foreach (int actionId in redoRecord.ActionIds)
+                {
+                    Action action = Controller.StateMachine.Find(actionId) as Action;
+                    Actions.Add(action);
+                }
+                ActionIds = null;
             }
         }
 
-        private void ActionNameCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        private void Actions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            ActionIds = null;
+
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach (Action action in e.NewItems)
+                    {
+                        action.Removing += ActionIsBeingRemovedHandler;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach (Action action in e.OldItems)
+                    {
+                        action.Removing -= ActionIsBeingRemovedHandler;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
             //  TODO TODO TODO
             //
             //  We should have synchronized with the underlying text buffer before we made the change.
@@ -208,10 +279,15 @@ namespace SimpleStateMachineEditor.ViewModel
                 {
                     Controller?.UndoManager.Add(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "Actions", OldActions));
                 }
-                OldActions = new List<string>(Actions);
+                OldActions = Actions.Select(a => a.Id.ToString()).ToList<string>();
                 EndChange();
             }
-            OnPropertyChanged("ActionNames");
+        }
+
+        private void ActionIsBeingRemovedHandler(ObjectModel.TrackableObject action)
+        {
+            action.Removing -= ActionIsBeingRemovedHandler;
+            Actions.Remove(action as Action);
         }
 
         internal override void DeserializeCleanup(ViewModelController controller, ViewModel.StateMachine stateMachine)
@@ -229,6 +305,14 @@ namespace SimpleStateMachineEditor.ViewModel
                 _sourceState.TransitionsFrom.Add(this);
 
                 _triggerEvent = stateMachine.Find(_triggerEventId) as ViewModel.EventType;
+
+                foreach (int actionId in ActionIds)
+                {
+                    Action action = stateMachine.Find(actionId) as Action;
+                    Actions.Add(action);
+                }
+
+                LoadDeprecatedActions(controller, stateMachine);
             }
         }
 
@@ -245,7 +329,7 @@ namespace SimpleStateMachineEditor.ViewModel
             switch (propertyName)
             {
                 case "Actions":
-                    value = Actions.ToArray<string>();
+                    value = Actions.Select(a => a.Id.ToString()).ToArray<string>();
                     break;
                 default:
                     base.GetProperty(propertyName, out value);
@@ -272,25 +356,49 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        /// <summary>
+        /// Previously, actions were saved in the XML serialization as an array of strings, and no semantics were
+        /// associated with them, except they were the name of abstract methods.
+        /// This has been replaced by the ViewModel.Action class.  Here, we create Action objects for each old-style
+        /// string action name. Then we remove the old-style names so they won't be saved by the serializer.
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <param name="stateMachine"></param>
+        private void LoadDeprecatedActions(ViewModelController controller, StateMachine stateMachine)
+        {
+            foreach (string actionName in DeprecatedActions)
+            {
+                Action action = stateMachine.Actions.Where(a => a.Name == actionName).FirstOrDefault();
+                if (action == null)
+                {
+                    action = new Action(controller, actionName);
+                    stateMachine.Actions.Add(action);
+                }
+                Actions.Add(action);
+            }
+            DeprecatedActions.Clear();
+        }
+
         private void OnEndpointChanged()
         {
             EndpointChanged?.Invoke(this, new EventArgs());
         }
 
-        private void SetActionNamesFromTextString(string actionNames)
+        internal override void ResetSearch()
         {
-            Actions.Clear();
-            int start = 0;
-            while (start < actionNames.Length)
-            {
-                int delimiterPosition = actionNames.IndexOf(',', start);
-                if (delimiterPosition == -1)
-                {
-                    delimiterPosition = actionNames.Length;
-                }
-                Actions.Add(actionNames.Substring(start, delimiterPosition - start));
-                start = delimiterPosition + 1;
-            }
+            WasActionFound = false;
+            WasTriggerFound = false;
+            base.ResetSearch();
+        }
+
+        internal override uint Search(string searchString)
+        {
+            uint count =  base.Search(searchString);
+
+            WasActionFound = Actions.Where(a => a.Name.Contains(searchString)).Any();
+            WasTriggerFound = TriggerEvent != null && !string.IsNullOrWhiteSpace(TriggerEvent.Name) && TriggerEvent.Name.Contains(searchString);
+
+            return count + (uint)(WasActionFound ? 1 : 0) + (uint)(WasTriggerFound ? 1 : 0);
         }
 
         internal override void OnRemoving()
@@ -305,8 +413,13 @@ namespace SimpleStateMachineEditor.ViewModel
                 _sourceState.PropertyChanged -= EndpointPropertyChangedHandler;
                 _sourceState.TransitionsFrom.Remove(this);
             }
+            foreach (Action action in Actions)
+            {
+                action.Removing -= ActionIsBeingRemovedHandler;
+            }
             base.OnRemoving();
         }
+
 
         internal override void SetProperty(string propertyName, string newValue)
         {
@@ -334,10 +447,16 @@ namespace SimpleStateMachineEditor.ViewModel
                 case "Actions":
                     using (new UndoRedo.AtomicBlock(Controller, "Set property Actions"))
                     {
-                        Actions.Clear();
+                        while (Actions.Count > 0)
+                        {
+                            //  We don't use the Clear method because it results in a Reset notification, which doesn't provide the OldItems list on the CollectionChanged event
+
+                            Actions.Remove(Actions.First());
+                        }
                         foreach (string v in newValue)
                         {
-                            Actions.Add(v);
+                            Action action = Controller.StateMachine.Find(int.Parse(v)) as Action;
+                            Actions.Add(action);
                         }
                     }
                     break;

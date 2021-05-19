@@ -70,6 +70,37 @@ namespace SimpleStateMachineEditor.ObjectModel
         }
         string _wrappedName;
 
+        [XmlIgnore]
+        [Browsable(false)]
+        public bool WasNameFound
+        {
+            get => _wasNameFound;
+            set
+            {
+                if (_wasNameFound != value)
+                {
+                    _wasNameFound = value;
+                    OnPropertyChanged("WasNameFound");
+                }
+            }
+        }
+        bool _wasNameFound;
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public bool WasDescriptionFound
+        {
+            get => _wasDescriptionFound;
+            set
+            {
+                if (_wasDescriptionFound != value)
+                {
+                    _wasDescriptionFound = value;
+                    OnPropertyChanged("WasDescriptionFound");
+                }
+            }
+        }
+        bool _wasDescriptionFound;
 
 
 
@@ -77,6 +108,13 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         public NamedObject()
         {
+        }
+
+        //  Constructor for use during DeserializationCleanup
+
+        protected NamedObject(ViewModel.ViewModelController controller, string name) : base(controller)
+        {
+            _name = name;
         }
 
         //  Constructors for use by derived classes
@@ -88,11 +126,14 @@ namespace SimpleStateMachineEditor.ObjectModel
         public NamedObject(ViewModel.ViewModelController controller, IEnumerable<NamedObject> existingObjectList, string rootName) : base(controller)
         {
             int uniquifier = 1;
+            string candidateName = "";
 
             do
             {
-                Name = $@"{rootName}{uniquifier++}";
-            } while (existingObjectList.Where(o => o.Name == Name).Count() > 0);
+                candidateName = $@"{rootName}{uniquifier++}";
+            } while (existingObjectList.Where(o => o.Name == candidateName).Count() > 0);
+
+            Name = candidateName;
         }
 
         //  Constructor for use by Redo
@@ -125,6 +166,23 @@ namespace SimpleStateMachineEditor.ObjectModel
         private bool IsBreakableCharacter(char v)
         {
             return v == '_' || v == '.' || Char.IsUpper(v);
+        }
+
+        internal override void ResetSearch()
+        {
+            WasNameFound = false;
+            WasDescriptionFound = false;
+            base.ResetSearch();
+        }
+
+        internal override uint Search(string searchString)
+        {
+            uint count = base.Search(searchString);
+
+            WasNameFound = !string.IsNullOrWhiteSpace(Name) && Name.Contains(searchString);
+//            WasDescriptionFound = !string.IsNullOrWhiteSpace(Description) && Description.Contains(searchString);
+
+            return count + (uint)(WasNameFound ? 1 : 0) + (uint)(WasDescriptionFound ? 1 : 0);
         }
 
         internal override void SetProperty(string propertyName, string newValue)

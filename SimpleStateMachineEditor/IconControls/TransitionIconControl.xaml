@@ -6,30 +6,23 @@
              xmlns:local="clr-namespace:SimpleStateMachineEditor.IconControls"
              xmlns:global="clr-namespace:SimpleStateMachineEditor"
              mc:Ignorable="d" 
+             AllowDrop="True"
+             Drop="Drop_Handler"
+             DragEnter="DragEnter_Handler"
+             DragLeave="DragLeave_Handler"
+             DragOver="DragOver_Handler"
              d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
 
-        <Style x:Key="TransitionNameStyle" TargetType="Label">
-            <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.EventNameFontSize}"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
-                    <Setter Property="Foreground" Value="LightGreen"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </DataTrigger>
-            </Style.Triggers>    
-        </Style>
-
-        <Style x:Key="TransitionActionsStyle" TargetType="Label">
+        <Style x:Key="TransitionActionsStyle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.ActionFontSize}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.WasActionFound}" Value="True">
+                    <Setter Property="Background" Value="Gray"/>
+                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
                     <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
@@ -41,6 +34,26 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.HideActionNames}" Value="True">
                     <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TransitionNameStyle" TargetType="Label">
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.EventNameFontSize}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.WasTriggerFound}" Value="True">
+                    <Setter Property="Background" Value="Gray"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
+                    <Setter Property="Foreground" Value="LightGreen"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -62,7 +75,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
+
     </UserControl.Resources>
     
     <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
@@ -91,9 +104,25 @@
                 </Grid>
             </Grid>
 
-            <Label Grid.Row="1" HorizontalAlignment="Center" Style="{StaticResource TransitionActionsStyle}"
-                   Content="{Binding Path=ReferencedObject.ActionNames}"  />
-
+            <ListBox Grid.Row="1" ItemsSource="{Binding Path=ActionIcons}" DisplayMemberPath="ReferencedObject.Name"
+                     BorderThickness="0" FontSize="10" Background="Transparent">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <EventSetter Event="Loaded" Handler="ActionIconLoadedHandler"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ActionIsHighlighted}" Value="True">
+                                <Setter Property="Background" Value="Gray"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+            
         </Grid>
 
         <Path x:Name="ConnectorPath" Style="{StaticResource TransitionPathStyle}"/>

@@ -146,7 +146,7 @@ namespace SimpleStateMachineEditor.Utility
             return outputGeometry;
         }
 
-        public static Point NormalizePoint(Panel outputParent, Panel inputParent, Point inputPoint)
+        public static Point NormalizePoint(Visual outputParent, Visual inputParent, Point inputPoint)
         {
             return outputParent.PointFromScreen(inputParent.PointToScreen(inputPoint));
         }

@@ -162,7 +162,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             points = new[] { point };
 
             // TODO: error handling
-            Designer.UiShell.ShowContextMenu(0, ref contextMenuGuid, DraggingIcon.ContextMenuId, points, Designer);
+            Designer.UiShell.ShowContextMenu(0, ref contextMenuGuid, DraggingIcon.ContextMenuId, points, DraggingIcon);
         }
 
         protected override void DisplayStateMachineContextMenu()

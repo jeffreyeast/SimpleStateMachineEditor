@@ -18,6 +18,11 @@
         <Style x:Key="RegionColor" TargetType="Label">
             <Setter Property="Background" Value="{Binding Path=ReferencedObject.DisplayColors.Background.Brush}"    />
             <Setter Property="Foreground" Value="{Binding Path=ReferencedObject.DisplayColors.Foreground.Brush}"    />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.WasNameFound}" Value="True">
+                    <Setter Property="Background" Value="Gray"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
     </UserControl.Resources>

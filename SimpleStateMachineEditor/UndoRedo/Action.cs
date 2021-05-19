@@ -19,11 +19,14 @@ namespace SimpleStateMachineEditor.UndoRedo
 
         public enum ActionTypes
         {
+            AddAction,
             AddEventType,
             AddRegion,
             AddState,
             AddTransition,
             ChangeProperty,
+            ChangePropertyList,
+            DeleteAction,
             DeleteEventType,
             DeleteRegion,
             DeleteState,
@@ -215,6 +218,67 @@ namespace SimpleStateMachineEditor.UndoRedo
         public void GetParentState(out uint pdwState)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    // Action Records
+
+    internal class AddActionRecord : NamedObjectRecord
+    {
+        protected override string UnitDescription => "Add action";
+        protected override int UnitType => (int)ActionTypes.AddAction;
+
+
+
+        internal AddActionRecord(ViewModel.ViewModelController controller, ViewModel.Action actionType) : base(ActionTypes.AddAction, controller, actionType)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine($@">>> AddActionRecord.AddActionRecord: Created {UnitDescription} record, ID: {Id}, Name: {Name}");
+#endif
+        }
+
+        public override void Do(IOleUndoManager pUndoManager)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine(">>> AddActionRecord.Do");
+#endif
+            if (Controller.StateMachine.IsChangeAllowed)
+            {
+                ViewModel.Action newAction = new ViewModel.Action(Controller, this);
+                Controller.StateMachine.Actions.Add(newAction);
+                Controller.StateMachine.EndChange();
+
+                Controller.UndoManager.Add(new DeleteActionRecord(Controller, newAction));
+            }
+        }
+    }
+
+    internal class DeleteActionRecord : NamedObjectRecord
+    {
+        protected override string UnitDescription => "Delete action";
+        protected override int UnitType => (int)ActionTypes.DeleteAction;
+
+
+        internal DeleteActionRecord(ViewModel.ViewModelController controller, ViewModel.Action actionType) : base(ActionTypes.DeleteAction, controller, actionType)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine($@">>> DeleteActionRecord.DeleteActionRecord: Created {UnitDescription} record, ID: {Id}, Name: {Name}");
+#endif
+        }
+
+        public override void Do(IOleUndoManager pUndoManager)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine(">>> DeleteActionRecord.Do");
+#endif
+            if (Controller.StateMachine.IsChangeAllowed)
+            {
+                ViewModel.Action targetAction = Controller.StateMachine.Actions.Where(e => e.Id == Id).First();
+                Controller.StateMachine.Actions.Remove(targetAction);
+                Controller.StateMachine.EndChange();
+
+                Controller.UndoManager.Add(new AddActionRecord(Controller, targetAction));
+            }
         }
     }
 
@@ -419,19 +483,20 @@ namespace SimpleStateMachineEditor.UndoRedo
         protected override string UnitDescription => "Add transition";
         protected override int UnitType => (int)ActionTypes.AddTransition;
 
-        public IEnumerable<string> Actions;
         public int DestinationStateId;
         public int SourceStateId;
         public int TriggerEventId;
+        public int[] ActionIds;
 
 
 
         internal AddTransitionRecord(ViewModel.ViewModelController controller, ViewModel.Transition transition) : base(ActionTypes.AddTransition, controller, transition) 
         {
-            transition.GetProperty("Actions", out Actions);
             DestinationStateId = transition.DestinationStateId;
             SourceStateId = transition.SourceStateId;
             TriggerEventId = transition.TriggerEvent?.Id ?? -1;
+            ActionIds = transition.Actions.Select(a => a.Id).ToArray();
+
 #if DEBUGUNDOREDO
             Debug.WriteLine($@">>> AddTransitionRecord.AddTransitionRecord: Created {UnitDescription} record, Id: {Id}, Src: {SourceStateId}, Dest: {DestinationStateId}");
 #endif
@@ -526,27 +591,27 @@ namespace SimpleStateMachineEditor.UndoRedo
     internal class ListValuedPropertyChangedRecord : TrackableObjectRecord
     {
         protected override string UnitDescription => $@"Property {PropertyName} changed";
-        protected override int UnitType => (int)ActionTypes.ChangeProperty;
+        protected override int UnitType => (int)ActionTypes.ChangePropertyList;
 
         public string ObjectType;
         public string PropertyName;
         public string[] Value;
 
 
-        internal ListValuedPropertyChangedRecord(ViewModel.ViewModelController controller, TrackableObject trackableObject, string propertyName, IEnumerable<string> targetList) : base(ActionTypes.ChangeProperty, controller, trackableObject)
+        internal ListValuedPropertyChangedRecord(ViewModel.ViewModelController controller, TrackableObject trackableObject, string propertyName, IEnumerable<string> targetList) : base(ActionTypes.ChangePropertyList, controller, trackableObject)
         {
             ObjectType = trackableObject.GetType().ToString();
             PropertyName = propertyName;
             Value = targetList.ToArray<string>();
 #if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> PropertyChangedRecord.PropertyChangedRecord: Created {UnitDescription} record, Id: {Id}, PropertyName: {PropertyName}");
+            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.ListValuedPropertyChangedRecord: Created {UnitDescription} record, Id: {Id}, PropertyName: {PropertyName}");
 #endif
         }
 
         public override void Do(IOleUndoManager pUndoManager)
         {
 #if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> PropertyChangedRecord.Do (Property {PropertyName}, Value: {Value})");
+            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.Do (Property {PropertyName}, Value: {Value})");
 #endif
             if (Controller.StateMachine.IsChangeAllowed)
             {

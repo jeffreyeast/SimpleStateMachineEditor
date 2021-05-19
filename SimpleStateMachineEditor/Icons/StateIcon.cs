@@ -114,10 +114,18 @@ namespace SimpleStateMachineEditor.Icons
                     switch (prgCmds[i].cmdID)
                     {
                         case PackageIds.AddTransitionCommandId:
-                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED | OLECMDF.OLECMDF_ENABLED);
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
+                            if (Designer.SelectedIcons.Count == 1)
+                            {
+                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
+                            }
                             break;
                         case PackageIds.StartStateCommandId:
-                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED | OLECMDF.OLECMDF_ENABLED);
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
+                            if (Designer.SelectedIcons.Count == 1)
+                            {
+                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
+                            }
                             if (Designer.Model.StateMachine.StartState == ReferencedObject)
                             {
                                 prgCmds[i].cmdf |= (uint)OLECMDF.OLECMDF_LATCHED;

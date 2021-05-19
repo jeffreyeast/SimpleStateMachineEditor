@@ -201,9 +201,45 @@
   FIXED
 - It'd be nice to not display the toolbar when looking at the code file for an SFSA file.
 - Nice to be able to search the sfsa diagram
+  DONE
 - Maybe add icon size to options page?
 - Consider: should we have a list of actions?
 - We don't detect duplicate state names
+  FIXED
 - It would be nice to disable commands in context menus that can't be executed on multiple selections (e.g., Add Transition)
 - What happens if there's a blank line in the list of actions for a transition?
 - State machine trace depth should be configurable
+- Build the Nuget package
+- Build the Visual Studio Marketplace package
+- Setting starting state to S1, then S2, doesn't clear the starting state status of S1
+
+5/13/2021
+
+- Try using a lightning bolt for events, similar to the icon used for "add event type"
+  DONE
+
+5/14/2021
+
+- Note https://docs.microsoft.com/en-us/visualstudio/extensibility/adding-a-shortcut-menu-in-a-tool-window?view=vs-2019 shows a different way to display a "shortcut menu". They use the
+  command service, while we're using the shell service.
+- Action tool window's existance and visibility isn't connected well to that of the active window.  Why? Associating it with the solution seems to have lost its transience.
+- Need a way to demark selected transition
+
+5/15/2021
+
+- BUG: drop an action onto a transition, the undo arrow doesn't get set. Change an object name, the arrow gets set and BOTH undos show up (and work). W/o doing the undo, drop another action. The undo
+  arrow is disabled. But change another name, and all FOUR changes show up as undoable.
+  FIXED - THIS WAS BECAUSE THE FOCUS WAS ON THE ACTION WINDOW.
+
+5/16/2021
+
+ - Check if adding/removing members from a region works with undo/redo
+
+5/18/2021
+
+ - We're using a datagrid control to allow the user to control the Actions. But we need to detect committed changes. The DataGrid won't tell us; we probably need to use an ObservableCollection, and monitor PropertyChanged on each
+   row. 
+   DONE
+ - Actions window should indicate which document it's actions are members of
+ - Consider dropping NewWindow command, it's going to cause a lot of grief
+

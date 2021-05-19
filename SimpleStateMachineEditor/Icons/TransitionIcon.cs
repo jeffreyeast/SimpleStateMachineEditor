@@ -3,12 +3,15 @@ using Microsoft.VisualStudio.OLE.Interop;
 using SimpleStateMachineEditor.ObjectModel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -19,6 +22,7 @@ namespace SimpleStateMachineEditor.Icons
     {
         public override int ContextMenuId => PackageIds.TransitionIconContextMenuId;
 
+        public ObservableCollection<ActionIcon> ActionIcons { get; private set; }
 
         public override Point CenterPosition
         {
@@ -62,10 +66,15 @@ namespace SimpleStateMachineEditor.Icons
         }
         bool _isHighlighted;
 
-
         internal TransitionIcon(DesignerControl designer, ViewModel.Transition transition, System.Windows.Point? center, System.Windows.Point? leftTop) :
             base(designer, transition, null, null)
         {
+            transition.Actions.CollectionChanged += TransitionActionsCollectionChangedHandler;
+            ActionIcons = new ObservableCollection<ActionIcon>();
+            foreach(ViewModel.Action action in transition.Actions)
+            {
+                ActionIcons.Add(new ActionIcon(designer, action));
+            }
         }
 
         public override void CancelDrag()
@@ -150,6 +159,59 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
 
+        /// <summary>
+        /// Invoked to handle a "dropped" action string onto an icon
+        /// </summary>
+        /// <param name="action">The action being dropped</param>
+        /// <param name="originState">The source or destination state, whichever is to the left of the other</param>
+        /// <param name="clickPosition">The mouse click position, relative to the originState</param>
+        internal void ProcessDroppedAction(ViewModel.Action action, ViewModel.State originState, Point clickPosition)
+        {
+            if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed)
+            {
+                if (transition.Actions.Contains(action))
+                {
+                    //  The action is already associated with the transition, so we interpret the request as "remove the action"
+
+                    transition.Actions.Remove(action);
+                }
+                else
+                {
+                    //  This is a new action. We'll try to put it in the list of actions near where they clicked.
+
+                    //  Identify the existing action position closest to the click
+
+                    IconControls.StateIconControl originControl = Designer.LoadedIcons[originState].Body as IconControls.StateIconControl;
+                    List<double> segmentMidpointDistancesFromOrigin = new List<double>();
+
+                    foreach (ActionIcon actionIcon in ActionIcons)
+                    {
+                        Point leftTop = Utility.DrawingAids.NormalizePoint(originControl, actionIcon.ListBoxItem, new Point(0, 0));
+                        Point rightBottom = Utility.DrawingAids.NormalizePoint(originControl, actionIcon.ListBoxItem, new Point(actionIcon.ListBoxItem.ActualWidth, actionIcon.ListBoxItem.ActualHeight));
+                        double distance = Utility.DrawingAids.Distance((leftTop.X + rightBottom.X) / 2, (leftTop.Y + rightBottom.Y) / 2, 0, 0);
+                        segmentMidpointDistancesFromOrigin.Add(distance);
+                    }
+
+                    segmentMidpointDistancesFromOrigin.Add(double.MaxValue);
+
+
+                    //  Now figure the insertion position of the new action into the list of actions for the transition
+
+                    double clickDistance = Utility.DrawingAids.Distance(clickPosition, new Point(0, 0));
+                    for (int i = 0; ; i++)
+                    {
+                        if (clickDistance <= segmentMidpointDistancesFromOrigin[i])
+                        {
+                            transition.Actions.Insert(i, action);
+                            break;
+                        }
+                    }
+                }
+                transition.EndChange();
+                Designer.IconSurface.Focus();
+            }
+        }
+
         public override int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
             if (pguidCmdGroup == PackageGuids.guidSimpleStateMachineEditorPackageCmdSet)
@@ -164,7 +226,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewDestinationCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition && transition.SourceState != null && transition.DestinationState != null)
+                            if (ReferencedObject is ViewModel.Transition transition && transition.SourceState != null && transition.DestinationState != null && Designer.SelectedIcons.Count == 1)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -173,7 +235,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewSourceCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.SourceState != null && transition1.DestinationState != null)
+                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.SourceState != null && transition1.DestinationState != null && Designer.SelectedIcons.Count == 1)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -186,6 +248,28 @@ namespace SimpleStateMachineEditor.Icons
             }
 
             return base.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+        }
+
+        private void TransitionActionsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ViewModel.Action action in e.NewItems)
+                    {
+                        int slot = (ReferencedObject as ViewModel.Transition).Actions.IndexOf(action);
+                        ActionIcons.Insert(slot, new ActionIcon(Designer, action));
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ViewModel.Action action in e.OldItems)
+                    {
+                        ActionIcons.Remove(ActionIcons.Where(icon => icon.ReferencedObject == action).Single());
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public override Size Size { get => throw new InvalidOperationException(); set => throw new InvalidOperationException(); }

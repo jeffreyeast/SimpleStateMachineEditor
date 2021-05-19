@@ -18,8 +18,7 @@ namespace SimpleStateMachineEditor.Icons
 {
     internal abstract class IconBase : INotifyPropertyChanged, IOleCommandTarget
     {
-        const int HoverDelay = 250;     // Milliseconds
-        const int MinHoverTime = 1000;  // Milliseconds
+        internal const int HoverDelay = 250;     // Milliseconds
 
         public abstract int ContextMenuId { get; }
         internal DesignerControl Designer { get; private set; }

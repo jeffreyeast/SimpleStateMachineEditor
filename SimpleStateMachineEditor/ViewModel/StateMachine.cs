@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SimpleStateMachineEditor.ViewModel
     //--
     public class StateMachine : ObjectModel.NamedObject
     {
+        [Browsable(false)]
+        public ObservableCollection<Action> Actions { get; private set; }
         [Browsable(false)]
         public ObservableCollection<EventType> EventTypes { get; private set; }
         [Browsable(false)]
@@ -145,21 +148,32 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public StateMachine()
         {
+            Actions = new ObservableCollection<Action>();
+            Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
+            EventTypes.CollectionChanged += CollectionChangedHandler;
             Regions = new ObservableCollection<Region>();
+            Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
-
+            States.CollectionChanged += CollectionChangedHandler;
             Transitions = new ObservableCollection<Transition>();
+            Transitions.CollectionChanged += CollectionChangedHandler;
         }
 
         //  General-use internal constructor
 
         internal StateMachine(ViewModelController controller) : base(controller)
         {
+            Actions = new ObservableCollection<Action>();
+            Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
+            EventTypes.CollectionChanged += CollectionChangedHandler;
             Regions = new ObservableCollection<Region>();
+            Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
+            States.CollectionChanged += CollectionChangedHandler;
             Transitions = new ObservableCollection<Transition>();
+            Transitions.CollectionChanged += CollectionChangedHandler;
         }
 
         public void ApplyDefaults(string filePath)
@@ -171,6 +185,23 @@ namespace SimpleStateMachineEditor.ViewModel
             if (string.IsNullOrWhiteSpace(ReturnValue))
             {
                 _returnValue = "void";
+            }
+        }
+
+        private void CollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ObjectModel.TrackableObject o in e.OldItems)
+                    {
+                        o.OnRemoving();
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -191,6 +222,10 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             base.DeserializeCleanup(controller, this);
 
+            foreach (Action a in Actions)
+            {
+                a.DeserializeCleanup(Controller, this);
+            }
             foreach (EventType e in EventTypes)
             {
                 e.DeserializeCleanup(Controller, this);
@@ -215,24 +250,28 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             ObjectModel.TrackableObject trackableObject = null;
 
-            trackableObject = EventTypes.Where(e => e.Id == id).FirstOrDefault();
+            trackableObject = Actions.Where(a => a.Id == id).FirstOrDefault();
+            if (trackableObject == null)
+            {
+                trackableObject = EventTypes.Where(e => e.Id == id).FirstOrDefault();
+            }
             if (trackableObject == null)
             {
                 trackableObject = Regions.Where(r => r.Id == id).FirstOrDefault();
-                if (trackableObject == null)
+            }
+            if (trackableObject == null)
+            {
+                trackableObject = States.Where(s => s.Id == id).FirstOrDefault();
+            }
+            if (trackableObject == null)
+            {
+                trackableObject = Transitions.Where(t => t.Id == id).FirstOrDefault();
+            }
+            if (trackableObject == null)
+            {
+                if (id == Id)
                 {
-                    trackableObject = States.Where(s => s.Id == id).FirstOrDefault();
-                    if (trackableObject == null)
-                    {
-                        trackableObject = Transitions.Where(t => t.Id == id).FirstOrDefault();
-                        if (trackableObject == null)
-                        {
-                            if (id == Id)
-                            {
-                                trackableObject = this;
-                            }
-                        }
-                    }
+                    trackableObject = this;
                 }
             }
 

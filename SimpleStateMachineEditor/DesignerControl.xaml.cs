@@ -50,7 +50,6 @@ namespace SimpleStateMachineEditor
         IInputElement OldKeyboardFocus;
         public IconControls.OptionsPropertiesPage OptionsPage { get; private set; }
         IOleParentUndoUnit CurrentParentUndoUnit;
-        Point? NewObjectOrigin;
 
 
 
@@ -1007,7 +1006,6 @@ namespace SimpleStateMachineEditor
                         RemoveIconSelection(LoadedIcons[eventType]);
                         IconSurface.Children.Remove(LoadedIcons[eventType].Body);
                         LoadedIcons.Remove(eventType);
-                        eventType.OnRemoving();
                     }
                     break;
                 default:
@@ -1036,7 +1034,6 @@ namespace SimpleStateMachineEditor
                         RemoveIconSelection(LoadedIcons[region]);
                         IconSurface.Children.Remove(LoadedIcons[region].Body);
                         LoadedIcons.Remove(region);
-                        region.OnRemoving();
                     }
                     break;
                 default:
@@ -1065,7 +1062,6 @@ namespace SimpleStateMachineEditor
                         RemoveIconSelection(LoadedIcons[state]);
                         IconSurface.Children.Remove(LoadedIcons[state].Body);
                         LoadedIcons.Remove(state);
-                        state.OnRemoving();
                     }
                     break;
                 default:
@@ -1094,7 +1090,6 @@ namespace SimpleStateMachineEditor
                         RemoveIconSelection(LoadedIcons[transition]);
                         IconSurface.Children.Remove(LoadedIcons[transition].Body);
                         LoadedIcons.Remove(transition);
-                        transition.OnRemoving();
                     }
                     break;
                 default:

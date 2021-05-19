@@ -4,8 +4,13 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextTemplating.VSHost;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 
 namespace SimpleStateMachineEditor
@@ -45,6 +50,11 @@ namespace SimpleStateMachineEditor
     // We have an options page in the tools/options menu, whereby configuration values can be viewed and changed
     [ProvideOptionPage(typeof(IconControls.OptionsPropertiesPage), "Simple State Machine Editor", "General", 0, 0, true)]
 
+    // The Actions window is only visible when a pane containing a Simple State Machine is active. It's default location is
+    // as a tab of the Solutions group. However, once it's there, it stays, and may load very eary in the IDE's life. 
+    [ProvideToolWindow(typeof(IconControls.ActionsToolWindow), Style = VsDockStyle.Tabbed, Window = "3AE79031-E1BC-11D0-8F78-00A0C9110057")]    
+    [ProvideToolWindowVisibility(typeof(IconControls.ActionsToolWindow), PackageGuids.guidDesignControlCmdUIContextString)]
+
     //  Define a command context that will be active when a pane containing a Simple State Machine is active. We use
     //  this in the .VSCT file to control menu and toolbar visibility
     [ProvideUIContextRule(PackageGuids.guidDesignControlCmdUIContextString,
@@ -59,23 +69,29 @@ namespace SimpleStateMachineEditor
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(GuidList.guidDesignerPkgString)]
-    public sealed class SimpleStateMachineEditorPackage : AsyncPackage
+    [ProvideToolWindow(typeof(SimpleStateMachineEditor.IconControls.ActionsToolWindow))]
+    public sealed class SimpleStateMachineEditorPackage : AsyncPackage, INotifyPropertyChanged
     {
         IVsMonitorSelection SelectionMonitorSvc;
         internal IconControls.OptionsPropertiesPage OptionsPropertiesPage;
         DTE DTE;
+
         internal DesignerControl ActiveDesignerControl
         {
-            get
+            get => _activeDesignerControl;
+            set
             {
-                Window activeWindow = DTE.ActiveWindow;
-                if (activeWindow.Object is EditorPane editorPane && editorPane.Content is DesignerControl designerControl)
+                if (_activeDesignerControl != value)
                 {
-                    return designerControl;
+                    _activeDesignerControl = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ActiveDesignerControl"));
                 }
-                return null;
             }
         }
+        DesignerControl _activeDesignerControl;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
 
 
         /// <summary>
@@ -87,7 +103,6 @@ namespace SimpleStateMachineEditor
         /// </summary>
         public SimpleStateMachineEditorPackage()
         {
-
         }
 
 
@@ -106,11 +121,20 @@ namespace SimpleStateMachineEditor
         {
             await base.InitializeAsync(cancellationToken, progress);
 
+
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+
             // Register for service activity events
             DTE = await GetServiceAsync(typeof(DTE)) as DTE;
+            if (DTE == null)
+            {
+                throw new InvalidOperationException();
+            }
+            DTE.Events.WindowEvents.WindowActivated += WindowActivatedHandler;
+
             SelectionMonitorSvc = await GetServiceAsync(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
             if (SelectionMonitorSvc == null)
             {
@@ -137,7 +161,31 @@ namespace SimpleStateMachineEditor
             await Commands.AlignmentCommand.InitializeAsync(this, PackageIds.DistributeVerticallyCommandId);
 
             OptionsPropertiesPage = (IconControls.OptionsPropertiesPage)GetDialogPage(typeof(IconControls.OptionsPropertiesPage));
+            await SimpleStateMachineEditor.IconControls.ActionsToolWindowCommand.InitializeAsync(this);
         }
-#endregion
+
+        private void WindowActivatedHandler(Window GotFocus, Window LostFocus)
+        {
+            if (GotFocus.Object is EditorPane editorPane)
+            {
+                ActiveDesignerControl = editorPane.Content as DesignerControl;
+                IconControls.ActionsToolWindow toolWindow = FindToolWindow(typeof(IconControls.ActionsToolWindow), 0, false) as IconControls.ActionsToolWindow;
+                if (toolWindow != null)
+                {
+                    toolWindow.Designer = ActiveDesignerControl;
+                }
+                else
+                {
+                    string designerName = "<null>";
+                    if (ActiveDesignerControl.Model.StateMachine != null)
+                    {
+                        designerName = ActiveDesignerControl.Model.StateMachine.Name ?? "<unnamed>";
+                    }
+                    Debug.WriteLine($@">>>SimpleStateMachineEditorPackage.WindowActivatedHandler, ActiveDesignerControl = {designerName}, ToolWindow is null");
+                }
+            }
+        }
+        #endregion
+
     }
 }

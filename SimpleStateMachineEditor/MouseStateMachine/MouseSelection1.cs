@@ -139,7 +139,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                 { // Idle(2)
                     new Transition<Action>(0, new Action[] { TrackMouseMovement, ClearSelection, SelectDraggingIcon, StartDrag, DragIcon, }),  // DraggingTransition(0)
                     new Transition<Action>(2, new Action[] { }),  // Esc(1)
-                    new Transition<Action>(3, new Action[] { SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDown(2)
+                    new Transition<Action>(3, new Action[] { ClearSelection, SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDown(2)
                     new Transition<Action>(4, new Action[] { SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDownOnIcon(3)
                     new Transition<Action>(2, new Action[] { StopTrackingMouse, }),  // LeftButtonUp(4)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(5)

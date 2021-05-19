@@ -8,15 +8,9 @@
              d:DesignHeight="61" d:DesignWidth="61">
     
     <UserControl.Resources>
-    
-        <Style x:Key="StateIconEllipseStyle" TargetType="Ellipse">
+
+        <Style x:Key="StateIconEllipseVisibilityStyle" TargetType="Ellipse">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsStartState}" Value="True">
-                    <Setter Property="StrokeThickness" Value="3"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsStartState}" Value="False">
-                    <Setter Property="StrokeThickness" Value="0"/>
-                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish">
                     <Setter Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
@@ -25,6 +19,17 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Error">
                     <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StateIconEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StateIconEllipseVisibilityStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsStartState}" Value="True">
+                    <Setter Property="StrokeThickness" Value="3"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsStartState}" Value="False">
+                    <Setter Property="StrokeThickness" Value="0"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -43,13 +48,13 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="StateIconPathColorStyle" TargetType="Control">
+        <Style x:Key="StateIconPathColorStyle" TargetType="Path" BasedOn="{StaticResource StateIconPathStyle}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish">
-                    <Setter Property="Background" Value="LightGreen"/>
+                    <Setter Property="Fill" Value="LightGreen"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Error">
-                    <Setter Property="Background" Value="Red"/>
+                    <Setter Property="Fill" Value="Red"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -64,24 +69,28 @@
 
             <Border BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
                 <Grid>
+                    <Ellipse Width="60" Height="60" Fill="Pink" Style="{StaticResource StateIconEllipseVisibilityStyle}"/>
                     <Ellipse Width="60" Height="60" Stroke="DarkRed" Style="{StaticResource StateIconEllipseStyle}">
                         <Ellipse.Fill>
                             <VisualBrush>
                                 <VisualBrush.Visual>
                                     <StackPanel>
-                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Background="Pink"/>
+                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Style="{DynamicResource NameStyle}"/>
                                     </StackPanel>
                                 </VisualBrush.Visual>
                             </VisualBrush>
                         </Ellipse.Fill>
                     </Ellipse>
                     <Path Data="M 17,0 L 43,0 60,17 60,43 43,60, 17,60, 0,43, 0,17 17,0"
+                            Style="{StaticResource StateIconPathColorStyle}"/>
+
+                    <Path Data="M 17,0 L 43,0 60,17 60,43 43,60, 17,60, 0,43, 0,17 17,0"
                             Style="{StaticResource StateIconPathStyle}">
                         <Path.Fill>
                             <VisualBrush>
                                 <VisualBrush.Visual>
                                     <StackPanel>
-                                        <Label Content="{Binding Path=ReferencedObject.Name}" Style="{StaticResource StateIconPathColorStyle}" HorizontalContentAlignment="Center"/>
+                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Style="{DynamicResource NameStyle}" HorizontalContentAlignment="Center"/>
                                     </StackPanel>
                                 </VisualBrush.Visual>
                             </VisualBrush>

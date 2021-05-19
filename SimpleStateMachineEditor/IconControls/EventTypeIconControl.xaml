@@ -8,7 +8,7 @@
              d:DesignHeight="61" d:DesignWidth="61">
 
     <UserControl.Resources>
-
+    
         <Style x:Key="EventTypePathStyle" TargetType="Path">
             <Setter Property="StrokeThickness" Value="0"/>
             <Setter Property="Fill" Value="LightBlue"/>
@@ -49,14 +49,14 @@
             <Border Grid.Row="0"  BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
                 <Grid x:Name="IconPanel">
                     <Path x:Name="Path" Style="{StaticResource EventTypePathStyle}"
-                    Data="M0,60 L30,0 60,60 0,60"/>
+                        Data="M25,0 L55,0 30,25, 45,25 15,60 25,30, 15,30 25,0"/>
 
-                    <Rectangle Width="56" Height="33" VerticalAlignment="Bottom" Margin="2,0,0,-5">
+                    <Rectangle Width="56" Height="53" VerticalAlignment="Center" Margin="2,0,0,-5">
                         <Rectangle.Fill>
                             <VisualBrush>
                                 <VisualBrush.Visual>
                                     <StackPanel>
-                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Background="Transparent" HorizontalContentAlignment="Center"/>
+                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Style="{DynamicResource NameStyle}" HorizontalContentAlignment="Center"/>
                                     </StackPanel>
                                 </VisualBrush.Visual>
                             </VisualBrush>
