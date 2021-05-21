@@ -244,8 +244,19 @@
  - Actions window should indicate which document it's actions are members of
  - Consider dropping NewWindow command, it's going to cause a lot of grief
 
- 5/29/2021
+ 5/19/2021
 
  - Sometimes it's hard to get the Actions tool window to appear if you've explicitly closed it. It may require resetting the window layout.
  - BUG: Undo of a deletion of a ToolWindowIcon doesn't work. Redo is worse.
+   FIXED
 
+5/21/2021
+
+ - There's still problems with 1) getting the Actions toolwindow to appear, and 2) getting it to reflect the current designer once it does appear. I think it's related to we make it invisible when the UI context isn't SFSA.  Makes it very
+   difficult to move it around and position it
+ - Handle CTRL key for selection
+ - Should Transitions have a Description field?
+ - Should descriptions be included in the code-behind file as comments?
+ - Should you be able to drag Actions around a transition to change their order?
+ - Search should also search for action names
+ - If a method throws beyond the Execute, should we detect if another call to Execute is made w/o invoking Reset?

@@ -36,6 +36,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         public event ObjectModel.RemovingHandler Removing;
 
         [XmlIgnore]
+        [Browsable(false)]
         public int GID { get; private set; }
         static int _gid = 0;
 

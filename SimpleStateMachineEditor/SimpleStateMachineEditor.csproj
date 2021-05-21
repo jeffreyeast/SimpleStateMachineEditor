@@ -185,9 +185,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Images\HelloWorld_Code.jpg" />
-    <Content Include="Images\HelloWorld_Designer.jpg" />
-    <Content Include="Images\HelloWorld_Program.jpg" />
+    <Content Include="Images\HelloWorld_Designer.png" />
+    <Content Include="Images\HelloWorld_Designer_Window.png" />
     <Content Include="Images\MoreInfo.PNG" />
     <Content Include="Resources\Command1.png" />
     <Content Include="Resources\SampleContextCommand.png" />
