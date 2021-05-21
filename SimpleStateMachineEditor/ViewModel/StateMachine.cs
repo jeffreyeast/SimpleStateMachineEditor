@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,10 +38,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_generatedClassName != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "GeneratedClassName", _generatedClassName?.ToString() ?? ""));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "GeneratedClassName", _generatedClassName?.ToString() ?? ""));
                     _generatedClassName = value;
                     OnPropertyChanged("GeneratedClassName");
                     EndChange();
@@ -57,10 +55,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_ignoreUnmatchedEvents != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "IgnoreUnmatchedEvents", _ignoreUnmatchedEvents.ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "IgnoreUnmatchedEvents", _ignoreUnmatchedEvents.ToString()));
                     _ignoreUnmatchedEvents = value;
                     OnPropertyChanged("IgnoreUnmatchedEvents");
                     EndChange();
@@ -77,10 +72,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_returnValue != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "ReturnValue", _returnValue?.ToString() ?? ""));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "ReturnValue", _returnValue?.ToString() ?? ""));
                     _returnValue = value;
                     OnPropertyChanged("ReturnValue");
                     EndChange();
@@ -98,10 +90,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_startState != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "StartState", _startState?.Id.ToString() ?? ((int)-1).ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StartState", _startState?.Id.ToString() ?? ((int)-1).ToString()));
                     _startState = value;
                     if (_startState == null)
                     {
@@ -130,10 +119,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_requireCompleteEventCoverage != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "RequireCompleteEventCoverage", _requireCompleteEventCoverage.ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "RequireCompleteEventCoverage", _requireCompleteEventCoverage.ToString()));
                     _requireCompleteEventCoverage = value;
                     OnPropertyChanged("RequireCompleteEventCoverage");
                     EndChange();
@@ -197,7 +183,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 case NotifyCollectionChangedAction.Remove:
                     foreach (ObjectModel.TrackableObject o in e.OldItems)
                     {
-                        o.OnRemoving();
+                        o.Remove();
                     }
                     break;
                 default:
@@ -210,6 +196,7 @@ namespace SimpleStateMachineEditor.ViewModel
             XmlSerializer serializer = new XmlSerializer(typeof(StateMachine));
             using (new UndoRedo.DontLogBlock(controller))
             {
+                controller.StateMachine = null;
                 StateMachine stateMachine = serializer.Deserialize(xmlStream) as StateMachine;
                 stateMachine.DeserializeCleanup(controller, stateMachine);
                 controller.StateMachine = stateMachine;

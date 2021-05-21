@@ -30,10 +30,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_stateType != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "StateType", _stateType.ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StateType", _stateType.ToString()));
                     _stateType = value;
                     OnPropertyChanged("StateType");
                     EndChange();

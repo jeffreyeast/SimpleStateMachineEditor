@@ -85,6 +85,11 @@ namespace SimpleStateMachineEditor
                 {
                     _activeDesignerControl = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ActiveDesignerControl"));
+                    IconControls.ActionsToolWindow toolWindow = FindToolWindow(typeof(IconControls.ActionsToolWindow), 0, false) as IconControls.ActionsToolWindow;
+                    if (toolWindow != null)
+                    {
+                        toolWindow.Designer = ActiveDesignerControl;
+                    }
                 }
             }
         }
@@ -169,20 +174,6 @@ namespace SimpleStateMachineEditor
             if (GotFocus.Object is EditorPane editorPane)
             {
                 ActiveDesignerControl = editorPane.Content as DesignerControl;
-                IconControls.ActionsToolWindow toolWindow = FindToolWindow(typeof(IconControls.ActionsToolWindow), 0, false) as IconControls.ActionsToolWindow;
-                if (toolWindow != null)
-                {
-                    toolWindow.Designer = ActiveDesignerControl;
-                }
-                else
-                {
-                    string designerName = "<null>";
-                    if (ActiveDesignerControl.Model.StateMachine != null)
-                    {
-                        designerName = ActiveDesignerControl.Model.StateMachine.Name ?? "<unnamed>";
-                    }
-                    Debug.WriteLine($@">>>SimpleStateMachineEditorPackage.WindowActivatedHandler, ActiveDesignerControl = {designerName}, ToolWindow is null");
-                }
             }
         }
         #endregion

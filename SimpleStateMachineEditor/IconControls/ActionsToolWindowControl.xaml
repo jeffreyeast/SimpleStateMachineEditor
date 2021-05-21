@@ -66,10 +66,15 @@
             
         </DataGrid>
 
-        <TextBlock Text="No active Simple State Machine designer pane" Foreground="LightGray">
+        <TextBlock Text="No active Simple State Machine designer pane" Foreground="LightGray" FontSize="16">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="LayoutTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="45"/>
+                        </Setter.Value>
+                    </Setter>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding ElementName=ActionsDataGrid, Path=Visibility}" Value="Hidden">
                             <Setter Property="Visibility" Value="Visible"/>

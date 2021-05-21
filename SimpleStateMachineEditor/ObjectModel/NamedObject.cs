@@ -21,10 +21,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 if (_name != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
                     _name = value;
                     OnPropertyChanged("Name");
                     EndChange();
@@ -42,10 +39,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 if (_description != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
                     _description = value;
                     OnPropertyChanged("Description");
                     EndChange();

@@ -56,7 +56,7 @@ namespace SimpleStateMachineEditor.ViewModel
         internal IOleUndoManager UndoManager { get; set; }
         internal volatile int InhibitUndoRedoCount;     //  Logging is disabled if count > 0
 
-        internal bool LoggingIsEnabled => InhibitUndoRedoCount == 0;
+        bool LoggingIsEnabled => InhibitUndoRedoCount == 0;
 
 
 
@@ -137,6 +137,14 @@ namespace SimpleStateMachineEditor.ViewModel
                     default:
                         throw new NotImplementedException();
                 }
+            }
+        }
+
+        internal void LogUndoAction(UndoRedo.UndoRedoRecord undoRedoRecord)
+        {
+            if (LoggingIsEnabled)
+            {
+                UndoManager.Add(undoRedoRecord);
             }
         }
 

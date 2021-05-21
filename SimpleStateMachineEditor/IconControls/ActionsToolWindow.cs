@@ -41,7 +41,6 @@ namespace SimpleStateMachineEditor.IconControls
                     if (_designer != null)
                     {
                         oldDesignerName = _designer.Model.StateMachine?.Name ?? "<unnamed>";
-                        StateMachine = null;
                         _designer.Model.PropertyChanged -= DesignerModelPropertyChangedHandler;
                         _designer.Unloaded -= DesignerUnloadedHandler;
                     }
@@ -50,15 +49,13 @@ namespace SimpleStateMachineEditor.IconControls
                     if (_designer != null)
                     {
                         newDesignerName = _designer.Model.StateMachine?.Name ?? "<unnamed>";
-                        StateMachine = _designer.Model.StateMachine;
-                        if (StateMachine != null)
+                        if (_designer.Model.StateMachine != null)
                         {
                             ReloadToolWindowActionIcons();
                         }
                         _designer.Model.PropertyChanged += DesignerModelPropertyChangedHandler;
                         _designer.Unloaded += DesignerUnloadedHandler;
                     }
-                    Debug.WriteLine($@">>>ActionsToolWindow.Designer.Set changing designer from {oldDesignerName} to {newDesignerName}");
                     OnPropertyChanged("Designer");
                 }
             }
@@ -68,7 +65,6 @@ namespace SimpleStateMachineEditor.IconControls
         //  This is the set of icons displayed in the tools window's data grid
 
         public ObservableCollection<Icons.ToolWindowActionIcon> ToolWindowActionIcons { get; private set; }
-        ViewModel.StateMachine StateMachine;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -86,27 +82,29 @@ namespace SimpleStateMachineEditor.IconControls
             this.Content = new ActionsToolWindowControl(this);
         }
 
-        private void ActionsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            ReloadToolWindowActionIcons(false);
-        }
-
         private void ToolWindowActionIconPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            if (sender is Icons.ToolWindowActionIcon icon && Designer.Model.StateMachine.IsChangeAllowed)
+            if (sender is Icons.ToolWindowActionIcon icon)
             {
                 switch (e.PropertyName)
                 {
                     case "Description":
-                        icon.Action.Description = icon.Description;
+                        if (Designer.Model.StateMachine.IsChangeAllowed)
+                        {
+                            icon.Action.Description = icon.Description;
+                            Designer.Model.StateMachine.EndChange();
+                        }
                         break;
                     case "Name":
-                        icon.Action.Name = icon.Name;
+                        if (Designer.Model.StateMachine.IsChangeAllowed)
+                        {
+                            icon.Action.Name = icon.Name;
+                            Designer.Model.StateMachine.EndChange();
+                        }
                         break;
                     default:
                         break;
                 }
-                Designer.Model.StateMachine.EndChange();
             }
         }
 
@@ -121,7 +119,7 @@ namespace SimpleStateMachineEditor.IconControls
                         {
                             foreach (Icons.ToolWindowActionIcon icon in e.NewItems)
                             {
-                                Designer.Model.UndoManager.Add(new UndoRedo.DeleteActionRecord(Designer.Model, icon.Action));
+                                Designer.Model.LogUndoAction(new UndoRedo.DeleteActionRecord(Designer.Model, icon.Action));
                                 icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
                                 Designer.Model.StateMachine.Actions.Add(icon.Action);
                             }
@@ -136,9 +134,9 @@ namespace SimpleStateMachineEditor.IconControls
                         {
                             foreach (Icons.ToolWindowActionIcon icon in e.OldItems)
                             {
-                                Designer.Model.UndoManager.Add(new UndoRedo.AddActionRecord(Designer.Model, icon.Action));
                                 icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
                                 Designer.Model.StateMachine.Actions.Remove(icon.Action);
+                                Designer.Model.LogUndoAction(new UndoRedo.AddActionRecord(Designer.Model, icon.Action));
                             }
                         }
                         Designer.Model.StateMachine.EndChange();
@@ -166,7 +164,7 @@ namespace SimpleStateMachineEditor.IconControls
 
         private void LoadToolWindowActionIconsInternal()
         {
-            HashSet<ViewModel.Action> actions = new HashSet<ViewModel.Action>(StateMachine.Actions);
+            HashSet<ViewModel.Action> actions = new HashSet<ViewModel.Action>(Designer.Model.StateMachine.Actions);
             List<Icons.ToolWindowActionIcon> iconsPendingDeletion = new List<Icons.ToolWindowActionIcon>();
             HashSet<ViewModel.Action> actionsWithIcons = new HashSet<ViewModel.Action>();
 
@@ -216,24 +214,31 @@ namespace SimpleStateMachineEditor.IconControls
         {
             if (Designer.Model.StateMachine != null)
             {
-                Designer.Model.StateMachine.Actions.CollectionChanged -= ActionsCollectionChangedHandler;
+                Designer.Model.StateMachine.Actions.CollectionChanged -= ViewModelActionsCollectionChangedHandler;
                 ToolWindowActionIcons.CollectionChanged -= ToolWindowActionIconsChangedHandler;
                 foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
                 {
                     icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
                 }
+
                 if (clearIcons)
                 {
                     ToolWindowActionIcons.Clear();
                 }
                 LoadToolWindowActionIconsInternal();
-                Designer.Model.StateMachine.Actions.CollectionChanged += ActionsCollectionChangedHandler;
+
+                Designer.Model.StateMachine.Actions.CollectionChanged += ViewModelActionsCollectionChangedHandler;
                 ToolWindowActionIcons.CollectionChanged += ToolWindowActionIconsChangedHandler;
                 foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
                 {
                     icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
                 }
             }
+        }
+
+        private void ViewModelActionsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ReloadToolWindowActionIcons(false);
         }
     }
 }

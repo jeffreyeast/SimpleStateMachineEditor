@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    public abstract class TrackableObject : INotifyPropertyChanged
+    public abstract class TrackableObject : INotifyPropertyChanged, IRemovableObject
     {
         internal bool IsChangeAllowed => Controller?.CanGuiChangeBegin() ?? true;
 
@@ -32,17 +32,19 @@ namespace SimpleStateMachineEditor.ObjectModel
         [XmlIgnore]
         internal ViewModel.ViewModelController Controller { get; set; }
 
-        internal delegate void RemovingHandler(TrackableObject sender);
-
-        internal event RemovingHandler Removing;
         public event PropertyChangedEventHandler PropertyChanged;
+        public event ObjectModel.RemovingHandler Removing;
 
+        [XmlIgnore]
+        public int GID { get; private set; }
+        static int _gid = 0;
 
         //  Constructor for use by serializer ONLY
 
         public TrackableObject()
         {
             Id = -1;
+            GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
         //  Constructor for use by derived classes
@@ -51,6 +53,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             Controller = controller;
             Id = Controller.NextId;
+            GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
         //  For use in Redo recovery
@@ -59,6 +62,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             Controller = controller;
             Id = redoRecord.Id;
+            GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
         internal virtual void GetProperty(string propertyName, out string value)
@@ -99,7 +103,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             }
         }
 
-        internal virtual void OnRemoving()
+        protected virtual void OnRemoving()
         {
             Removing?.Invoke(this);
         }
@@ -126,6 +130,11 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 throw new ArgumentException($@"Property '{propertyName}' not recognized");
             }
+        }
+
+        public void Remove()
+        {
+            OnRemoving();
         }
     }
 }

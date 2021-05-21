@@ -104,6 +104,7 @@
     </Compile>
     <Compile Include="ObjectModel\EditableString.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
+    <Compile Include="ObjectModel\IRemovableObject.cs" />
     <Compile Include="SearchTask.cs" />
     <Compile Include="SimpleStateMachineEditorPackage1.cs">
       <AutoGen>True</AutoGen>

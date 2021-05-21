@@ -223,6 +223,7 @@
 - Note https://docs.microsoft.com/en-us/visualstudio/extensibility/adding-a-shortcut-menu-in-a-tool-window?view=vs-2019 shows a different way to display a "shortcut menu". They use the
   command service, while we're using the shell service.
 - Action tool window's existance and visibility isn't connected well to that of the active window.  Why? Associating it with the solution seems to have lost its transience.
+  FIXED
 - Need a way to demark selected transition
 
 5/15/2021
@@ -242,4 +243,9 @@
    DONE
  - Actions window should indicate which document it's actions are members of
  - Consider dropping NewWindow command, it's going to cause a lot of grief
+
+ 5/29/2021
+
+ - Sometimes it's hard to get the Actions tool window to appear if you've explicitly closed it. It may require resetting the window layout.
+ - BUG: Undo of a deletion of a ToolWindowIcon doesn't work. Redo is worse.
 

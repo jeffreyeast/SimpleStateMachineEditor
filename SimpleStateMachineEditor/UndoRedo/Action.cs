@@ -604,14 +604,14 @@ namespace SimpleStateMachineEditor.UndoRedo
             PropertyName = propertyName;
             Value = targetList.ToArray<string>();
 #if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.ListValuedPropertyChangedRecord: Created {UnitDescription} record, Id: {Id}, PropertyName: {PropertyName}");
+            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.ListValuedPropertyChangedRecord: Created {UnitDescription} record, Id: {Id}, PropertyName: {PropertyName}, Value: {ArrayToString(Value)}");
 #endif
         }
 
         public override void Do(IOleUndoManager pUndoManager)
         {
 #if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.Do (Property {PropertyName}, Value: {Value})");
+            Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.Do (Property {PropertyName}, Value: {ArrayToString(Value)})");
 #endif
             if (Controller.StateMachine.IsChangeAllowed)
             {
@@ -621,5 +621,19 @@ namespace SimpleStateMachineEditor.UndoRedo
                 Controller.StateMachine.EndChange();
             }
         }
+
+#if DEBUGUNDOREDO
+        private string ArrayToString ( IEnumerable<string> a)
+        {
+            string result = "{";
+            string separator = "";
+            foreach (var s in a)
+            {
+                result += separator + s;
+                separator = ",";
+            }
+            return result + "}";
+        }
+#endif
     }
 }

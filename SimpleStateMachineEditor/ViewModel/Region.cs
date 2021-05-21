@@ -25,10 +25,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if ((_displayColors == null ^ value == null) ||  !_displayColors.Equals(value))
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "DisplayColors", _displayColors?.ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "DisplayColors", _displayColors?.ToString()));
                     _displayColors = value;
                     OnPropertyChanged("DisplayColors");
                 }
@@ -180,13 +177,13 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        private void MemberIsBeingRemovedHandler(TrackableObject member)
+        private void MemberIsBeingRemovedHandler(IRemovableObject member)
         {
             member.Removing -= MemberIsBeingRemovedHandler;
-            Members.Remove(member);
+            Members.Remove(member as ObjectModel.TrackableObject);
         }
 
-        internal override void OnRemoving()
+        protected override void OnRemoving()
         {
             foreach (TrackableObject member in Members)
             {

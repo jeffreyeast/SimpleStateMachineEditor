@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,10 +35,7 @@ namespace SimpleStateMachineEditor.ViewModel
                         _sourceState.PropertyChanged -= EndpointPropertyChangedHandler;
                         _sourceState.TransitionsFrom.Remove(this);
                     }
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "SourceState", _sourceState?.Id.ToString() ?? ((int)-1).ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "SourceState", _sourceState?.Id.ToString() ?? ((int)-1).ToString()));
                     _sourceState = value;
                     if (_sourceState != null)
                     {
@@ -74,10 +72,7 @@ namespace SimpleStateMachineEditor.ViewModel
                         _destinationState.PropertyChanged -= EndpointPropertyChangedHandler;
                         _destinationState.TransitionsTo.Remove(this);
                     }
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "DestinationState", _destinationState?.Id.ToString() ?? ((int)-1).ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "DestinationState", _destinationState?.Id.ToString() ?? ((int)-1).ToString()));
                     _destinationState = value;
                     if (_destinationState != null)
                     {
@@ -109,10 +104,7 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_triggerEvent != value && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "TriggerEvent", _triggerEvent?.Id.ToString() ?? ((int)-1).ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "TriggerEvent", _triggerEvent?.Id.ToString() ?? ((int)-1).ToString()));
                     _triggerEvent = value;
                     OnPropertyChanged("TriggerEvent");
                     EndChange();
@@ -235,7 +227,6 @@ namespace SimpleStateMachineEditor.ViewModel
                 SourceState = redoRecord.SourceStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.SourceStateId) as State;
                 DestinationState = redoRecord.DestinationStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.DestinationStateId) as State;
                 TriggerEvent = redoRecord.TriggerEventId == -1 ? null : Controller.StateMachine.Find(redoRecord.TriggerEventId) as EventType;
-                OldActions = new List<string>();
                 Actions = new ObservableCollection<Action>();
                 Actions.CollectionChanged += Actions_CollectionChanged;
                 foreach (int actionId in redoRecord.ActionIds)
@@ -244,6 +235,7 @@ namespace SimpleStateMachineEditor.ViewModel
                     Actions.Add(action);
                 }
                 ActionIds = null;
+                OldActions = Actions.Select(a => a.Id.ToString()).ToList<string>();
             }
         }
 
@@ -275,16 +267,14 @@ namespace SimpleStateMachineEditor.ViewModel
 
             if (IsChangeAllowed)
             {
-                if (Controller?.LoggingIsEnabled ?? false)
-                {
-                    Controller?.UndoManager.Add(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "Actions", OldActions));
-                }
-                OldActions = Actions.Select(a => a.Id.ToString()).ToList<string>();
+                Controller?.LogUndoAction(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "Actions", OldActions));
                 EndChange();
             }
+
+            OldActions = Actions.Select(a => a.Id.ToString()).ToList<string>();
         }
 
-        private void ActionIsBeingRemovedHandler(ObjectModel.TrackableObject action)
+        private void ActionIsBeingRemovedHandler(ObjectModel.IRemovableObject action)
         {
             action.Removing -= ActionIsBeingRemovedHandler;
             Actions.Remove(action as Action);
@@ -401,7 +391,7 @@ namespace SimpleStateMachineEditor.ViewModel
             return count + (uint)(WasActionFound ? 1 : 0) + (uint)(WasTriggerFound ? 1 : 0);
         }
 
-        internal override void OnRemoving()
+        protected override void OnRemoving()
         {
             if (DestinationState != null)
             {

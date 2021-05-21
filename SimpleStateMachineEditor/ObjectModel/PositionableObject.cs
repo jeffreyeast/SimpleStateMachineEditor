@@ -17,10 +17,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed)
                 {
-                    if (Controller?.LoggingIsEnabled ?? false)
-                    {
-                        Controller?.UndoManager.Add(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
-                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
                     _leftTopPosition = value;
                     OnPropertyChanged("LeftTopPosition");
                     EndChange();

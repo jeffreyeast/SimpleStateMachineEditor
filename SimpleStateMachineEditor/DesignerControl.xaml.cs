@@ -86,7 +86,7 @@ namespace SimpleStateMachineEditor
                 using (new UndoRedo.AtomicBlock(Model, AddEventTypeDescription))
                 {
                     ViewModel.EventType newEventType = ViewModel.EventType.Create(Model, OptionsPage);
-                    Model.UndoManager.Add(new UndoRedo.DeleteEventTypeRecord(Model, newEventType));
+                    Model.LogUndoAction(new UndoRedo.DeleteEventTypeRecord(Model, newEventType));
                     if (!center.HasValue)
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
@@ -106,7 +106,7 @@ namespace SimpleStateMachineEditor
                 using (new UndoRedo.AtomicBlock(Model, AddRegionDescription))
                 {
                     ViewModel.Region newRegion = ViewModel.Region.Create(Model, OptionsPage);
-                    Model.UndoManager.Add(new UndoRedo.DeleteRegionRecord(Model, newRegion));
+                    Model.LogUndoAction(new UndoRedo.DeleteRegionRecord(Model, newRegion));
                     if (!center.HasValue)
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
@@ -126,7 +126,7 @@ namespace SimpleStateMachineEditor
                 using (new UndoRedo.AtomicBlock(Model, AddStateDescription))
                 {
                     ViewModel.State newState = ViewModel.State.Create(Model, OptionsPage);
-                    Model.UndoManager.Add(new UndoRedo.DeleteStateRecord(Model, newState));
+                    Model.LogUndoAction(new UndoRedo.DeleteStateRecord(Model, newState));
                     if (!center.HasValue)
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
@@ -186,7 +186,7 @@ namespace SimpleStateMachineEditor
             }
             else
             {
-                transition.OnRemoving();
+                transition.Remove();
             }
 
             Model.UndoManager.Close(CurrentParentUndoUnit, 0);
@@ -270,7 +270,7 @@ namespace SimpleStateMachineEditor
                 switch (operationDescription)
                 {
                     case AddTransitionDescription:
-                        Model.UndoManager.Add(new UndoRedo.DeleteTransitionRecord(Model, transition));
+                        Model.LogUndoAction(new UndoRedo.DeleteTransitionRecord(Model, transition));
                         transition.DestinationState = nearestState;
                         Model.StateMachine.Transitions.Add(transition);
                         break;
@@ -322,7 +322,7 @@ namespace SimpleStateMachineEditor
                         DeleteIcon(LoadedIcons[t]);
                     }
                     Model.StateMachine.States.Remove(state);
-                    Model.UndoManager.Add(new UndoRedo.AddStateRecord (Model, state));
+                    Model.LogUndoAction(new UndoRedo.AddStateRecord (Model, state));
                     Model.StateMachine.EndChange();
                 }
                 else if (icon.ReferencedObject is ViewModel.EventType eventType && Model.StateMachine.EventTypes.Contains(eventType) && Model.StateMachine.IsChangeAllowed)
@@ -335,19 +335,19 @@ namespace SimpleStateMachineEditor
                         }
                     }
                     Model.StateMachine.EventTypes.Remove(eventType);
-                    Model.UndoManager.Add(new UndoRedo.AddEventTypeRecord(Model, eventType));
+                    Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
                     Model.StateMachine.EndChange();
                 }
                 else if (icon.ReferencedObject is ViewModel.Region region && Model.StateMachine.Regions.Contains(region) && Model.StateMachine.IsChangeAllowed)
                 {
                     Model.StateMachine.Regions.Remove(region);
-                    Model.UndoManager.Add(new UndoRedo.AddRegionRecord(Model, region));
+                    Model.LogUndoAction(new UndoRedo.AddRegionRecord(Model, region));
                     Model.StateMachine.EndChange();
                 }
                 else if (icon.ReferencedObject is ViewModel.Transition transition && Model.StateMachine.Transitions.Contains(transition) && Model.StateMachine.IsChangeAllowed)
                 {
                     Model.StateMachine.Transitions.Remove(transition);
-                    Model.UndoManager.Add(new UndoRedo.AddTransitionRecord(Model, transition));
+                    Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
                     Model.StateMachine.EndChange();
                 }
             }
@@ -382,6 +382,26 @@ namespace SimpleStateMachineEditor
             MonitorStateMachineForChanges(false);
             SelectStateMachine();
             LoadViewModelIcons();
+
+            //  On startup, the DTE window gets focus long before this control (or EditorPane) is created
+
+            if (IsFocused && Package.ActiveDesignerControl == null)
+            {
+                Package.ActiveDesignerControl = this;
+            }
+            else
+            {
+                GotFocus += DesignerControl_GotFocus;
+            }
+        }
+
+        private void DesignerControl_GotFocus(object sender, RoutedEventArgs e)
+        {
+            //  There seems to be a bug in the DTE ActiveWindow event delivery, it occurs the first time a window
+            //  gets focus.  So we'll try to help them out here.
+
+            GotFocus -= DesignerControl_GotFocus;
+            Package.ActiveDesignerControl = this;
         }
 
         private void DesignerControl_Unloaded(object sender, RoutedEventArgs e)

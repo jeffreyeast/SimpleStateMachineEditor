@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,8 +17,8 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public Action()
         {
-
         }
+
         //  Constructor for new object creation during DeserializationCleanup
 
         internal Action(ViewModelController controller, string name) : base(controller, name)
@@ -30,14 +31,12 @@ namespace SimpleStateMachineEditor.ViewModel
 
         private Action(ViewModelController controller, IEnumerable<ObjectModel.NamedObject> existingObjectList, string rootName) : base(controller, existingObjectList, rootName)
         {
-
         }
 
         //  Constructor for use by Redo
 
         internal Action(ViewModel.ViewModelController controller, UndoRedo.AddActionRecord redoRecord) : base(controller, redoRecord)
         {
-
         }
 
         public int CompareTo(Action other)
