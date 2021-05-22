@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="SimpleStateMachine">
+      <HintPath>..\..\SimpleStateMachineEditor\SimpleStateMachine\bin\Debug\SimpleStateMachine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="StateMachine1.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StateMachine1.sfsa</DependentUpon>
+    </Compile>
+    <Compile Update="HelloWorld.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HelloWorld.sfsa</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StateMachine1.sfsa">
+      <Generator>SfsaGenerator</Generator>
+      <LastGenOutput>StateMachine1.cs</LastGenOutput>
+    </None>
+    <None Update="HelloWorld.sfsa">
+      <Generator>SfsaGenerator</Generator>
+      <LastGenOutput>HelloWorld.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

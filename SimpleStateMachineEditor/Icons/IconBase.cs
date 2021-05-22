@@ -21,10 +21,29 @@ namespace SimpleStateMachineEditor.Icons
         internal const int HoverDelay = 250;     // Milliseconds
 
         public abstract int ContextMenuId { get; }
-        internal DesignerControl Designer { get; private set; }
+        internal DesignerControl Designer { get; set; }
         public virtual Size Size { get; set; }
         public ObjectModel.TrackableObject ReferencedObject { get; private set; }
-        public Control Body { get; private set; }
+        public virtual Control Body 
+        {
+            get => _body;
+            internal set
+            {
+                _body = value;
+                if (_body != null)
+                {
+                    if (_body.IsLoaded)
+                    {
+                        OnBodyLoaded(_body, null);
+                    }
+                    else
+                    {
+                        _body.Loaded += OnBodyLoaded;
+                    }
+                }
+            }
+        }
+        Control _body;
         public FrameworkElement DraggableShape { get; set; }
         protected System.Windows.Point ContextMenuActivationLocation { get; private set; }
         DispatcherTimer MouseHoverTimer;
@@ -76,10 +95,6 @@ namespace SimpleStateMachineEditor.Icons
             if (center.HasValue)
             {
                 CenterPosition = center.Value;
-            }
-            if (Body != null)
-            {
-                Body.Loaded += OnBodyLoaded;
             }
 
             DraggableShape = CreateDraggableShape();
@@ -155,7 +170,7 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
 
-        private void OnBodyUnloaded(object sender, RoutedEventArgs e)
+        protected virtual void OnBodyUnloaded(object sender, RoutedEventArgs e)
         {
             Body.Unloaded -= OnBodyUnloaded;
             Body.MouseEnter -= MouseEnterHandler;

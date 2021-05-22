@@ -19,7 +19,6 @@
     </State>
   </States>
   <Transitions />
-  <GeneratedClassName>StateMachine</GeneratedClassName>
   <IgnoreUnmatchedEvents>false</IgnoreUnmatchedEvents>
   <ReturnValue>void</ReturnValue>
   <RequireCompleteEventCoverage>false</RequireCompleteEventCoverage>

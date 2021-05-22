@@ -66,6 +66,13 @@
         </Strings>
       </Menu>
 
+      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuId" type="Context">
+        <Strings>
+          <MenuText>Context Menu</MenuText>
+          <ButtonText>Context Menu</ButtonText>
+        </Strings>
+      </Menu>
+
       <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuId" type="Context">
         <Strings>
           <MenuText>Context Menu</MenuText>
@@ -121,6 +128,7 @@
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlToolsMenuGroupId" priority="0xffff" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xffff" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0600" />
@@ -416,6 +424,16 @@
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineContextMenuId" />
+    </CommandPlacement>
+
+    <!-- Action Context Menu -->
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuGroupId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuId" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- Event Context Menu -->

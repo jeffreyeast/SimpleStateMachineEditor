@@ -12,11 +12,13 @@ namespace SimpleStateMachineEditor.Icons
     /// <summary>
     /// Represents an action in a transition icon's action list
     /// </summary>
-    internal class ActionIcon : IconBase
+    internal class ActionIcon : DraggableIcon
     {
         public override int ContextMenuId => PackageIds.ActionIconContextMenuId;
 
         internal ListBoxItem ListBoxItem { get; set; }
+        internal TransitionIcon TransitionIcon { get; private set; }
+        internal ViewModel.Transition Transition { get; private set; }
 
 
         public bool ActionIsHighlighted
@@ -33,16 +35,49 @@ namespace SimpleStateMachineEditor.Icons
         }
         bool _actionIsHighlighted;
 
-
-
-
-        internal ActionIcon(DesignerControl designer, ViewModel.Action action) : base(designer, action, null, null)
+        public override Point CenterPosition
         {
+            get => Utility.DrawingAids.NormalizePoint(Designer.IconSurface, Body, new Point(Body.ActualWidth / 2, Body.ActualHeight / 2));
+            set => throw new InvalidOperationException();
+        }
+
+
+
+
+        internal ActionIcon(DesignerControl designer, TransitionIcon transitionIcon, ViewModel.Action action) : base(designer, action, null, null)
+        {
+            TransitionIcon = transitionIcon;
+            Transition = transitionIcon.ReferencedObject as ViewModel.Transition;
         }
 
         protected override FrameworkElement CreateDraggableShape()
         {
-            return null;
+            return new IconControls.ActionIconControl(true)
+            {
+                DataContext = this,
+                Opacity = 0.5,
+            };
+        }
+
+        public override void CommitDrag(Point dragTerminationPoint, Point offset)
+        {
+            Designer.IconSurface.Children.Remove(DraggableShape);
+
+            //  The user is attempting to re-order the actions for the transition
+
+            int oldSlot = TransitionIcon.ActionIcons.IndexOf(this);
+            ViewModel.State originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
+
+            if (Transition.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Transition.Controller, "Move action"))
+                {
+                    int newSlot = TransitionIcon.ProcessDroppedAction(ReferencedObject as ViewModel.Action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
+                    Transition.Actions.RemoveAt(oldSlot + (newSlot > oldSlot ? 0 : 1));
+                }
+                Transition.EndChange();
+                Designer.ClearSelectedItems();
+            }
         }
 
         protected override Control CreateIcon()
@@ -50,6 +85,20 @@ namespace SimpleStateMachineEditor.Icons
             return null;
         }
 
-        public override Size Size { get => throw new InvalidOperationException(); set => throw new InvalidOperationException(); }
+        public override void Drag(Point offset)
+        {
+            Point center = CenterPosition;
+            Size iconSize = Size;
+            DraggableShape.Margin = new Thickness(Math.Max(0, center.X - iconSize.Width / 2 + offset.X), Math.Max(0, center.Y - iconSize.Height / 2 + offset.Y), 0, 0);
+        }
+
+        public override Size Size => Body.RenderSize;
+
+        public override void StartDrag()
+        {
+            Designer.IconSurface.Children.Add(DraggableShape);
+            Drag(new Point(0, 0));
+        }
+
     }
 }

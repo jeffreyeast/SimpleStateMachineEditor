@@ -213,7 +213,7 @@ namespace SimpleStateMachineEditor.IconControls
             if (action != null && action.Action.Controller == Designer.Model)
             {
                 ViewModel.State originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
-                (DataContext as Icons.TransitionIcon).ProcessDroppedAction(action.Action, originState, e.GetPosition(Designer.LoadedIcons[originState].Body));
+                (DataContext as Icons.TransitionIcon).ProcessDroppedAction(action.Action, originState, e.GetPosition(Designer.LoadedIcons[originState].Body), true);
                 e.Handled = true;
             }
             (DataContext as Icons.TransitionIcon).IsDropCandidate = false;

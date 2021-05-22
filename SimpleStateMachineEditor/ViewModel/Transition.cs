@@ -149,7 +149,22 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         List<int> _actionIds;
 
-        List<string> OldActions;
+        List<string> OldActions
+        {
+            get => _oldActions;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (_oldActions != value)
+                {
+                    _oldActions = value;
+                }
+            }
+        }
+        List<string> _oldActions;
 
         [XmlIgnore]
         [Browsable(false)]
@@ -227,6 +242,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 SourceState = redoRecord.SourceStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.SourceStateId) as State;
                 DestinationState = redoRecord.DestinationStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.DestinationStateId) as State;
                 TriggerEvent = redoRecord.TriggerEventId == -1 ? null : Controller.StateMachine.Find(redoRecord.TriggerEventId) as EventType;
+                OldActions = new List<string>();
                 Actions = new ObservableCollection<Action>();
                 Actions.CollectionChanged += Actions_CollectionChanged;
                 foreach (int actionId in redoRecord.ActionIds)
@@ -235,7 +251,6 @@ namespace SimpleStateMachineEditor.ViewModel
                     Actions.Add(action);
                 }
                 ActionIds = null;
-                OldActions = Actions.Select(a => a.Id.ToString()).ToList<string>();
             }
         }
 

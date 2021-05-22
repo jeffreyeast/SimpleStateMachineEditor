@@ -73,7 +73,7 @@ namespace SimpleStateMachineEditor.Icons
             ActionIcons = new ObservableCollection<ActionIcon>();
             foreach(ViewModel.Action action in transition.Actions)
             {
-                ActionIcons.Add(new ActionIcon(designer, action));
+                ActionIcons.Add(new ActionIcon(designer, this, action));
             }
         }
 
@@ -165,11 +165,14 @@ namespace SimpleStateMachineEditor.Icons
         /// <param name="action">The action being dropped</param>
         /// <param name="originState">The source or destination state, whichever is to the left of the other</param>
         /// <param name="clickPosition">The mouse click position, relative to the originState</param>
-        internal void ProcessDroppedAction(ViewModel.Action action, ViewModel.State originState, Point clickPosition)
+        /// <returns>The origin-0 relative position of the action within the transtion's action icons</returns>
+        internal int ProcessDroppedAction(ViewModel.Action action, ViewModel.State originState, Point clickPosition, bool inhibitDeletion)
         {
+            int slot = -1;
+
             if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed)
             {
-                if (transition.Actions.Contains(action))
+                if (!inhibitDeletion && transition.Actions.Contains(action))
                 {
                     //  The action is already associated with the transition, so we interpret the request as "remove the action"
 
@@ -203,6 +206,7 @@ namespace SimpleStateMachineEditor.Icons
                         if (clickDistance <= segmentMidpointDistancesFromOrigin[i])
                         {
                             transition.Actions.Insert(i, action);
+                            slot = i;
                             break;
                         }
                     }
@@ -210,6 +214,8 @@ namespace SimpleStateMachineEditor.Icons
                 transition.EndChange();
                 Designer.IconSurface.Focus();
             }
+
+            return slot;
         }
 
         public override int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -255,16 +261,15 @@ namespace SimpleStateMachineEditor.Icons
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (ViewModel.Action action in e.NewItems)
+                    for (int i = 0; i < e.NewItems.Count; i++)
                     {
-                        int slot = (ReferencedObject as ViewModel.Transition).Actions.IndexOf(action);
-                        ActionIcons.Insert(slot, new ActionIcon(Designer, action));
+                        ActionIcons.Insert(e.NewStartingIndex + i, new ActionIcon(Designer, this, e.NewItems[i] as ViewModel.Action));
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (ViewModel.Action action in e.OldItems)
                     {
-                        ActionIcons.Remove(ActionIcons.Where(icon => icon.ReferencedObject == action).Single());
+                        ActionIcons.RemoveAt(e.OldStartingIndex);
                     }
                     break;
                 default:

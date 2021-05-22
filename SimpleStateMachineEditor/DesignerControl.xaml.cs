@@ -309,7 +309,12 @@ namespace SimpleStateMachineEditor
         {
             using (new UndoRedo.AtomicBlock(Model, "Delete"))
             {
-                if (icon.ReferencedObject is ViewModel.State state && Model.StateMachine.States.Contains(state) && Model.StateMachine.IsChangeAllowed)
+                if (icon is Icons.ActionIcon actionIcon && Model.StateMachine.IsChangeAllowed)
+                {
+                    actionIcon.Transition.Actions.RemoveAt(actionIcon.TransitionIcon.ActionIcons.IndexOf(actionIcon));
+                    Model.StateMachine.EndChange();
+                }
+                else if (icon.ReferencedObject is ViewModel.State state && Model.StateMachine.States.Contains(state) && Model.StateMachine.IsChangeAllowed)
                 {
                     ViewModel.Transition[] transitions = state.TransitionsFrom.ToArray();
                     foreach (ViewModel.Transition t in transitions)
@@ -349,6 +354,10 @@ namespace SimpleStateMachineEditor
                     Model.StateMachine.Transitions.Remove(transition);
                     Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
                     Model.StateMachine.EndChange();
+                }
+                else
+                {
+                    throw new NotImplementedException();
                 }
             }
         }

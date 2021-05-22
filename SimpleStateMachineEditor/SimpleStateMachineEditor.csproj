@@ -61,6 +61,9 @@
     <Compile Include="EditorPane.cs" />
     <Compile Include="Commands\AddEventTypeCommand.cs" />
     <Compile Include="Generators\SfsaGenerator.cs" />
+    <Compile Include="IconControls\ActionIconControl.xaml.cs">
+      <DependentUpon>ActionIconControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IconControls\EditableStringConverter.cs" />
     <Compile Include="Icons\ActionIcon.cs" />
     <Compile Include="Icons\ToolWindowActionIcon.cs" />
@@ -185,9 +188,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Images\HelloWorld.png" />
     <Content Include="Images\HelloWorld_Designer.png" />
     <Content Include="Images\HelloWorld_Designer_Window.png" />
     <Content Include="Images\MoreInfo.PNG" />
+    <Content Include="Images\MouseSelection.png" />
     <Content Include="Resources\Command1.png" />
     <Content Include="Resources\SampleContextCommand.png" />
     <Content Include="StateMachineEditor_16x.png">
@@ -207,6 +212,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="DesignerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\ActionIconControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

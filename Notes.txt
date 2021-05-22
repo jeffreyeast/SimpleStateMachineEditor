@@ -258,5 +258,6 @@
  - Should Transitions have a Description field?
  - Should descriptions be included in the code-behind file as comments?
  - Should you be able to drag Actions around a transition to change their order?
+   DONE
  - Search should also search for action names
  - If a method throws beyond the Execute, should we detect if another call to Execute is made w/o invoking Reset?

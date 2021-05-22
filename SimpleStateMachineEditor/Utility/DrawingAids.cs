@@ -58,6 +58,18 @@ namespace SimpleStateMachineEditor.Utility
             return pathFigure;
         }
 
+        internal static T FindAncestorOfType<T>(FrameworkElement root) where T : FrameworkElement
+        {
+            DependencyObject parent = root;
+
+            while (parent != null && parent.GetType() != typeof(T))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            return parent as T;
+        }
+
         internal static T FindChildOfSpecificType<T>(DependencyObject root) where T : DependencyObject
         {
             int childCount = VisualTreeHelper.GetChildrenCount(root);

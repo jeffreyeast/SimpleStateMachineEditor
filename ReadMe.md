@@ -95,14 +95,14 @@ Every state machine must include exactly one start state. This is the state wher
 
 ### Toolbar
 The Simple State Machine Toolbar is a standard Visual Studio toolbar. By default, it includes button to create objects (e.g., states, event types), remove existing events, and adjust the position of icons.
-### Actions Tool Window
+### Action Methods and the Actions Tool Window
 The Actions Tool Window is only visible when a Simple State Machine Designer window is active. It lists the names of all the action methods defined for the currently active designer window.  You use this window to maintain the list of action methods.
 | To... | Do this... |
 | ----- | ---------- |
 | Define a new action method       | Click on the name cell of the bottom row of the list and enter the method name (must be a legal C# name). Press *Enter* when done. |
-| Associate an action with a transition  | Drag the action method name from the Actions Tool Window over the transition arrow and drop it. |
-| Remove an action from a transition | Drag the action method name from the Actions Tool Window over the transition arrow and drop it. |
-| Change the order of actions within a transition | Currently, you have to delete and re-associate the names whose order is incorrect. |
+| Associate an action with a transition  | Drag the action method name from the Actions Tool Window over the transition's arrow and drop it. |
+| Remove an action from a transition | Right click the action under the transition's arrow to bring up its short cut menu and click on *Remove*. |
+| Change the order of actions within a transition | Select the action under the transition's arrow and drag it to its new position. |
 | Delete an existing action method | Select the row of the target method and press the *Delete* key. |
 | Change a method name             | Click on the name cell of the target method and press F2. Alternatively, double click the name cell. Enter the new name and press *Enter* when finished.|
 | Enter descriptive text           | Click on the description cell of the target method and press F2. Alternatively, double click the description cell. Enter the text and press *Enter* when finished. |
@@ -323,22 +323,38 @@ The sample implementation class for Hello World is:
     }
 
 ## Debugging
-The most likely error made in state machine design is encountering an event at runtime for which the current state does not have a matching transition. The Simple State Machine runtime detects such occurances and throws `UnexpectedEventException`. The state machine class includes a `Trace` property which shows the most recent state transitions and the event types which triggered the transitions. 
-# Changing a State Machine
-The designer is used to create the initial definition of a Simple State Machine as well as for editting it. Many changes are simply adding transitions or changing the end state of an existing transition. Such changes may have no impact on user-code -- they are simple reflected as changes in the generated code-behind file.
+The most likely error made in state machine design is encountering an event at runtime for which the current state does not have a matching transition. The Simple State Machine runtime detects such occurances and throws `UnexpectedEventException`.
+The state machine class includes a `Trace` property which shows the most recent state transitions and the event types which triggered the transitions. 
 
-Changing the name of an action method, adding new action methods and removing existing action methods all require changes to the action implement class. The C# compiler helps by identifying which methods remain to be implemented and those which were removed or renamed.
+# Changing a State Machine
+The designer is used to create the initial definition of a Simple State Machine as well as for editting it. A common change may be simply adding transitions or changing the end state of an existing transition. Such changes may have no impact on user-code -- they are simply reflected as changes in the generated code-behind file.
+
+Changing the name of an action method, adding new action methods and removing existing action methods all require changes to the action implementation class.
+The C# compiler helps by identifying which methods remain to be implemented and those which were removed or renamed.
 
 Generally, maintainers should find it easier to understand a state machine pictorially (through the designer), than if the state machine was simply implemented as a set of ad-hoc `select` statements. Implementors who make judicious use of the *Description* properties of states and event types can make future maintenance faster, easier and less error-prone.
 # Samples
 ## Hello World
+The Hello World sample is a very simple example of using the Simple State Machine designer and runtime. The state machine consists of two states (*Start* and *Done*) with one event type (*SayHelloWorld*).
+A transition connects the two states and executes the *DoSayHello* action.
+
+This example demonstrates creating a state machine and it's implementation class, then posting an event and executing the state machine.
+
+![Image of Visual Studio with the designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/HelloWorld.png)
+
 ## Lexical Analyzer
 ## Mouse Tracking
+The MouseSelection state machine handles all the mouse events for the designer window. This includes object selection, dragging objects and invoking short cut menus. The source is included in the SimpleStateMachineEditor project. The class implementation file is 
+SimpleStateMachineEditor/MouseStateMachine/DesignerMouseSelectionImplementation.cs.
+
+![Image of Visual Studio with the designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/MouseSelection.png)
+
 # Known Issues
 ## Designer
 1. Right-clicking on the editor pane, or directly on an icon, should bring up a context menu near where you click. However, sometimes the context menu shows up at the very top-left corner of 
 the window. The problem appears randomly, however once it starts, it remains for the life of the window. A work-around is to close and reopen the .SFSA designer window.
-2. The Action Tool Window is only visible when a .SFSA designer window is active.  This can make placing it problematic.
+2. The Action Tool Window is only visible when a .SFSA designer window is active.  This can make placing it problematic when it's a member of a window group and you want to adjust it's position or move it to another group.
+An easy solution is to float the window, then position it in the desired window group.
 ## Runtime
 No known issues.
 # Support

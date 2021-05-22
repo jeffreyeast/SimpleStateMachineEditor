@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<StateMachine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="-1" StartStateId="2">
+  <Description>Sample state machine</Description>
+  <Actions>
+    <Action Id="6" Name="DoSayHello" />
+  </Actions>
+  <EventTypes>
+    <EventType Id="3" Name="SayHelloWorld">
+      <LeftTopPosition>
+        <X>119.5</X>
+        <Y>292.5</Y>
+      </LeftTopPosition>
+    </EventType>
+  </EventTypes>
+  <Regions />
+  <States>
+    <State Id="2" Name="Start">
+      <LeftTopPosition>
+        <X>124.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Normal</StateType>
+    </State>
+    <State Id="4" Name="Done">
+      <LeftTopPosition>
+        <X>404.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Finish</StateType>
+    </State>
+  </States>
+  <Transitions>
+    <Transition Id="5" SourceStateId="2" DestinationStateId="4" TriggerEventId="3">
+      <Actions />
+      <ActionIds>
+        <int>6</int>
+      </ActionIds>
+    </Transition>
+  </Transitions>
+  <GeneratedClassName>HelloWorldStateMachine</GeneratedClassName>
+  <IgnoreUnmatchedEvents>false</IgnoreUnmatchedEvents>
+  <ReturnValue>void</ReturnValue>
+  <RequireCompleteEventCoverage>false</RequireCompleteEventCoverage>
+</StateMachine>

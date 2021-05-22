@@ -104,7 +104,7 @@
                 </Grid>
             </Grid>
 
-            <ListBox Grid.Row="1" ItemsSource="{Binding Path=ActionIcons}" DisplayMemberPath="ReferencedObject.Name"
+            <ListBox Grid.Row="1" ItemsSource="{Binding Path=ActionIcons}" 
                      BorderThickness="0" FontSize="10" Background="Transparent">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -121,6 +121,11 @@
                         </Style.Triggers>
                     </Style>
                 </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <local:ActionIconControl/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
             
         </Grid>

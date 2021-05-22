@@ -13,6 +13,19 @@ namespace SimpleStateMachineEditor.Icons
 {
     internal abstract class DraggableIcon : IconBase, IDraggableIcon
     {
+        public override Control Body
+        {
+            get => base.Body;
+            internal set
+            {
+                base.Body = value;
+                if (Body != null)
+                {
+                    Body.MouseLeftButtonDown += IconSelectedHandler;
+                    Body.MouseRightButtonUp += MouseRightButtonUpHandler;
+                }
+            }
+        }
 
         public bool IsRegionHighlighted => HighlightedRegion != null;
 
@@ -35,11 +48,6 @@ namespace SimpleStateMachineEditor.Icons
         internal DraggableIcon(DesignerControl designer, TrackableObject o, System.Windows.Point? center, Size? size) :
             base(designer, o, center, size)
         {
-            if (Body != null)
-            {
-                Body.MouseLeftButtonDown += IconSelectedHandler;
-                Body.MouseRightButtonUp += MouseRightButtonUpHandler;
-            }
         }
 
         public virtual void CancelDrag()
@@ -104,8 +112,17 @@ namespace SimpleStateMachineEditor.Icons
             e.Handled = true;
         }
 
-        protected virtual void OnCommitDrag(Point dragTerminationPoint) { }
+        protected override void OnBodyUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (Body != null)
+            {
+                Body.MouseLeftButtonDown -= IconSelectedHandler;
+                Body.MouseRightButtonUp -= MouseRightButtonUpHandler;
+            }
+            base.OnBodyUnloaded(sender, e);
+        }
 
+        protected virtual void OnCommitDrag(Point dragTerminationPoint) { }
         TrackableObject IDraggableIcon.ReferencedObject => ReferencedObject;
 
         public virtual void StartDrag()
