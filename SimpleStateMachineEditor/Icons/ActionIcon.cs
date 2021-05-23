@@ -16,10 +16,47 @@ namespace SimpleStateMachineEditor.Icons
     {
         public override int ContextMenuId => PackageIds.ActionIconContextMenuId;
 
-        internal ListBoxItem ListBoxItem { get; set; }
-        internal TransitionIcon TransitionIcon { get; private set; }
-        internal ViewModel.Transition Transition { get; private set; }
+        internal ListBoxItem ListBoxItem 
+        {
+            get => _listBoxItem;
+            set
+            {
+                if (_listBoxItem != value)
+                {
+                    _listBoxItem = value;
+                    OnPropertyChanged("ListBoxItem");
+                }
+            }
+        }
+        ListBoxItem _listBoxItem;
 
+        public TransitionIcon TransitionIcon
+        {
+            get => _transitionIcon;
+            private set
+            {
+                if (_transitionIcon != value)
+                {
+                    _transitionIcon = value;
+                    OnPropertyChanged("TransitionIcon");
+                }
+            }
+        }
+        TransitionIcon _transitionIcon;
+
+        public ViewModel.Transition Transition
+        {
+            get => _transition;
+            private set
+            {
+                if (_transition != value)
+                {
+                    _transition = value;
+                    OnPropertyChanged("Transition");
+                }
+            }
+        }
+        ViewModel.Transition _transition;
 
         public bool ActionIsHighlighted
         {

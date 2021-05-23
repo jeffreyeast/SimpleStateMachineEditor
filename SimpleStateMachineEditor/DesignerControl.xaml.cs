@@ -880,7 +880,7 @@ namespace SimpleStateMachineEditor
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (SelectedObjects.Count == 1 && SelectedObjects[0] == Model.StateMachine)
+            if (SelectedObjects.Count == 1 && (SelectedObjects[0] == Model.StateMachine || !(icon is Icons.PositionableIcon) || !(SelectedIcons.Values.First() is Icons.PositionableIcon)))
             {
                 ClearSelectedItems();
             }

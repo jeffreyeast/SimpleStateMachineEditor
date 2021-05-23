@@ -49,28 +49,17 @@ namespace SimpleStateMachineEditor.Generators
 
         private string GenerateActions(ViewModel.StateMachine stateMachine, IEnumerable<ViewModel.Transition> transitions)
         {
-            List<string> rawActionNames = new List<string>();
-
-            foreach (var t in transitions)
-            {
-                foreach (ViewModel.Action action in t.Actions)
-                {
-                    rawActionNames.Add(action.Name);
-                }
-            }
-
-            rawActionNames.Sort();
-
-            string lastActionName = null;
             string result = "";
-            foreach (string actionName in rawActionNames)
+            foreach (var action in stateMachine.Actions.OrderBy(a => a.Name))
             {
-                if (actionName != lastActionName)
+                if (!string.IsNullOrWhiteSpace(action.Description))
                 {
-                    result += $@"        protected abstract {(stateMachine.ReturnValue == "void" ? "void" : $@"{stateMachine.ReturnValue}")} {actionName}();
+                    result += $@"        ///<summary>{action.Description}</summary>
 ";
-                    lastActionName = actionName;
                 }
+
+                result += $@"        protected abstract {(stateMachine.ReturnValue == "void" ? "void" : $@"{stateMachine.ReturnValue}")} {action.Name}();
+";
             }
 
             return result;
@@ -110,6 +99,11 @@ namespace SimpleStateMachineEditor.Generators
 
             foreach (var o in objects)
             {
+                if (!string.IsNullOrWhiteSpace(o.Description))
+                {
+                    result += $@"            ///<summary>{o.Description}</summary>
+";
+                }
                 result += $@"            {(o.Name == ViewModel.EventType.WildcardEventTypeName ? "Wildcard" : o.Name)},
 ";
             }
@@ -119,19 +113,11 @@ namespace SimpleStateMachineEditor.Generators
 
         private string GenerateNameStrings(IEnumerable<ObjectModel.NamedObject> objects)
         {
-            List<string> nameList = new List<string>();
-
-            foreach (var o in objects)
-            {
-                nameList.Add($@"            ""{o.Name}"",
-");
-            }
-            nameList.Sort();
-
             string result = "";
-            foreach (string name in nameList)
+            foreach (var o in objects.OrderBy(o => o.Name))
             {
-                result += name;
+                 result += $@"            ""{o.Name}"",
+";
             }
             return result;
         }
@@ -158,6 +144,7 @@ namespace {FileNamespace}
     using System.Collections.Generic;
     using SimpleStateMachine;
 
+    {(!string.IsNullOrWhiteSpace(stateMachine.Description) ? $@"///<summary>{stateMachine.Description}</summary>" : "")}
     public abstract class {stateMachine.GeneratedClassName} : {(stateMachine.ReturnValue == "void" ? "StateMachineWithoutReturnValueBase" : ($@"StateMachineWithReturnValueBase<{stateMachine.ReturnValue}>"))}
     {{
         public enum EventTypes
@@ -166,20 +153,17 @@ namespace {FileNamespace}
 
         static readonly string[] EventTypeNames = new string[]
         {{
-{eventTypeNames}
-        }};
+{eventTypeNames}        }};
 
         static readonly string[] StateNames = new string[]
         {{
-{stateNames}
-        }};
+{stateNames}        }};
 
         protected override int StartState => Array.IndexOf(StateNames, ""{stateMachine.StartState?.Name}"");
 
         static readonly StateTypes[] StateClassifications = new StateTypes[]
         {{
-{stateClassifications}
-        }};
+{stateClassifications}        }};
 
         /// <summary>
         /// Action Routines
@@ -252,8 +236,8 @@ namespace {FileNamespace}
 
             foreach (ViewModel.State state in sortedStates)
             {
-                classifications += $@"
-            StateTypes.{state.StateType},";
+                classifications += $@"            StateTypes.{state.StateType},
+";
             }
 
             return classifications;

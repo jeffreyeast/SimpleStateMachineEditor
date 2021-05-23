@@ -90,11 +90,19 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 if (_startState != value && IsChangeAllowed)
                 {
+                    if (_startState != null)
+                    {
+                        _startState.IsStartState = false;
+                    }
                     Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StartState", _startState?.Id.ToString() ?? ((int)-1).ToString()));
                     _startState = value;
                     if (_startState == null)
                     {
                         _startStateId = -1;
+                    }
+                    else
+                    {
+                        _startState.IsStartState = true;
                     }
                     OnPropertyChanged("StartState");
                     EndChange();
@@ -231,6 +239,10 @@ namespace SimpleStateMachineEditor.ViewModel
             }
 
             _startState = Find(_startStateId) as State;
+            if (_startState != null)
+            {
+                _startState.IsStartState = true;
+            }
         }
 
         internal ObjectModel.TrackableObject Find(int id)

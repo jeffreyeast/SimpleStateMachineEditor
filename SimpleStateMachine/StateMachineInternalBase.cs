@@ -32,19 +32,64 @@ namespace SimpleStateMachine
             Error,
         }
 
+        /// <summary>
+        /// Determines how calls to Execute are handled
+        /// </summary>
+        protected enum ExecutionStates
+        {
+            /// <summary>
+            /// Action terminated by exception
+            /// </summary>
+            Exception,
+            /// <summary>
+            /// Execution proceeds
+            /// </summary>
+            Idle,
+            /// <summary>
+            /// Recursive calls are ignored
+            /// </summary>
+            Executing,
+            /// <summary>
+            /// CurrentState is a Finish state, execution is halted
+            /// </summary>
+            Finished,
+            /// <summary>
+            /// CurrentState is an Error state, or an action terminated with an exception; execution is halted
+            /// </summary>
+            Errored,
+        }
+
 
         internal string[] EventNames;
         internal string[] StateNames;
         LinkedList<int> NormalPriorityEventQueue = new LinkedList<int>();
         LinkedList<int> HighPriorityEventQueue = new LinkedList<int>();
+
+        /// <summary>
+        /// Before calling Execute, describes the state in which transitions will be searched for the next event.
+        /// During execution, describes the state in which the current action was executed
+        /// </summary>
         protected int CurrentState;
+
+        /// <summary>
+        /// How a call to Execute will be handled
+        /// </summary>
+        protected ExecutionStates ExecutionState;
+
+        /// <summary>
+        /// The state to set CurrentState to when Reset is invoked
+        /// </summary>
         protected abstract int StartState { get; }
         internal EventTraceList EventTrace;
 
         const int EventTraceDepth = 10;
 
 
-
+        /// <summary>
+        /// The base class for all Simple State Machines
+        /// </summary>
+        /// <param name="eventNames"></param>
+        /// <param name="stateNames"></param>
         protected StateMachineInternalBase(string[] eventNames, string[]stateNames)
         {
             EventNames = eventNames;
@@ -53,6 +98,10 @@ namespace SimpleStateMachine
             EventTrace = new EventTraceList(EventTraceDepth, EventNames, StateNames);
         }
 
+        /// <summary>
+        /// Internal method for choosing the next event to handle
+        /// </summary>
+        /// <returns></returns>
         protected int? GetNextEvent()
         {
             LinkedListNode<int> node = HighPriorityEventQueue.First;
@@ -108,6 +157,7 @@ namespace SimpleStateMachine
         public void Reset()
         {
             CurrentState = StartState;
+            ExecutionState = ExecutionStates.Idle;
             NormalPriorityEventQueue.Clear();
             HighPriorityEventQueue.Clear();
             EventTrace.Reset();

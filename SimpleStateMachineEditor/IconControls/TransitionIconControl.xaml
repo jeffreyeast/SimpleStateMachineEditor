@@ -15,23 +15,9 @@
 
     <UserControl.Resources>
 
-        <Style x:Key="TransitionActionsStyle" TargetType="TextBlock">
-            <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.ActionFontSize}"/>
-            <Setter Property="Background" Value="Transparent"/>
+        <Style x:Key="TransitionActionsStyle" TargetType="ListBoxItem">
+            <EventSetter Event="Loaded" Handler="ActionIconLoadedHandler"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=ReferencedObject.WasActionFound}" Value="True">
-                    <Setter Property="Background" Value="Gray"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsDropCandidate}" Value="True">
-                    <Setter Property="Foreground" Value="LightGreen"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </DataTrigger>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=global:DesignerControl}, Path=OptionsPage.HideActionNames}" Value="True">
                     <Setter Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
@@ -80,57 +66,51 @@
     
     <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
         <Grid x:Name="TextGrid" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
             <Grid.RenderTransform>
                 <RotateTransform 
-                        Angle="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextRotationAngle}"  
-                        CenterX="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.X}"             
-                        CenterY="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.Y}" />
+                    Angle="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextRotationAngle}"  
+                    CenterX="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.X}"             
+                    CenterY="{Binding RelativeSource={RelativeSource AncestorType=local:TransitionIconControl}, Path=TextVirtualCenterPoint.Y}" />
             </Grid.RenderTransform>
 
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <Label x:Name="TriggerEventName" Grid.Row="0" HorizontalAlignment="Center"  Style="{StaticResource TransitionNameStyle}"
-                   Content="{Binding Path=ReferencedObject.TriggerEvent.Name}" FontStyle="Italic" />
-                <Grid x:Name="PositioningGrid" Grid.Row="1" >
-                    <Grid x:Name="PositioningGridCenter" Width="1" Height="1" HorizontalAlignment="Center" VerticalAlignment="Center" />   
+            <Border Grid.Row="0"  BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label x:Name="TriggerEventName" Grid.Row="0" HorizontalAlignment="Center"  Style="{StaticResource TransitionNameStyle}"
+                            Content="{Binding Path=ReferencedObject.TriggerEvent.Name}" FontStyle="Italic" />
+                        <Grid x:Name="PositioningGrid" Grid.Row="1" >
+                            <Grid x:Name="PositioningGridCenter" Width="1" Height="1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Grid>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Path=ActionIcons}" 
+                                BorderThickness="0" FontSize="10" Background="Transparent" ItemContainerStyle="{StaticResource TransitionActionsStyle}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <local:ActionIconControl/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </Grid>
-            </Grid>
-
-            <ListBox Grid.Row="1" ItemsSource="{Binding Path=ActionIcons}" 
-                     BorderThickness="0" FontSize="10" Background="Transparent">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <EventSetter Event="Loaded" Handler="ActionIconLoadedHandler"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=ActionIsHighlighted}" Value="True">
-                                <Setter Property="Background" Value="Gray"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <local:ActionIconControl/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            
+            </Border>
         </Grid>
-
-        <Path x:Name="ConnectorPath" Style="{StaticResource TransitionPathStyle}"/>
         
+        <Path x:Name="ConnectorPath" Style="{StaticResource TransitionPathStyle}"/>
+
     </Grid>
 </UserControl>

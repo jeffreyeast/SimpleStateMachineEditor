@@ -15,7 +15,7 @@ namespace SimpleStateMachineEditor.ViewModel
     //  The Transition class represents a transition from one state to another, based on a triggering event. A set of
     //  actions is executed as part of the transition.
     //--
-    public class Transition : ObjectModel.TrackableObject
+    public class Transition : ObjectModel.DocumentedObject
     {
         //  The design pattern for references to other view model objects is to use a reference to the object at runtime, but to serialize only the objects ID.
         //  This is done to enable the serializer to generate a tree, even through the actual data structure is a graph.  At deserialization
@@ -456,7 +456,7 @@ namespace SimpleStateMachineEditor.ViewModel
                         {
                             //  We don't use the Clear method because it results in a Reset notification, which doesn't provide the OldItems list on the CollectionChanged event
 
-                            Actions.Remove(Actions.First());
+                            Actions.RemoveAt(0);
                         }
                         foreach (string v in newValue)
                         {

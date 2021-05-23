@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    public class NamedObject : TrackableObject
+    public class NamedObject : DocumentedObject
     {
         const int LongNameLength = 12;
 
@@ -30,23 +30,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             }
         }
         string _name;
-
-        [Description("Comment describing the object")]
-        public string Description
-        {
-            get => _description;
-            set
-            {
-                if (_description != value && IsChangeAllowed)
-                {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
-                    _description = value;
-                    OnPropertyChanged("Description");
-                    EndChange();
-                }
-            }
-        }
-        string _description;
 
         [XmlIgnore]
         [Browsable(false)]
@@ -79,22 +62,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             }
         }
         bool _wasNameFound;
-
-        [XmlIgnore]
-        [Browsable(false)]
-        public bool WasDescriptionFound
-        {
-            get => _wasDescriptionFound;
-            set
-            {
-                if (_wasDescriptionFound != value)
-                {
-                    _wasDescriptionFound = value;
-                    OnPropertyChanged("WasDescriptionFound");
-                }
-            }
-        }
-        bool _wasDescriptionFound;
 
 
 
@@ -137,7 +104,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             using (new UndoRedo.DontLogBlock(controller))
             {
                 Name = redoRecord.Name;
-                Description = redoRecord.Description;
             }
         }
 
@@ -147,9 +113,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 case "Name":
                     value = Name;
-                    break;
-                case "Description":
-                    value = Description;
                     break;
                 default:
                     base.GetProperty(propertyName, out value);
@@ -165,7 +128,6 @@ namespace SimpleStateMachineEditor.ObjectModel
         internal override void ResetSearch()
         {
             WasNameFound = false;
-            WasDescriptionFound = false;
             base.ResetSearch();
         }
 
@@ -174,7 +136,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             uint count = base.Search(searchString);
 
             WasNameFound = !string.IsNullOrWhiteSpace(Name) && Name.Contains(searchString);
-//            WasDescriptionFound = !string.IsNullOrWhiteSpace(Description) && Description.Contains(searchString);
 
             return count + (uint)(WasNameFound ? 1 : 0) + (uint)(WasDescriptionFound ? 1 : 0);
         }
@@ -185,9 +146,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 case "Name":
                     Name = newValue;
-                    break;
-                case "Description":
-                    Description = newValue;
                     break;
                 default:
                     base.SetProperty(propertyName, newValue);

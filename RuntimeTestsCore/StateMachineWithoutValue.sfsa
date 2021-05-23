@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<StateMachine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="-1" StartStateId="2">
+  <Actions>
+    <Action Id="17" Name="RaiseException" />
+  </Actions>
+  <EventTypes>
+    <EventType Id="6" Name="BeginTest">
+      <LeftTopPosition>
+        <X>126.5</X>
+        <Y>335.5</Y>
+      </LeftTopPosition>
+    </EventType>
+    <EventType Id="7" Name="Advance">
+      <LeftTopPosition>
+        <X>239</X>
+        <Y>335.5</Y>
+      </LeftTopPosition>
+    </EventType>
+    <EventType Id="9" Name="Finish">
+      <LeftTopPosition>
+        <X>351.5</X>
+        <Y>335.5</Y>
+      </LeftTopPosition>
+    </EventType>
+    <EventType Id="10" Name="CauseError">
+      <LeftTopPosition>
+        <X>126.5</X>
+        <Y>436.5</Y>
+      </LeftTopPosition>
+    </EventType>
+    <EventType Id="15" Name="CauseActionError">
+      <LeftTopPosition>
+        <X>239</X>
+        <Y>436.5</Y>
+      </LeftTopPosition>
+    </EventType>
+  </EventTypes>
+  <Regions />
+  <States>
+    <State Id="2" Name="Start">
+      <LeftTopPosition>
+        <X>124.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Normal</StateType>
+    </State>
+    <State Id="3" Name="Starting">
+      <LeftTopPosition>
+        <X>427.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Normal</StateType>
+    </State>
+    <State Id="4" Name="S1">
+      <LeftTopPosition>
+        <X>730.5</X>
+        <Y>114.5</Y>
+      </LeftTopPosition>
+      <StateType>Normal</StateType>
+    </State>
+    <State Id="5" Name="Done">
+      <LeftTopPosition>
+        <X>1038.5</X>
+        <Y>118.5</Y>
+      </LeftTopPosition>
+      <StateType>Finish</StateType>
+    </State>
+    <State Id="8" Name="S2">
+      <LeftTopPosition>
+        <X>1033.5</X>
+        <Y>366.5</Y>
+      </LeftTopPosition>
+      <StateType>Error</StateType>
+    </State>
+  </States>
+  <Transitions>
+    <Transition Id="11" SourceStateId="2" DestinationStateId="3" TriggerEventId="6">
+      <Actions />
+      <ActionIds />
+    </Transition>
+    <Transition Id="12" SourceStateId="3" DestinationStateId="4" TriggerEventId="7">
+      <Actions />
+      <ActionIds />
+    </Transition>
+    <Transition Id="13" SourceStateId="4" DestinationStateId="5" TriggerEventId="9">
+      <Actions />
+      <ActionIds />
+    </Transition>
+    <Transition Id="14" SourceStateId="4" DestinationStateId="8" TriggerEventId="10">
+      <Actions />
+      <ActionIds />
+    </Transition>
+    <Transition Id="16" SourceStateId="4" DestinationStateId="5" TriggerEventId="15">
+      <Actions />
+      <ActionIds>
+        <int>17</int>
+      </ActionIds>
+    </Transition>
+  </Transitions>
+  <GeneratedClassName>StateMachineWithoutValue</GeneratedClassName>
+  <IgnoreUnmatchedEvents>false</IgnoreUnmatchedEvents>
+  <ReturnValue>void</ReturnValue>
+  <RequireCompleteEventCoverage>false</RequireCompleteEventCoverage>
+</StateMachine>

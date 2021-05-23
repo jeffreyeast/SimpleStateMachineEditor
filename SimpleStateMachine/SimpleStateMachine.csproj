@@ -48,7 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnteredErrorState.cs" />
+    <Compile Include="ActionRaisedException.cs" />
+    <Compile Include="EnteredErrorStateException.cs" />
     <Compile Include="EventTraceList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StateMachineInternalBase.cs" />

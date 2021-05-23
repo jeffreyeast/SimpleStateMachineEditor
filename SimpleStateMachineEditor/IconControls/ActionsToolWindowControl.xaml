@@ -50,7 +50,7 @@
                     <DataGridTextColumn.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Action" ToolTip="Method name for the transition action"/>
-                            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom" ToolTip="Drag an action over a transition to add the action, drag it again to remove the action">
+                            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom" ToolTip="Drag an action over a transition to add the action to the transition">
                                 <Ellipse Width="10" Height="10" Fill="SkyBlue" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                 <TextBlock Text="i" Foreground="White" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>

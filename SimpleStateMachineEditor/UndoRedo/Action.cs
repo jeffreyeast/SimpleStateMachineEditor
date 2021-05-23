@@ -70,6 +70,16 @@ namespace SimpleStateMachineEditor.UndoRedo
     }
 
 
+    internal abstract class DocumentedObjectRecord : TrackableObjectRecord
+    {
+        internal string Description;
+
+        protected DocumentedObjectRecord(ActionTypes actionType, ViewModel.ViewModelController controller, ObjectModel.DocumentedObject documentedObject) : base(actionType, controller, documentedObject)
+        {
+            Description = (documentedObject.Description == null ? null : string.Copy(documentedObject.Description));
+        }
+    }
+
     internal abstract class PositionableObjectRecord : NamedObjectRecord
     {
         internal System.Windows.Point LeftTopPosition;
@@ -80,15 +90,13 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
-    internal abstract class NamedObjectRecord : TrackableObjectRecord
+    internal abstract class NamedObjectRecord : DocumentedObjectRecord
     {
         internal string Name;
-        internal string Description;
 
         protected NamedObjectRecord(ActionTypes actionType, ViewModel.ViewModelController controller, ObjectModel.NamedObject namedObject) : base(actionType, controller, namedObject)
         {
             Name = (namedObject.Name == null ? null : string.Copy(namedObject.Name));
-            Description = (namedObject.Description == null ? null : string.Copy(namedObject.Description));
         }
     }
 
@@ -478,7 +486,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 
     //  Transition Records
 
-    internal class AddTransitionRecord : TrackableObjectRecord
+    internal class AddTransitionRecord : DocumentedObjectRecord
     {
         protected override string UnitDescription => "Add transition";
         protected override int UnitType => (int)ActionTypes.AddTransition;

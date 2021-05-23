@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleStateMachine\SimpleStateMachine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="StateMachineWithoutValue.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StateMachineWithoutValue.sfsa</DependentUpon>
+    </Compile>
+    <Compile Update="StateMachineWithValue.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StateMachineWithValue.sfsa</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StateMachineWithoutValue.sfsa">
+      <Generator>SfsaGenerator</Generator>
+      <LastGenOutput>StateMachineWithoutValue.cs</LastGenOutput>
+    </None>
+    <None Update="StateMachineWithValue.sfsa">
+      <Generator>SfsaGenerator</Generator>
+      <LastGenOutput>StateMachineWithValue.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

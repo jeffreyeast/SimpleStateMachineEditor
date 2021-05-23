@@ -71,6 +71,23 @@ namespace SimpleStateMachineEditor.ViewModel
         List<int> _memberIds;
 
 
+        List<string> OldMembers
+        {
+            get => _oldMembers;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (_oldMembers != value)
+                {
+                    _oldMembers = value;
+                }
+            }
+        }
+        List<string> _oldMembers;
+
 
 
 
@@ -82,6 +99,7 @@ namespace SimpleStateMachineEditor.ViewModel
             Members = new ObservableCollection<TrackableObject>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = new List<int>();
+            OldMembers = new List<string>();
         }
 
         //  Constructor for new object creation through commands
@@ -92,6 +110,7 @@ namespace SimpleStateMachineEditor.ViewModel
             Members = new ObservableCollection<TrackableObject>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
+            OldMembers = new List<string>();
         }
 
         //  Constructor for use by Redo
@@ -104,6 +123,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 IsHidden = redoRecord.IsHidden;
                 Members = new ObservableCollection<TrackableObject>();
                 Members.CollectionChanged += Members_CollectionChanged;
+                OldMembers = new List<string>();
                 foreach (int memberId in redoRecord.MemberIds)
                 {
                     TrackableObject member = Controller.StateMachine.Find(memberId);
@@ -133,6 +153,20 @@ namespace SimpleStateMachineEditor.ViewModel
                     TrackableObject member = stateMachine.Find(memberId);
                     Members.Add(member);
                 }
+            }
+        }
+
+        internal override void GetProperty(string propertyName, out IEnumerable<string> value)
+        {
+            switch (propertyName)
+            {
+                case "Members":
+                    value = Members.Select(m => m.Id.ToString()).ToArray<string>();
+                    break;
+
+                default:
+                    base.GetProperty(propertyName, out value);
+                    break;
             }
         }
 
@@ -175,6 +209,18 @@ namespace SimpleStateMachineEditor.ViewModel
                 default:
                     throw new NotImplementedException();
             }
+
+            //  TODO TODO TODO
+            //
+            //  We should have synchronized with the underlying text buffer before we made the change.
+
+            if (IsChangeAllowed)
+            {
+                Controller?.LogUndoAction(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "Members", OldMembers));
+                EndChange();
+            }
+
+            OldMembers = Members.Select(a => a.Id.ToString()).ToList<string>();
         }
 
         private void MemberIsBeingRemovedHandler(IRemovableObject member)
@@ -201,6 +247,32 @@ namespace SimpleStateMachineEditor.ViewModel
                     break;
                 case "IsHidden":
                     IsHidden = bool.Parse(newValue);
+                    break;
+                default:
+                    base.SetProperty(propertyName, newValue);
+                    break;
+            }
+        }
+
+        internal override void SetProperty(string propertyName, IEnumerable<string> newValue)
+        {
+            switch (propertyName)
+            {
+                case "Members":
+                    using (new UndoRedo.AtomicBlock(Controller, "Set property Members"))
+                    {
+                        while (Members.Count > 0)
+                        {
+                            //  We don't use the Clear method because it results in a Reset notification, which doesn't provide the OldItems list on the CollectionChanged event
+
+                            Members.RemoveAt(0);
+                        }
+                        foreach (string v in newValue)
+                        {
+                            ObjectModel.TrackableObject member = Controller.StateMachine.Find(int.Parse(v)) as ObjectModel.TrackableObject;
+                            Members.Add(member);
+                        }
+                    }
                     break;
                 default:
                     base.SetProperty(propertyName, newValue);

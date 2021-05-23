@@ -11,9 +11,16 @@ namespace SimpleStateMachine
     /// </summary>
     public abstract class StateMachineWithReturnValueBase<R> : StateMachineInternalBase
     {
+        /// <summary>
+        /// The base class for Simple State Machines whose Execute method does not return a value
+        /// </summary>
         public delegate R Action();
 
         StateTypes[] StateClassifications;
+
+        /// <summary>
+        ///  Provides the state transition graph
+        /// </summary>
         protected abstract Transition<Action>[,] Transitions { get; }
         int? CurrentEvent;
         bool Executing;
@@ -22,6 +29,7 @@ namespace SimpleStateMachine
         protected StateMachineWithReturnValueBase(StateTypes[] stateTypes, string[] eventNames, string[] stateNames) : base(eventNames, stateNames)
         {
             StateClassifications = stateTypes;
+            ExecutionState = ExecutionStates.Idle;
         }
 
         /// <summary>
@@ -32,6 +40,7 @@ namespace SimpleStateMachine
         /// <exception cref="System.InvalidOperationException">Thrown if an event is chosen for 
         /// execution and no transition from the current state maches the event.
         /// </exception>
+        /// <exception cref="EnteredErrorStateException">Thrown if execution enters an error state</exception>
         /// <remarks>
         /// The state machine runs until one of the following conditions is met:
         /// - There are no remaining events to process
@@ -50,11 +59,10 @@ namespace SimpleStateMachine
 
             R returnValue = default(R);
 
-            if (!Executing)
+            switch (ExecutionState)
             {
-                try
-                {
-                    Executing = true;
+                case ExecutionStates.Idle:
+                    ExecutionState = ExecutionStates.Executing;
 
                     while (StateClassifications[CurrentState] == StateTypes.Normal && (CurrentEvent = GetNextEvent()).HasValue)
                     {
@@ -62,23 +70,49 @@ namespace SimpleStateMachine
                         Transition<Action> transition = Transitions[CurrentState, CurrentEvent.Value];
                         foreach (Action a in transition.Actions)
                         {
-                            returnValue = a();
+                            try
+                            {
+                                returnValue = a();
+                            }
+                            catch (UnexpectedEventException)
+                            {
+                                throw;
+                            }
+                            catch (Exception exc)
+                            {
+                                ExecutionState = ExecutionStates.Exception;
+                                throw new ActionRaisedException(this,
+                                    (CurrentState >= StateNames.GetLowerBound(0) && CurrentState <= StateNames.GetUpperBound(0) ? StateNames[CurrentState] : CurrentState.ToString()),
+                                    exc);
+                            }
                         }
                         CurrentState = transition.NextState;
                     }
 
                     if (StateClassifications[CurrentState] == StateTypes.Error)
                     {
-                        throw new EnteredErrorState(StateNames[CurrentState]);
+                        ExecutionState = ExecutionStates.Errored;
+                        throw new EnteredErrorStateException(this,
+                            (CurrentEvent.Value >= EventNames.GetLowerBound(0) && CurrentEvent.Value <= EventNames.GetUpperBound(0) ? EventNames[CurrentEvent.Value] : CurrentEvent.Value.ToString()),
+                            (CurrentState >= StateNames.GetLowerBound(0) && CurrentState <= StateNames.GetUpperBound(0) ? StateNames[CurrentState] : CurrentState.ToString()));
                     }
-                }
-                finally
-                {
-                    Executing = false;
-                }
-            }
 
-            return returnValue;
+                    ExecutionState = ExecutionStates.Idle;
+                    return returnValue;
+
+                case ExecutionStates.Errored:
+                case ExecutionStates.Exception:
+                    throw new EnteredErrorStateException(this,
+                        (CurrentEvent.Value >= EventNames.GetLowerBound(0) && CurrentEvent.Value <= EventNames.GetUpperBound(0) ? EventNames[CurrentEvent.Value] : CurrentEvent.Value.ToString()),
+                        (CurrentState >= StateNames.GetLowerBound(0) && CurrentState <= StateNames.GetUpperBound(0) ? StateNames[CurrentState] : CurrentState.ToString()));
+
+                case ExecutionStates.Executing:
+                case ExecutionStates.Finished:
+                    return returnValue;
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         /// <summary>

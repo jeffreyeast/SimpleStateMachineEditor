@@ -82,6 +82,98 @@ namespace SimpleStateMachineEditor.IconControls
             this.Content = new ActionsToolWindowControl(this);
         }
 
+        private void DesignerModelPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "StateMachine")
+            {
+                ReloadToolWindowActionIcons();
+            }
+        }
+        private void DesignerUnloadedHandler(object sender, RoutedEventArgs e)
+        {
+            Designer = (Package as SimpleStateMachineEditorPackage).ActiveDesignerControl;
+        }
+
+        private void LoadToolWindowActionIconsInternal()
+        {
+            HashSet<ViewModel.Action> actions = new HashSet<ViewModel.Action>(Designer.Model.StateMachine.Actions);
+            List<Icons.ToolWindowActionIcon> iconsPendingDeletion = new List<Icons.ToolWindowActionIcon>();
+            HashSet<ViewModel.Action> actionsWithIcons = new HashSet<ViewModel.Action>();
+
+            foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
+            {
+                if (actions.Contains(icon.Action))
+                {
+                    actionsWithIcons.Add(icon.Action);
+                }
+                else
+                {
+                    iconsPendingDeletion.Add(icon);
+                }
+            }
+
+            foreach (Icons.ToolWindowActionIcon icon in iconsPendingDeletion)
+            {
+                ToolWindowActionIcons.Remove(icon);
+            }
+
+            actions.ExceptWith(actionsWithIcons);
+            List<ViewModel.Action> actionsNeedingIcons = new List<ViewModel.Action>(actions);
+            actionsNeedingIcons.Sort();
+
+            int needyIndex = 0;
+            int existingIndex = 0;
+
+            while (needyIndex < actionsNeedingIcons.Count)
+            {
+                if (existingIndex >= ToolWindowActionIcons.Count || actionsNeedingIcons[needyIndex].Name.CompareTo(ToolWindowActionIcons[existingIndex].Action.Name) < 0)
+                {
+                    ToolWindowActionIcons.Insert(existingIndex++, new Icons.ToolWindowActionIcon(this, actionsNeedingIcons[needyIndex++]));
+                }
+                else
+                {
+                    existingIndex++;
+                }
+            }
+        }
+
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            Designer = (Package as SimpleStateMachineEditorPackage).ActiveDesignerControl;
+        }
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void ReloadToolWindowActionIcons(bool clearIcons = false)
+        {
+            if (Designer.Model.StateMachine != null)
+            {
+                Designer.Model.StateMachine.Actions.CollectionChanged -= ViewModelActionsCollectionChangedHandler;
+                ToolWindowActionIcons.CollectionChanged -= ToolWindowActionIconsChangedHandler;
+                foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
+                {
+                    icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
+                }
+
+                if (clearIcons)
+                {
+                    ToolWindowActionIcons.Clear();
+                }
+                LoadToolWindowActionIconsInternal();
+
+                Designer.Model.StateMachine.Actions.CollectionChanged += ViewModelActionsCollectionChangedHandler;
+                ToolWindowActionIcons.CollectionChanged += ToolWindowActionIconsChangedHandler;
+                foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
+                {
+                    icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
+                }
+            }
+        }
+
         private void ToolWindowActionIconPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
             if (sender is Icons.ToolWindowActionIcon icon)
@@ -147,92 +239,6 @@ namespace SimpleStateMachineEditor.IconControls
                 case NotifyCollectionChangedAction.Reset:
                 default:
                     throw new NotImplementedException();
-            }
-        }
-
-        private void DesignerModelPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "StateMachine")
-            {
-                ReloadToolWindowActionIcons();
-            }
-        }
-        private void DesignerUnloadedHandler(object sender, RoutedEventArgs e)
-        {
-            Designer = (Package as SimpleStateMachineEditorPackage).ActiveDesignerControl;
-        }
-
-        private void LoadToolWindowActionIconsInternal()
-        {
-            HashSet<ViewModel.Action> actions = new HashSet<ViewModel.Action>(Designer.Model.StateMachine.Actions);
-            List<Icons.ToolWindowActionIcon> iconsPendingDeletion = new List<Icons.ToolWindowActionIcon>();
-            HashSet<ViewModel.Action> actionsWithIcons = new HashSet<ViewModel.Action>();
-
-            foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
-            {
-                if (actions.Contains(icon.Action))
-                {
-                    actionsWithIcons.Add(icon.Action);
-                }
-                else
-                {
-                    iconsPendingDeletion.Add(icon);
-                }
-            }
-
-            foreach (Icons.ToolWindowActionIcon icon in iconsPendingDeletion)
-            {
-                ToolWindowActionIcons.Remove(icon);
-            }
-
-            actions.ExceptWith(actionsWithIcons);
-            List<ViewModel.Action> actionsNeedingIcons = new List<ViewModel.Action>(actions);
-            actionsNeedingIcons.Sort();
-
-            int needyIndex = 0;
-            int existingIndex = 0;
-
-            while (needyIndex < actionsNeedingIcons.Count)
-            {
-                if (existingIndex >= ToolWindowActionIcons.Count || actionsNeedingIcons[needyIndex].Name.CompareTo(ToolWindowActionIcons[existingIndex].Action.Name) < 0)
-                {
-                    ToolWindowActionIcons.Insert(existingIndex++, new Icons.ToolWindowActionIcon(this, actionsNeedingIcons[needyIndex++]));
-                }
-                else
-                {
-                    existingIndex++;
-                }
-            }
-        }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void ReloadToolWindowActionIcons(bool clearIcons = false)
-        {
-            if (Designer.Model.StateMachine != null)
-            {
-                Designer.Model.StateMachine.Actions.CollectionChanged -= ViewModelActionsCollectionChangedHandler;
-                ToolWindowActionIcons.CollectionChanged -= ToolWindowActionIconsChangedHandler;
-                foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
-                {
-                    icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
-                }
-
-                if (clearIcons)
-                {
-                    ToolWindowActionIcons.Clear();
-                }
-                LoadToolWindowActionIconsInternal();
-
-                Designer.Model.StateMachine.Actions.CollectionChanged += ViewModelActionsCollectionChangedHandler;
-                ToolWindowActionIcons.CollectionChanged += ToolWindowActionIconsChangedHandler;
-                foreach (Icons.ToolWindowActionIcon icon in ToolWindowActionIcons)
-                {
-                    icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
-                }
             }
         }
 

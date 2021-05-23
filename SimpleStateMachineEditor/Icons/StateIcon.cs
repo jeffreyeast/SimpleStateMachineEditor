@@ -18,8 +18,6 @@ namespace SimpleStateMachineEditor.Icons
         internal readonly static Size IconSize = new Size(61, 61);
         internal readonly static double Radius = 30;
 
-        public bool IsStartState => Designer.Model.StateMachine.StartState == ReferencedObject;
-
 
 
 
@@ -66,7 +64,6 @@ namespace SimpleStateMachineEditor.Icons
                         {
                             Designer.SetStartState(ReferencedObject as ViewModel.State);
                         }
-                        OnPropertyChanged("IsStartState");
                         return VSConstants.S_OK;
                     default:
                         break;

@@ -240,9 +240,9 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Keyboard.ClearFocus();
         }
 
-        protected override void TestIfTransitionIcon()
+        protected override void TestIfPositionableIcon()
         {
-            PostHighPriorityEvent(DraggingIcon is Icons.TransitionIcon ? EventTypes.Yes : EventTypes.No);
+            PostHighPriorityEvent(DraggingIcon is Icons.PositionableIcon ? EventTypes.Yes : EventTypes.No);
         }
 
         protected override void TestIsIconSelected()

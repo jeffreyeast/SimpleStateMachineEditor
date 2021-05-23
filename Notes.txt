@@ -204,14 +204,17 @@
   DONE
 - Maybe add icon size to options page?
 - Consider: should we have a list of actions?
+  DONE
 - We don't detect duplicate state names
   FIXED
 - It would be nice to disable commands in context menus that can't be executed on multiple selections (e.g., Add Transition)
 - What happens if there's a blank line in the list of actions for a transition?
+  FIXED
 - State machine trace depth should be configurable
 - Build the Nuget package
 - Build the Visual Studio Marketplace package
 - Setting starting state to S1, then S2, doesn't clear the starting state status of S1
+  FIXED
 
 5/13/2021
 
@@ -225,6 +228,7 @@
 - Action tool window's existance and visibility isn't connected well to that of the active window.  Why? Associating it with the solution seems to have lost its transience.
   FIXED
 - Need a way to demark selected transition
+  DONE
 
 5/15/2021
 
@@ -235,6 +239,7 @@
 5/16/2021
 
  - Check if adding/removing members from a region works with undo/redo
+   FIXED
 
 5/18/2021
 
@@ -243,6 +248,7 @@
    DONE
  - Actions window should indicate which document it's actions are members of
  - Consider dropping NewWindow command, it's going to cause a lot of grief
+   DONE
 
  5/19/2021
 
@@ -254,10 +260,30 @@
 
  - There's still problems with 1) getting the Actions toolwindow to appear, and 2) getting it to reflect the current designer once it does appear. I think it's related to we make it invisible when the UI context isn't SFSA.  Makes it very
    difficult to move it around and position it
+   PARTIALLY FIXED -- IT RECOGNIZES THE CURRENT DESIGNER MORE OFTEN
  - Handle CTRL key for selection
+   NOT DONE - SEMANICS OF SHIFT KEY MATCH CTRL IN THIS APPLICATION
  - Should Transitions have a Description field?
+   DONE
  - Should descriptions be included in the code-behind file as comments?
+   DONE
  - Should you be able to drag Actions around a transition to change their order?
    DONE
  - Search should also search for action names
+   DONE
  - If a method throws beyond the Execute, should we detect if another call to Execute is made w/o invoking Reset?
+   DONE
+
+5/23/2021
+
+ - BUG: In Console19, clicking on an object in the Left state machine doesn't update the properties window until you first click on an inactive window. 
+   The properties window is displaying the Right designer (state machine), but the Actions window is displaying the left, and the left's tab is highlighted as if it's the active window.
+   This has to be something related to the other problems we're having with early focus on a designer during startup.
+
+ - BUG: Select a transition and a state and drag. Boom.
+   FIXED
+
+ - There's problem when a state already has two transition and you want to swap the trigger events on them (e.g., Yes and No). You need a 3rd event to act as a placeholder.  It prevents you from having multiple
+   transitions with the same trigger.
+
+ - You can't select multiple transitions and delete them. It'll only let you select one.

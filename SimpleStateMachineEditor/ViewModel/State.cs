@@ -40,6 +40,21 @@ namespace SimpleStateMachineEditor.ViewModel
         StateTypes _stateType;
 
         [XmlIgnore]
+        public bool IsStartState
+        {
+            get => _isStartState;
+            set
+            {
+                if (_isStartState != value)
+                {
+                    _isStartState = value;
+                    OnPropertyChanged("IsStartState");
+                }
+            }
+        }
+        bool _isStartState;
+
+        [XmlIgnore]
         [Browsable(false)]
         public ObservableCollection<Transition> TransitionsFrom { get; private set; }
         [XmlIgnore]

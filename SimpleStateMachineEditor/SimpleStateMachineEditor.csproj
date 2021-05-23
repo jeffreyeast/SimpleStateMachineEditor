@@ -105,6 +105,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MouseSelection.sfsa</DependentUpon>
     </Compile>
+    <Compile Include="ObjectModel\DocumentedObject.cs" />
     <Compile Include="ObjectModel\EditableString.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
     <Compile Include="ObjectModel\IRemovableObject.cs" />

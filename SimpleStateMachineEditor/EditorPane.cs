@@ -180,8 +180,6 @@ namespace SimpleStateMachineEditor
                 // create the OleMenuCommand object for this command. The EventHandler object is the
                 // function that will be called when the user will select the command. Then we add the 
                 // OleMenuCommand to the menu service.  The addCommand helper function does all this for us.
-                AddCommand(mcs, VSConstants.GUID_VSStandardCommandSet97, (int)VSStd97CmdID.NewWindow,
-                                new EventHandler(OnNewWindow), new EventHandler(OnQueryNewWindow));
                 AddCommand(mcs, VSConstants.GUID_VSStandardCommandSet97, (int)VSStd97CmdID.ViewCode,
                                 new EventHandler(OnViewCode), new EventHandler(OnQueryViewCode));
             }
@@ -351,17 +349,6 @@ namespace SimpleStateMachineEditor
 
 #region Commands
 
-        private void OnQueryNewWindow(object sender, EventArgs e)
-        {
-            OleMenuCommand command = (OleMenuCommand)sender;
-            command.Enabled = true;
-        }
-
-        private void OnNewWindow(object sender, EventArgs e)
-        {
-            NewWindow();
-        }
-
         private void OnQueryViewCode(object sender, EventArgs e)
         {
             OleMenuCommand command = (OleMenuCommand)sender;
@@ -383,28 +370,6 @@ namespace SimpleStateMachineEditor
         private void OnViewCode(object sender, EventArgs e)
         {
             ViewCode();
-        }
-
-
-        private void NewWindow()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            int hr = VSConstants.S_OK;
-
-            IVsUIShellOpenDocument uishellOpenDocument = (IVsUIShellOpenDocument)GetService(typeof(SVsUIShellOpenDocument));
-            if (uishellOpenDocument != null)
-            {
-                IVsWindowFrame windowFrameOrig = (IVsWindowFrame)GetService(typeof(SVsWindowFrame));
-                if (windowFrameOrig != null)
-                {
-                    IVsWindowFrame windowFrameNew;
-                    Guid LOGVIEWID_Primary = Guid.Empty;
-                    hr = uishellOpenDocument.OpenCopyOfStandardEditor(windowFrameOrig, ref LOGVIEWID_Primary, out windowFrameNew);
-                    if (windowFrameNew != null)
-                        hr = windowFrameNew.Show();
-                    ErrorHandler.ThrowOnFailure(hr);
-                }
-            }
         }
 
         private void ViewCode()

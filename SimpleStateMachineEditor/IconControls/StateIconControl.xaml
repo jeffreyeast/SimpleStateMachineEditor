@@ -25,10 +25,10 @@
 
         <Style x:Key="StateIconEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StateIconEllipseVisibilityStyle}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsStartState}" Value="True">
+                <DataTrigger Binding="{Binding Path=ReferencedObject.IsStartState}" Value="True">
                     <Setter Property="StrokeThickness" Value="3"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsStartState}" Value="False">
+                <DataTrigger Binding="{Binding Path=ReferencedObject.IsStartState}" Value="False">
                     <Setter Property="StrokeThickness" Value="0"/>
                 </DataTrigger>
             </Style.Triggers>
