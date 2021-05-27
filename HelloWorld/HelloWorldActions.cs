@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace HelloWorld
     {
         protected override void DoSayHello()
         {
-            Console.WriteLine("Hello World!");
+            Debug.WriteLine("Hello World!");
         }
     }
 }

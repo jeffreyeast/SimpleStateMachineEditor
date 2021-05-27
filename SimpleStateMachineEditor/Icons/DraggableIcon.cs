@@ -11,39 +11,8 @@ using System.Windows.Input;
 
 namespace SimpleStateMachineEditor.Icons
 {
-    internal abstract class DraggableIcon : IconBase, IDraggableIcon
+    internal abstract class DraggableIcon : SelectableIcon, IDraggableIcon
     {
-        public override Control Body
-        {
-            get => base.Body;
-            internal set
-            {
-                base.Body = value;
-                if (Body != null)
-                {
-                    Body.MouseLeftButtonDown += IconSelectedHandler;
-                    Body.MouseRightButtonUp += MouseRightButtonUpHandler;
-                }
-            }
-        }
-
-        public bool IsRegionHighlighted => HighlightedRegion != null;
-
-        public ViewModel.Region HighlightedRegion
-        {
-            get => _highlightedRegion;
-            set
-            {
-                if (_highlightedRegion != value)
-                {
-                    _highlightedRegion = value;
-                    OnPropertyChanged("HighlightedRegion");
-                    OnPropertyChanged("IsRegionHighlighted");
-                }
-            }
-        }
-        ViewModel.Region _highlightedRegion;
-
 
         internal DraggableIcon(DesignerControl designer, TrackableObject o, System.Windows.Point? center, Size? size) :
             base(designer, o, center, size)
@@ -53,11 +22,13 @@ namespace SimpleStateMachineEditor.Icons
         public virtual void CancelDrag()
         {
             Designer.IconSurface.Children.Remove(DraggableShape);
+            OnEndDrag();
         }
 
         public virtual void CommitDrag(Point dragTerminationPoint, Point offset)
         {
             Designer.IconSurface.Children.Remove(DraggableShape);
+            OnEndDrag();
 
             //  Check to see if they dragged an icon over a region
 
@@ -88,47 +59,20 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
 
-        public virtual void Drag(Point offset)
+        public virtual void Drag(Point mousePosition, Point offset)
         {
             DraggableShape.Margin = new Thickness(Math.Max(0, Body.Margin.Left + offset.X), Math.Max(0, Body.Margin.Top + offset.Y), 0, 0);
         }
 
-        protected void IconSelectedHandler(object sender, MouseButtonEventArgs e)
-        {
-            Designer.DraggableIconMouseLeftButtonDownHandler(e.GetPosition(Designer.IconSurface), this);
-            e.Handled = true;
-        }
-
-        public bool IsSelected => Designer.SelectedIcons.ContainsKey(ReferencedObject);
-
-        public void IsSelectedChanged()
-        {
-            OnPropertyChanged("IsSelected");
-        }
-
-        private void MouseRightButtonUpHandler(object sender, MouseButtonEventArgs e)
-        {
-            Designer.DraggableIconMouseRightButtonUpHandler(e.GetPosition(Designer.IconSurface), this);
-            e.Handled = true;
-        }
-
-        protected override void OnBodyUnloaded(object sender, RoutedEventArgs e)
-        {
-            if (Body != null)
-            {
-                Body.MouseLeftButtonDown -= IconSelectedHandler;
-                Body.MouseRightButtonUp -= MouseRightButtonUpHandler;
-            }
-            base.OnBodyUnloaded(sender, e);
-        }
-
         protected virtual void OnCommitDrag(Point dragTerminationPoint) { }
-        TrackableObject IDraggableIcon.ReferencedObject => ReferencedObject;
+        protected virtual void OnEndDrag() { }
+        protected virtual void OnStartDrag() { }
 
         public virtual void StartDrag()
         {
             Designer.IconSurface.Children.Add(DraggableShape);
             DraggableShape.Margin = Body.Margin;
+            OnStartDrag();
         }
     }
 }

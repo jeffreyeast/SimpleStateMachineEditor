@@ -87,6 +87,13 @@
         </Strings>
       </Menu>
 
+      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuId" type="Context">
+        <Strings>
+          <MenuText>Context Menu</MenuText>
+          <ButtonText>Context Menu</ButtonText>
+        </Strings>
+      </Menu>
+
       <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuId" type="Context">
         <Strings>
           <MenuText>Context Menu</MenuText>
@@ -131,6 +138,7 @@
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" priority="0x0600" />
@@ -454,6 +462,16 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" />
     </CommandPlacement>
 
+    <!-- Layer Context Menu -->
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuId" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" />
+    </CommandPlacement>
+
     <!-- Region Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0001">
@@ -621,6 +639,8 @@
       <IDSymbol name="SetIconDisplayColorsComboListId" value="0x1037" />
       <IDSymbol name="ActionIconContextMenuId" value="0x1038" />
       <IDSymbol name="ActionIconContextMenuGroupId" value="0x1039" />
+      <IDSymbol name="LayerIconContextMenuId" value="0x103a" />
+      <IDSymbol name="LayerIconContextMenuGroupId" value="0x103b" />
 
       <IDSymbol name="AddEventTypeCommandId" value="0x0100" />
       <IDSymbol name="AddRegionCommandId" value="0x0101" />

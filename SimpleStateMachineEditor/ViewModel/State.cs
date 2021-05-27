@@ -15,7 +15,7 @@ namespace SimpleStateMachineEditor.ViewModel
     //++
     //      The State class represents a state.
     //--
-    public class State : ObjectModel.PositionableObject
+    public class State : ObjectModel.LayeredPositionableObject
     {
         public enum StateTypes
         {
@@ -76,7 +76,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
         //  Constructor for new object creation through commands
 
-        private State(ViewModelController controller, string rootName) : base (controller, controller.StateMachine.States, rootName)
+        private State(ViewModelController controller, string rootName, ViewModel.Layer currentLayer) : base (controller, controller.StateMachine.States, rootName, currentLayer)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
@@ -102,11 +102,11 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        internal static State Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage)
+        internal static State Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, ViewModel.Layer currentLayer)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                return new State(controller, optionsPage.StateRootName);
+                return new State(controller, optionsPage.StateRootName, currentLayer);
             }
         }
 

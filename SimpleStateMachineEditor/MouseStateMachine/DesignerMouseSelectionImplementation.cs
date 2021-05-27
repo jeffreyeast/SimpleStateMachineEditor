@@ -16,7 +16,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         DesignerControl Designer;
         Point MousePosition;
         internal Point DragOrigin;
-        Icons.IDraggableIcon DraggingIcon;
+        Icons.ISelectableIcon SelectedIcon;
 
 
 
@@ -43,10 +43,10 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Execute();
         }
 
-        internal void MouseLeftButtonDownOnIcon(Point mousePosition, Icons.IDraggableIcon icon)
+        internal void MouseLeftButtonDownOnIcon(Point mousePosition, Icons.ISelectableIcon icon)
         {
             MousePosition = mousePosition;
-            DraggingIcon = icon;
+            SelectedIcon = icon;
             PostNormalPriorityEvent(EventTypes.LeftButtonDownOnIcon);
             Execute();
         }
@@ -72,17 +72,17 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Execute();
         }
 
-        internal void MouseRightButtonUpOnIcon(Point mousePosition, Icons.IDraggableIcon icon)
+        internal void MouseRightButtonUpOnIcon(Point mousePosition, Icons.ISelectableIcon icon)
         {
             MousePosition = mousePosition;
-            DraggingIcon = icon;
+            SelectedIcon = icon;
             PostNormalPriorityEvent(EventTypes.RightButtonUpOnIcon);
             Execute();
         }
 
         internal void StartDraggingTransition(Icons.TransitionIcon icon)
         {
-            DraggingIcon = icon;
+            SelectedIcon = icon;
             DragOrigin = (icon.ReferencedObject as ViewModel.Transition).SourceState == null ?
                 Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).DestinationState].CenterPosition :
                 Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).SourceState].CenterPosition;
@@ -96,7 +96,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void CancelDrag()
         {
-            Icons.IDraggableIcon[] selectedIcons = Designer.SelectedIcons.Values.ToArray<Icons.IDraggableIcon>();
+            Icons.IDraggableIcon[] selectedIcons = Designer.SelectedIcons.Values.OfType<Icons.IDraggableIcon>().ToArray<Icons.IDraggableIcon>();
 
             foreach (var icon in selectedIcons)
             {
@@ -112,7 +112,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         protected override void CommitDrag()
         {
             Point offset = new Point(MousePosition.X - DragOrigin.X, MousePosition.Y - DragOrigin.Y);
-            Icons.IDraggableIcon[] selectedIcons = Designer.SelectedIcons.Values.ToArray<Icons.IDraggableIcon>();
+            Icons.IDraggableIcon[] selectedIcons = Designer.SelectedIcons.Values.OfType<Icons.IDraggableIcon>().ToArray<Icons.IDraggableIcon>();
 
             foreach (var icon in selectedIcons)
             {
@@ -122,7 +122,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void DeselectDraggingIcon()
         {
-            Designer.DeselectIcon(DraggingIcon);
+            Designer.DeselectIcon(SelectedIcon);
         }
 
         protected override void DragIcon()
@@ -131,7 +131,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
             foreach (Icons.IDraggableIcon icon in Designer.SelectedIcons.Values)
             {
-                icon.Drag(offset);
+                icon.Drag(MousePosition, offset);
             }
         }
 
@@ -162,7 +162,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             points = new[] { point };
 
             // TODO: error handling
-            Designer.UiShell.ShowContextMenu(0, ref contextMenuGuid, DraggingIcon.ContextMenuId, points, DraggingIcon);
+            Designer.UiShell.ShowContextMenu(0, ref contextMenuGuid, SelectedIcon.ContextMenuId, points, SelectedIcon);
         }
 
         protected override void DisplayStateMachineContextMenu()
@@ -189,7 +189,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void DragSelectionBox()
         {
-            Designer.SelectionBoxIcon.Drag(new Point(MousePosition.X - DragOrigin.X, MousePosition.Y - DragOrigin.Y));
+            Designer.SelectionBoxIcon.Drag(MousePosition, new Point(MousePosition.X - DragOrigin.X, MousePosition.Y - DragOrigin.Y));
         }
 
         protected override void EnableSelectionBox()
@@ -209,7 +209,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void SelectDraggingIcon()
         {
-            Designer.SelectIcon(DraggingIcon);
+            Designer.SelectIcon(SelectedIcon);
         }
 
         protected override void SelectOccludedIcons()
@@ -242,12 +242,12 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void TestIfPositionableIcon()
         {
-            PostHighPriorityEvent(DraggingIcon is Icons.PositionableIcon ? EventTypes.Yes : EventTypes.No);
+            PostHighPriorityEvent(SelectedIcon is Icons.PositionableIcon ? EventTypes.Yes : EventTypes.No);
         }
 
         protected override void TestIsIconSelected()
         {
-            PostHighPriorityEvent(Designer.SelectedIcons.ContainsKey(DraggingIcon.ReferencedObject) ? EventTypes.Yes : EventTypes.No);
+            PostHighPriorityEvent(Designer.SelectedIcons.ContainsKey(SelectedIcon.ReferencedObject) ? EventTypes.Yes : EventTypes.No);
         }
 
         protected override void TestShiftKeyState()

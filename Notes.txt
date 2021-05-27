@@ -279,11 +279,32 @@
  - BUG: In Console19, clicking on an object in the Left state machine doesn't update the properties window until you first click on an inactive window. 
    The properties window is displaying the Right designer (state machine), but the Actions window is displaying the left, and the left's tab is highlighted as if it's the active window.
    This has to be something related to the other problems we're having with early focus on a designer during startup.
-
  - BUG: Select a transition and a state and drag. Boom.
    FIXED
-
  - There's problem when a state already has two transition and you want to swap the trigger events on them (e.g., Yes and No). You need a 3rd event to act as a placeholder.  It prevents you from having multiple
    transitions with the same trigger.
-
  - You can't select multiple transitions and delete them. It'll only let you select one.
+ - There's no way to set the display colors of a region
+ - Sometimes a transition becomes non-response to mouse clicks or hovering
+ - Do all actions need to return a value for a state machine with return value?  Seems sorta restrictive.
+ - Can the type of a state machine be a struct?
+
+5/25/2021
+
+ - The IsChangeAllowed tests are a little bogus -- when would change not be allowed (during startup and something to do with editting in the text window). But in DeleteIcon, it'll yield a notimplementedexception.
+ - Right click should not clear the selection
+ - Should regions be members of layers?
+ - Switching layers should be logged, otherwise undoredo may get screwed up with icon maintenance
+   DONE
+ - getting a bunch of binding errors when we create a layer icon. I think it's because the initial datacontext is set to Layer, rather than LayerIcon, as it is later on
+ - when you remove an icon from the currently active layer, it should disappear
+ - Can't change name of a layer icon
+   FIXED
+ - Need to highlight the current layer
+   FIXED
+ - Having problems with keeping the LeftTopPositions up to date in the text buffer. It looked like I clicked on Layer2, then pressed F7. The serialization is taking place as if the current layer is 2, not 1.  But the positions reflect 1. Hmmm..
+   FIXED
+
+5/26/2021
+
+ - Consider keeping track of the current layer and zoom level and restoring them on startup

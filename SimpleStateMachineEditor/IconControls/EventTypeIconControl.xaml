@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SimpleStateMachineEditor.IconControls"
              mc:Ignorable="d" 
-             d:DesignHeight="61" d:DesignWidth="61">
+             d:DesignHeight="62" d:DesignWidth="62">
 
     <UserControl.Resources>
     

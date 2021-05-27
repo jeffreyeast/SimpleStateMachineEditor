@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio;
+using SimpleStateMachineEditor.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,7 +22,7 @@ namespace SimpleStateMachineEditor.IconControls
     /// <summary>
     /// Interaction logic for TransitionIconControl.xaml
     /// </summary>
-    public partial class TransitionIconControl : UserControl, INotifyPropertyChanged
+    public partial class TransitionIconControl : UserControl, INotifyPropertyChanged, ObjectModel.IRemovableObject
     {
         DesignerControl Designer;
         ViewModel.Transition Transition;
@@ -65,6 +66,7 @@ namespace SimpleStateMachineEditor.IconControls
         }
         Point _textVirtualCenterPoint;
         public event PropertyChangedEventHandler PropertyChanged;
+        public event RemovingHandler Removing;
 
 
 
@@ -77,7 +79,6 @@ namespace SimpleStateMachineEditor.IconControls
             InitializeComponent();
 
             Loaded += TransitionIconControl_LoadedHandler;
-            Unloaded += TransitionIconControl_UnloadedHandler;
         }
 
         private void DragEnter_Handler(object sender, DragEventArgs e)
@@ -240,6 +241,14 @@ namespace SimpleStateMachineEditor.IconControls
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private void OnRemoving()
+        {
+            Transition.EndpointChanged -= EndpointChangedHandler;
+            Transition.EndpointPositionChanged -= EndpointPositionChangedHandler;
+            TextGrid.SizeChanged -= TriggerEventName_SizeChangedHandler;
+            Removing?.Invoke(this);
+        }
+
         private void PositionText()
         {
             if (IsMeasureValid)
@@ -263,7 +272,7 @@ namespace SimpleStateMachineEditor.IconControls
 
         private void TransitionIconControl_LoadedHandler(object sender, RoutedEventArgs e)
         {
-
+            Loaded -= TransitionIconControl_LoadedHandler;
             Transition.EndpointChanged += EndpointChangedHandler;
             Transition.EndpointPositionChanged += EndpointPositionChangedHandler;
 
@@ -273,13 +282,6 @@ namespace SimpleStateMachineEditor.IconControls
             }
 
             TextGrid.SizeChanged += TriggerEventName_SizeChangedHandler;
-        }
-
-        private void TransitionIconControl_UnloadedHandler(object sender, RoutedEventArgs e)
-        {
-            Transition.EndpointChanged -= EndpointChangedHandler;
-            Transition.EndpointPositionChanged -= EndpointPositionChangedHandler;
-            TextGrid.SizeChanged -= TriggerEventName_SizeChangedHandler;
         }
 
         private void TriggerEventName_SizeChangedHandler(object sender, SizeChangedEventArgs e)
@@ -293,6 +295,12 @@ namespace SimpleStateMachineEditor.IconControls
             {
                 actionIcon.ListBoxItem = listBoxItem;
             }
+        }
+
+        public void Remove()
+        {
+            Debug.WriteLine($@">>>TransitionIconControl.Remove: {Transition.ToString()}");
+            OnRemoving();
         }
     }
 }

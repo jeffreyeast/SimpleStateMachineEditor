@@ -65,7 +65,13 @@
       <DependentUpon>ActionIconControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="IconControls\EditableStringConverter.cs" />
+    <Compile Include="IconControls\LayerIconControl.xaml.cs">
+      <DependentUpon>LayerIconControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Icons\ActionIcon.cs" />
+    <Compile Include="Icons\ISelectableIcon.cs" />
+    <Compile Include="Icons\LayerIcon.cs" />
+    <Compile Include="Icons\SelectableIcon.cs" />
     <Compile Include="Icons\ToolWindowActionIcon.cs" />
     <Compile Include="IconControls\ActionsToolWindow.cs" />
     <Compile Include="IconControls\ActionsToolWindowCommand.cs" />
@@ -109,6 +115,8 @@
     <Compile Include="ObjectModel\EditableString.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
     <Compile Include="ObjectModel\IRemovableObject.cs" />
+    <Compile Include="ObjectModel\LayerPosition.cs" />
+    <Compile Include="ObjectModel\LayeredPositionableObject.cs" />
     <Compile Include="SearchTask.cs" />
     <Compile Include="SimpleStateMachineEditorPackage1.cs">
       <AutoGen>True</AutoGen>
@@ -143,6 +151,7 @@
     <Compile Include="ViewModel\Action.cs" />
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
+    <Compile Include="ViewModel\Layer.cs" />
     <Compile Include="ViewModel\Region.cs" />
     <Compile Include="ViewModel\State.cs" />
     <Compile Include="ViewModel\StateMachine.cs" />
@@ -227,6 +236,10 @@
     <Page Include="IconControls\EventTypeIconControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\LayerIconControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="IconControls\RegionIconControl.xaml">
       <SubType>Designer</SubType>

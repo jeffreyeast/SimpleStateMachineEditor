@@ -106,7 +106,7 @@ namespace SimpleStateMachineEditor.Icons
             return newIconBody;
         }
 
-        public override void Drag(Point offset)
+        public override void Drag(Point mousePosition, Point offset)
         {
             Point startPoint;
             Point endPoint;

@@ -40,7 +40,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         positionableObject.LeftTopPosition = new Point(positionableObject.LeftTopPosition.X, lowestBottom - icon.Size.Height);
                     }
@@ -85,7 +85,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         furthestLeft = Math.Min(furthestLeft, positionableObject.LeftTopPosition.X);
                     }
@@ -95,7 +95,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         positionableObject.LeftTopPosition = new Point(furthestLeft, positionableObject.LeftTopPosition.Y);
                     }
@@ -125,7 +125,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         positionableObject.LeftTopPosition = new Point(furthestRight - icon.Size.Width, positionableObject.LeftTopPosition.Y);
                     }
@@ -145,7 +145,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         highestTop = Math.Min(highestTop, positionableObject.LeftTopPosition.Y);
                     }
@@ -155,7 +155,7 @@ namespace SimpleStateMachineEditor.Icons
 
                 foreach (IconBase icon in Designer.SelectedIcons.Values)
                 {
-                    if (icon.ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                    if (icon.ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                     {
                         positionableObject.LeftTopPosition = new Point(positionableObject.LeftTopPosition.X, highestTop);
                     }

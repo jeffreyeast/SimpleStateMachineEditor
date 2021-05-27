@@ -51,6 +51,8 @@ namespace SimpleStateMachineEditor
         public const int SetIconDisplayColorsComboListId = 0x1037;
         public const int ActionIconContextMenuId = 0x1038;
         public const int ActionIconContextMenuGroupId = 0x1039;
+        public const int LayerIconContextMenuId = 0x103A;
+        public const int LayerIconContextMenuGroupId = 0x103B;
         public const int AddEventTypeCommandId = 0x0100;
         public const int AddRegionCommandId = 0x0101;
         public const int AddStateCommandId = 0x0102;

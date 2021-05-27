@@ -23,6 +23,8 @@ namespace SimpleStateMachineEditor.ViewModel
         [Browsable(false)]
         public ObservableCollection<EventType> EventTypes { get; private set; }
         [Browsable(false)]
+        public ObservableCollection<Layer> Layers { get; private set; }
+        [Browsable(false)]
         public ObservableCollection<Region> Regions { get; private set; }
         [Browsable(false)]
         public ObservableCollection<State> States { get; private set; }
@@ -146,6 +148,8 @@ namespace SimpleStateMachineEditor.ViewModel
             Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
             EventTypes.CollectionChanged += CollectionChangedHandler;
+            Layers = new ObservableCollection<Layer>();
+            Layers.CollectionChanged += CollectionChangedHandler;
             Regions = new ObservableCollection<Region>();
             Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
@@ -162,6 +166,8 @@ namespace SimpleStateMachineEditor.ViewModel
             Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
             EventTypes.CollectionChanged += CollectionChangedHandler;
+            Layers = new ObservableCollection<Layer>();
+            Layers.CollectionChanged += CollectionChangedHandler;
             Regions = new ObservableCollection<Region>();
             Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
@@ -225,6 +231,10 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 e.DeserializeCleanup(Controller, this);
             }
+            foreach (Layer l in Layers)
+            {
+                l.DeserializeCleanup(controller, this);
+            }
             foreach (Region r in Regions)
             {
                 r.DeserializeCleanup(controller, this);
@@ -268,6 +278,10 @@ namespace SimpleStateMachineEditor.ViewModel
             }
             if (trackableObject == null)
             {
+                trackableObject = Layers.Where(l => l.Id == id).FirstOrDefault();
+            }
+            if (trackableObject == null)
+            {
                 if (id == Id)
                 {
                     trackableObject = this;
@@ -304,7 +318,16 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public void Serialize(TextWriter xmlStream)
         {
-            XmlSerializer serializer = new XmlSerializer(GetType());
+            XmlAttributes attributes = new XmlAttributes();
+            attributes.XmlIgnore = true;
+
+            XmlElementAttribute legacyLeftTopPosition = new XmlElementAttribute("LegacyLeftTopPosition", typeof(System.Windows.Point));
+            attributes.XmlElements.Add(legacyLeftTopPosition);
+
+            XmlAttributeOverrides overrides = new XmlAttributeOverrides();
+            overrides.Add(typeof(ObjectModel.LayeredPositionableObject), "LegacyLeftTopPosition", attributes);
+
+            XmlSerializer serializer = new XmlSerializer(GetType(), overrides);
             serializer.Serialize(xmlStream, this);
         }
 

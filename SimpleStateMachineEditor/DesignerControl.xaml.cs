@@ -29,19 +29,20 @@ namespace SimpleStateMachineEditor
     public partial class DesignerControl : UserControl, IOleCommandTarget
     {
         const string AddEventTypeDescription = "Add event type";
+        const string AddLayerDescription = "Add layer";
         const string AddRegionDescription = "Add region type";
         const string AddStateDescription = "Add state";
         const string AddTransitionDescription = "Add transition";
         const string ChangeTransitionDestinationDescription = "Change transition end state";
         const string ChangeTransitionSourceDescription = "Change transition start state";
 
-        internal ViewModel.ViewModelController Model { get; set; }
+        public ViewModel.ViewModelController Model { get; set; }
         ViewModel.StateMachine StateMachine;
         internal IVsUIShell UiShell;
         ITrackSelection SelectionTracker;
         internal List<ObjectModel.TrackableObject> SelectedObjects;
-        internal Dictionary<ObjectModel.TrackableObject, Icons.IDraggableIcon> SelectedIcons;
-        internal Dictionary<ObjectModel.TrackableObject, Icons.IDraggableIcon> LoadedIcons;
+        internal Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon> SelectedIcons;
+        internal Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon> LoadedIcons;
         Microsoft.VisualStudio.Shell.SelectionContainer SelectionContainer;
         public SimpleStateMachineEditorPackage Package;
         internal System.Windows.Point ContextMenuActivationLocation;
@@ -50,7 +51,31 @@ namespace SimpleStateMachineEditor
         IInputElement OldKeyboardFocus;
         public IconControls.OptionsPropertiesPage OptionsPage { get; private set; }
         IOleParentUndoUnit CurrentParentUndoUnit;
-
+        internal ViewModel.Layer DefaultLayer;
+        internal ViewModel.Layer CurrentLayer
+        {
+            get => _currentLayer;
+            set
+            {
+                if (_currentLayer != value)
+                {
+                    if (_currentLayer != null)
+                    {
+                        _currentLayer.IsCurrentLayer = false;
+                        Model.LogUndoAction(new UndoRedo.SetLayerActiveRecord(Model, this, _currentLayer, value));
+                    }
+                    _currentLayer = value;
+                    if (_currentLayer != null)
+                    {
+                        _currentLayer.IsCurrentLayer = true;
+                    }
+                    ClearSelectedItems();
+                    SetCurrentLayer();
+                    LoadViewModelIcons();
+                }
+            }
+        }
+        ViewModel.Layer _currentLayer;
 
 
 
@@ -62,8 +87,8 @@ namespace SimpleStateMachineEditor
             OptionsPage = Package.OptionsPropertiesPage;
             Model = model;
             SelectedObjects = new List<ObjectModel.TrackableObject>();
-            LoadedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.IDraggableIcon>();
-            SelectedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.IDraggableIcon>();
+            LoadedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon>();
+            SelectedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon>();
             SelectionContainer = new Microsoft.VisualStudio.Shell.SelectionContainer(true, false);
             SelectionContainer.SelectableObjects = SelectedObjects;
             SelectionContainer.SelectedObjects = SelectedObjects;
@@ -99,6 +124,21 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        private void AddLayer(object sender, RoutedEventArgs e)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, AddLayerDescription))
+                {
+                    ViewModel.Layer newLayer = ViewModel.Layer.Create(Model, OptionsPage, false);
+                    Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
+                    Model.StateMachine.Layers.Add(newLayer);
+                }
+
+                Model.StateMachine.EndChange();
+            }
+        }
+
         internal void AddRegion(Point? center = null)
         {
             if (Model.StateMachine.IsChangeAllowed)
@@ -125,13 +165,19 @@ namespace SimpleStateMachineEditor
             {
                 using (new UndoRedo.AtomicBlock(Model, AddStateDescription))
                 {
-                    ViewModel.State newState = ViewModel.State.Create(Model, OptionsPage);
+                    ViewModel.State newState = ViewModel.State.Create(Model, OptionsPage, CurrentLayer);
                     Model.LogUndoAction(new UndoRedo.DeleteStateRecord(Model, newState));
                     if (!center.HasValue)
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
                     }
                     newState.LeftTopPosition = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                    if (CurrentLayer != DefaultLayer)
+                    {
+                        newState.CurrentLayer = DefaultLayer;
+                        newState.LeftTopPosition = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                        newState.CurrentLayer = CurrentLayer;
+                    }
 
                     Model.StateMachine.States.Add(newState);
 
@@ -175,6 +221,26 @@ namespace SimpleStateMachineEditor
             if (SelectedIcons.Count > 1 && SelectedIcons.Values.First() is Icons.PositionableIcon positionableIcon)
             {
                 positionableIcon.Exec(ref PackageGuids.guidSimpleStateMachineEditorPackageCmdSet, commandId, 0, default(IntPtr), default(IntPtr));
+            }
+        }
+
+        private void BuildDefaultLayer()
+        {
+            using (new UndoRedo.DontLogBlock(Model))
+            {
+                if (Model.StateMachine.IsChangeAllowed)
+                {
+                    DefaultLayer = ViewModel.Layer.Create(Model, OptionsPage, true);
+                    Model.StateMachine.Layers.Add(DefaultLayer);
+
+                    foreach (ViewModel.State state in Model.StateMachine.States)
+                    {
+                        DefaultLayer.Members.Add(state);
+                        state.CurrentLayer = DefaultLayer;
+                    }
+
+                    Model.StateMachine.EndChange();
+                }
             }
         }
 
@@ -230,10 +296,10 @@ namespace SimpleStateMachineEditor
 
         internal void ClearSelectedItems()
         {
-            Icons.IDraggableIcon[] previouslySelectedIcons = SelectedIcons.Values.ToArray();
+            Icons.ISelectableIcon[] previouslySelectedIcons = SelectedIcons.Values.ToArray();
             SelectedObjects.Clear();
             SelectedIcons.Clear();
-            foreach (Icons.IDraggableIcon icon in previouslySelectedIcons)
+            foreach (Icons.ISelectableIcon icon in previouslySelectedIcons)
             {
                 icon.IsSelectedChanged();
             }
@@ -249,12 +315,15 @@ namespace SimpleStateMachineEditor
 
             foreach (var state in Model.StateMachine.States)
             {
-                Icons.StateIcon stateIcon = LoadedIcons[state] as Icons.StateIcon;
-                double distance = Utility.DrawingAids.Distance(dragTerminationPoint, stateIcon.CenterPosition);
-                if (distance < nearestDistance)
+                if (LoadedIcons.ContainsKey(state))
                 {
-                    nearestDistance = distance;
-                    nearestState = state;
+                    Icons.StateIcon stateIcon = LoadedIcons[state] as Icons.StateIcon;
+                    double distance = Utility.DrawingAids.Distance(dragTerminationPoint, stateIcon.CenterPosition);
+                    if (distance < nearestDistance)
+                    {
+                        nearestDistance = distance;
+                        nearestState = state;
+                    }
                 }
             }
 
@@ -305,7 +374,7 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void DeleteIcon(Icons.IDraggableIcon icon)
+        internal void DeleteIcon(Icons.ISelectableIcon icon)
         {
             using (new UndoRedo.AtomicBlock(Model, "Delete"))
             {
@@ -319,12 +388,18 @@ namespace SimpleStateMachineEditor
                     ViewModel.Transition[] transitions = state.TransitionsFrom.ToArray();
                     foreach (ViewModel.Transition t in transitions)
                     {
-                        DeleteIcon(LoadedIcons[t]);
+                        if (LoadedIcons.ContainsKey(t))
+                        {
+                            DeleteIcon(LoadedIcons[t]);
+                        }
                     }
                     transitions = state.TransitionsTo.ToArray();
                     foreach (ViewModel.Transition t in transitions)
                     {
-                        DeleteIcon(LoadedIcons[t]);
+                        if (LoadedIcons.ContainsKey(t))
+                        {
+                            DeleteIcon(LoadedIcons[t]);
+                        }
                     }
                     Model.StateMachine.States.Remove(state);
                     Model.LogUndoAction(new UndoRedo.AddStateRecord (Model, state));
@@ -342,6 +417,15 @@ namespace SimpleStateMachineEditor
                     Model.StateMachine.EventTypes.Remove(eventType);
                     Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
                     Model.StateMachine.EndChange();
+                }
+                else if (icon.ReferencedObject is ViewModel.Layer layer && Model.StateMachine.Layers.Contains(layer))
+                {
+                    if (!layer.IsDefaultLayer && Model.StateMachine.IsChangeAllowed)
+                    {
+                        Model.StateMachine.Layers.Remove(layer);
+                        Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
+                        Model.StateMachine.EndChange();
+                    }
                 }
                 else if (icon.ReferencedObject is ViewModel.Region region && Model.StateMachine.Regions.Contains(region) && Model.StateMachine.IsChangeAllowed)
                 {
@@ -364,7 +448,7 @@ namespace SimpleStateMachineEditor
 
         internal void DeleteSelectedIcons()
         {
-            Icons.IDraggableIcon[] pendingDeletes = SelectedIcons.Values.ToArray();
+            Icons.ISelectableIcon[] pendingDeletes = SelectedIcons.Values.ToArray();
 
             using (new UndoRedo.AtomicBlock(Model, "Delete"))
             {
@@ -375,7 +459,7 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void DeselectIcon(Icons.IDraggableIcon draggingIcon)
+        internal void DeselectIcon(Icons.ISelectableIcon draggingIcon)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -421,16 +505,6 @@ namespace SimpleStateMachineEditor
         internal bool DoIdle(IVsTextLines textBuffer)
         {
             return Model.DoIdle(textBuffer);
-        }
-
-        internal void DraggableIconMouseLeftButtonDownHandler(System.Windows.Point dragOrigin, Icons.IDraggableIcon icon)
-        {
-            MouseStateMachine.MouseLeftButtonDownOnIcon(dragOrigin, icon);
-        }
-
-        internal void DraggableIconMouseRightButtonUpHandler(System.Windows.Point dragOrigin, Icons.IDraggableIcon icon)
-        {
-            MouseStateMachine.MouseRightButtonUpOnIcon(dragOrigin, icon);
         }
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -504,7 +578,7 @@ namespace SimpleStateMachineEditor
                     // Check if this spot is available.
 
                     RectangleGeometry rectangle = new RectangleGeometry(new Rect(new Point(centerX - iconSize.Width / 2, centerY - iconSize.Height / 2), iconSize));
-                    IEnumerable<Icons.IDraggableIcon> occludedIcons = FindOccludedIcons(rectangle);
+                    IEnumerable<Icons.ISelectableIcon> occludedIcons = FindOccludedIcons(rectangle);
 
                     if (occludedIcons.Count() == 0)
                     {
@@ -523,12 +597,12 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal Icons.IDraggableIcon FindNearestSelectedIcon(Point referencePoint)
+        internal Icons.ISelectableIcon FindNearestSelectedIcon(Point referencePoint)
         {
             double nearestDistance = double.MaxValue;
-            Icons.IDraggableIcon nearestIcon = null;
+            Icons.ISelectableIcon nearestIcon = null;
 
-            foreach (Icons.IDraggableIcon icon in SelectedIcons.Values)
+            foreach (Icons.ISelectableIcon icon in SelectedIcons.Values)
             {
                 double distance = Utility.DrawingAids.Distance(referencePoint, icon.CenterPosition);
                 if (distance < nearestDistance)
@@ -545,28 +619,16 @@ namespace SimpleStateMachineEditor
         {
             //  We're going to use the point at the center of the subject icon for the test. Only icons of the designated type are returned.
 
-            List<T> occludedIcons = new List<T>();
-
-            VisualTreeHelper.HitTest(IconSurface, null, new HitTestResultCallback((HitTestResult result) =>
-            {
-            if (result.VisualHit is FrameworkElement fe && fe.DataContext is T icon && icon.GetType() == typeof(T) && !occludedIcons.Contains(icon))
-                {
-                    occludedIcons.Add(icon);
-                }
-                return HitTestResultBehavior.Continue;
-            }),
-                new PointHitTestParameters(targetPoint));
-
-            return occludedIcons;
+            return Utility.DrawingAids.FindOccludedIcons<T>(IconSurface, targetPoint);
         }
 
-        internal IEnumerable<Icons.IDraggableIcon> FindOccludedIcons(Geometry geometry)
+        internal IEnumerable<Icons.ISelectableIcon> FindOccludedIcons(Geometry geometry)
         {
-            List<Icons.IDraggableIcon> occludedIcons = new List<Icons.IDraggableIcon>();
+            List<Icons.ISelectableIcon> occludedIcons = new List<Icons.ISelectableIcon>();
 
             VisualTreeHelper.HitTest(IconSurface, null, new HitTestResultCallback((HitTestResult result) =>
             {
-                if (result.VisualHit is FrameworkElement fe && fe.DataContext is Icons.IDraggableIcon icon && !occludedIcons.Contains(icon))
+                if (result.VisualHit is FrameworkElement fe && fe.DataContext is Icons.ISelectableIcon icon && !occludedIcons.Contains(icon))
                 {
                     occludedIcons.Add(icon);
                 }
@@ -661,16 +723,28 @@ namespace SimpleStateMachineEditor
         private void LoadViewModelIcons()
         {
             IconSurface.Children.Clear();
-            LoadedIcons.Clear();
+            while (LoadedIcons.Values.Count > 0)
+            {
+                Icons.IconBase icon = LoadedIcons.Values.First() as Icons.IconBase;
+                LoadedIcons.Remove(icon.ReferencedObject);
+                icon.Remove();
+            }
 
             if (Model.StateMachine != null)
             {
-                foreach (var state in Model.StateMachine.States)
+                if (Model.StateMachine.Layers.Count == 0)
                 {
-                    Icons.StateIcon stateIcon = new Icons.StateIcon(this, state, null, state.LeftTopPosition);
-                    IconSurface.Children.Add(stateIcon.Body);
-                    LoadedIcons.Add(state, stateIcon);
+                    BuildDefaultLayer();
                 }
+
+                DefaultLayer = Model.StateMachine.Layers.Where(l => l.IsDefaultLayer).Single();
+                if (_currentLayer == null)
+                {
+                    _currentLayer = DefaultLayer;
+                    _currentLayer.IsCurrentLayer = true;
+                }
+
+                SetCurrentLayer();
 
                 foreach (var eventType in Model.StateMachine.EventTypes)
                 {
@@ -686,11 +760,39 @@ namespace SimpleStateMachineEditor
                     LoadedIcons.Add(region, regionIcon);
                 }
 
+                foreach (var state in Model.StateMachine.States)
+                {
+                    if (CurrentLayer.Members.Contains(state))
+                    {
+                        //  Legacy save files didn't have layers
+
+                        if (state.LayerPositions.Count == 0)
+                        {
+                            state.LeftTopPosition = state.LegacyLeftTopPosition;
+                        }
+                        else
+                        {
+                            // If we haven't established a position in this layer for this state, use it's position in the default layer
+
+                            if (!state.LayerPositions.Any(p => p.Layer == CurrentLayer))
+                            {
+                                state.LeftTopPosition = state.LayerPositions.Where(p => p.Layer == DefaultLayer).Single().Position;
+                            }
+                        }
+                        Icons.StateIcon stateIcon = new Icons.StateIcon(this, state, null, state.LeftTopPosition);
+                        IconSurface.Children.Add(stateIcon.Body);
+                        LoadedIcons.Add(state, stateIcon);
+                    }
+                }
+
                 foreach (var transition in Model.StateMachine.Transitions)
                 {
-                    Icons.TransitionIcon transitionIcon = new Icons.TransitionIcon(this, transition, null, null);
-                    IconSurface.Children.Add(transitionIcon.Body);
-                    LoadedIcons.Add(transition, transitionIcon);
+                    if (CurrentLayer.Members.Contains(transition.SourceState) && CurrentLayer.Members.Contains(transition.DestinationState))
+                    {
+                        Icons.TransitionIcon transitionIcon = new Icons.TransitionIcon(this, transition, null, null);
+                        IconSurface.Children.Add(transitionIcon.Body);
+                        LoadedIcons.Add(transition, transitionIcon);
+                    }
                 }
 
                 ReComputeHiddenIcons();
@@ -703,6 +805,16 @@ namespace SimpleStateMachineEditor
             {
                 MouseStateMachine.Cancel();
                 e.Handled = true;
+            }
+        }
+
+        private void LayerListBoxItemLoadedHandler(object sender, RoutedEventArgs e)
+        {
+            if (sender is ListBoxItem listBoxItem && listBoxItem.Content is ViewModel.Layer layer)
+            {
+                Icons.LayerIcon layerIcon = new Icons.LayerIcon(this, layer, null, null);
+                layerIcon.Body = Utility.DrawingAids.FindChildOfSpecificType<IconControls.LayerIconControl>(listBoxItem);
+                layerIcon.Body.DataContext = layerIcon;
             }
         }
 
@@ -783,7 +895,7 @@ namespace SimpleStateMachineEditor
         {
             //  First, collect the set of potentially hidden icons
 
-            HashSet<Icons.IDraggableIcon> hiddenIcons = new HashSet<Icons.IDraggableIcon>();
+            HashSet<Icons.ISelectableIcon> hiddenIcons = new HashSet<Icons.ISelectableIcon>();
 
             foreach (ViewModel.Region region in Model.StateMachine.Regions)
             {
@@ -791,7 +903,10 @@ namespace SimpleStateMachineEditor
                 {
                     foreach (ObjectModel.TrackableObject trackableObject in region.Members)
                     {
-                        hiddenIcons.Add(LoadedIcons[trackableObject]);
+                        if (LoadedIcons.ContainsKey(trackableObject))
+                        {
+                            hiddenIcons.Add(LoadedIcons[trackableObject]);
+                        }
                     }
                 }
             }
@@ -804,14 +919,17 @@ namespace SimpleStateMachineEditor
                 {
                     foreach (ObjectModel.TrackableObject trackableObject in region.Members)
                     {
-                        hiddenIcons.Remove(LoadedIcons[trackableObject]);
+                        if (LoadedIcons.ContainsKey(trackableObject))
+                        {
+                            hiddenIcons.Remove(LoadedIcons[trackableObject]);
+                        }
                     }
                 }
             }
 
             //  And finalize the icons
 
-            foreach (Icons.IDraggableIcon icon in LoadedIcons.Values)
+            foreach (Icons.ISelectableIcon icon in LoadedIcons.Values)
             {
                 if (icon is Icons.TransitionIcon transitionIcon && transitionIcon.ReferencedObject is ViewModel.Transition transition)
                 {
@@ -832,7 +950,12 @@ namespace SimpleStateMachineEditor
 
             if (Model.StateMachine != null)
             {
-                Icons.IDraggableIcon[] previouslySelectedIcons = SelectedIcons.Values.ToArray();
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer = Model.StateMachine.Find(CurrentLayer.Id) as ViewModel.Layer;
+                }
+
+                Icons.ISelectableIcon[] previouslySelectedIcons = SelectedIcons.Values.ToArray();
 
                 LoadViewModelIcons();
                 ReComputeHiddenIcons();
@@ -855,7 +978,7 @@ namespace SimpleStateMachineEditor
                             }
                         }
 
-                        if (trackableObject != null)
+                        if (trackableObject != null && LoadedIcons.ContainsKey(trackableObject))
                         {
                             SelectedObjects.Add(trackableObject);
                             SelectedIcons.Add(trackableObject, LoadedIcons[trackableObject]);
@@ -866,7 +989,7 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        private void RemoveIconSelection(Icons.IDraggableIcon icon)
+        private void RemoveIconSelection(Icons.ISelectableIcon icon)
         {
             if (SelectedIcons.ContainsKey(icon.ReferencedObject) && SelectedObjects.Count > 0)
             {
@@ -876,7 +999,17 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void SelectIcon(Icons.IDraggableIcon icon)
+        internal void SelectableIconMouseLeftButtonDownHandler(System.Windows.Point dragOrigin, Icons.ISelectableIcon icon)
+        {
+            MouseStateMachine.MouseLeftButtonDownOnIcon(dragOrigin, icon);
+        }
+
+        internal void SelectableIconMouseRightButtonUpHandler(System.Windows.Point dragOrigin, Icons.ISelectableIcon icon)
+        {
+            MouseStateMachine.MouseRightButtonUpOnIcon(dragOrigin, icon);
+        }
+
+        internal void SelectIcon(Icons.ISelectableIcon icon)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -894,17 +1027,25 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        internal void SelectLayer(ViewModel.Layer layer)
+        {
+            using (new UndoRedo.AtomicBlock(Model, "Set layer"))
+            {
+                CurrentLayer = layer;
+            }
+        }
+
         internal void SelectOccludedIcons(Point dragOrigin, Point mousePosition)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
             //  Collect the set of icons in the selection box
 
-            List<Icons.IDraggableIcon> selectedIcons = new List<Icons.IDraggableIcon>();
+            List<Icons.ISelectableIcon> selectedIcons = new List<Icons.ISelectableIcon>();
 
-            foreach (Icons.IDraggableIcon draggableIcon in LoadedIcons.Values)
+            foreach (Icons.ISelectableIcon draggableIcon in LoadedIcons.Values)
             {
-                if (draggableIcon.ReferencedObject is ObjectModel.PositionableObject positionableObject &&
+                if (draggableIcon.ReferencedObject is ObjectModel.IPositionableObject positionableObject &&
                     Utility.DrawingAids.Occludes(dragOrigin, mousePosition, positionableObject.LeftTopPosition, new Point((draggableIcon as Icons.IconBase).Right, (draggableIcon as Icons.IconBase).Bottom)))
                 {
                     selectedIcons.Add(draggableIcon);
@@ -924,7 +1065,7 @@ namespace SimpleStateMachineEditor
 
             if (selectedIcons.Count > 0)
             {
-                foreach (Icons.IDraggableIcon icon in selectedIcons)
+                foreach (Icons.ISelectableIcon icon in selectedIcons)
                 {
                     if (!SelectedIcons.ContainsKey(icon.ReferencedObject))
                     {
@@ -938,7 +1079,7 @@ namespace SimpleStateMachineEditor
             SelectionTracker.OnSelectChange(SelectionContainer);
         }
 
-        internal void SelectSingle(Icons.IDraggableIcon icon)
+        internal void SelectSingle(Icons.ISelectableIcon icon)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -964,6 +1105,11 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        internal void SelectStateMachineHandler(object sender, MouseButtonEventArgs e)
+        {
+            SelectStateMachine();
+        }
+
         internal void SetStartState(ViewModel.State state)
         {
             if (Model.StateMachine.IsChangeAllowed)
@@ -971,11 +1117,6 @@ namespace SimpleStateMachineEditor
                 Model.StateMachine.StartState = state;
                 Model.StateMachine.EndChange();
             }
-        }
-
-        internal void SelectStateMachineHandler(object sender, MouseButtonEventArgs e)
-        {
-            SelectStateMachine();
         }
 
         internal void ShowAllIcons()
@@ -996,9 +1137,9 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void SortSelectedIcons(Icons.IDraggableIcon draggableIcon)
+        internal void SortSelectedIcons(Icons.ISelectableIcon draggableIcon)
         {
-            Icons.IDraggableIcon[] selectedIcons = SelectedIcons.Values.Where(i => i.ReferencedObject is ObjectModel.NamedObject).OrderBy(i => (i.ReferencedObject as ObjectModel.NamedObject).Name).ToArray();
+            Icons.ISelectableIcon[] selectedIcons = SelectedIcons.Values.Where(i => i.ReferencedObject is ObjectModel.NamedObject).OrderBy(i => (i.ReferencedObject as ObjectModel.NamedObject).Name).ToArray();
             Point[] iconPositions = selectedIcons.Select(i => i.CenterPosition).OrderBy(p => p.Y).ThenBy(p => p.X).ToArray();
 
             if (Model.StateMachine.IsChangeAllowed)
@@ -1042,6 +1183,38 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        private void StateMachineLayersCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ViewModel.Layer newLayer in e.NewItems)
+                    {
+                        Icons.LayerIcon layerIcon = new Icons.LayerIcon(this, newLayer, null, null);
+                        IconSurface.Children.Add(layerIcon.Body);
+                        LoadedIcons.Add(newLayer, layerIcon);
+
+                        ClearSelectedItems();
+                        SelectIcon(layerIcon);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ViewModel.Layer layer in e.OldItems)
+                    {
+                        if (layer == CurrentLayer)
+                        {
+                            CurrentLayer = DefaultLayer;
+                        }
+                        RemoveIconSelection(LoadedIcons[layer]);
+                        IconSurface.Children.Remove(LoadedIcons[layer].Body);
+                        LoadedIcons.Remove(layer);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void StateMachineRegionsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -1075,6 +1248,22 @@ namespace SimpleStateMachineEditor
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+                    using (new UndoRedo.AtomicBlock(Model, "Add states to layer"))
+                    {
+                        if (Model.StateMachine.IsChangeAllowed)
+                        {
+                            foreach (ViewModel.State state in e.NewItems)
+                            {
+                                DefaultLayer.Members.Add(state);
+                                if (CurrentLayer != DefaultLayer)
+                                {
+                                    CurrentLayer.Members.Add(state);
+                                }
+                            }
+                            Model.StateMachine.EndChange();
+                        }
+                    }
+
                     foreach (ViewModel.State newState in e.NewItems)
                     {
                         Icons.StateIcon stateIcon = new Icons.StateIcon(this, newState, null, newState.LeftTopPosition);
@@ -1086,6 +1275,21 @@ namespace SimpleStateMachineEditor
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
+                    using (new UndoRedo.AtomicBlock(Model, "Remove states from layer"))
+                    {
+                        if (Model.StateMachine.IsChangeAllowed)
+                        {
+                            foreach (ViewModel.State state in e.OldItems)
+                            {
+                                foreach (ViewModel.Layer layer in Model.StateMachine.Layers)
+                                {
+                                    layer.Members.Remove(state);
+                                }
+                            }
+                            Model.StateMachine.EndChange();
+                        }
+                    }
+
                     foreach (ViewModel.State state in e.OldItems)
                     {
                         RemoveIconSelection(LoadedIcons[state]);
@@ -1116,9 +1320,12 @@ namespace SimpleStateMachineEditor
                 case NotifyCollectionChangedAction.Remove:
                     foreach (ViewModel.Transition transition in e.OldItems)
                     {
-                        RemoveIconSelection(LoadedIcons[transition]);
-                        IconSurface.Children.Remove(LoadedIcons[transition].Body);
-                        LoadedIcons.Remove(transition);
+                        if (LoadedIcons.ContainsKey(transition))
+                        {
+                            RemoveIconSelection(LoadedIcons[transition]);
+                            IconSurface.Children.Remove(LoadedIcons[transition].Body);
+                            LoadedIcons.Remove(transition);
+                        }
                     }
                     break;
                 default:
@@ -1144,6 +1351,14 @@ namespace SimpleStateMachineEditor
                 double currentZoomFactor = ZoomSlider.Value;
                 double newZoomFactor = Math.Max(ZoomSlider.Minimum, Math.Min(ZoomSlider.Maximum, currentZoomFactor + percentChange / 100));
                 ZoomSlider.Value = newZoomFactor;
+            }
+        }
+
+        private void SetCurrentLayer()
+        {
+            foreach (ViewModel.State state in Model.StateMachine.States)
+            {
+                state.CurrentLayer = CurrentLayer;
             }
         }
     }

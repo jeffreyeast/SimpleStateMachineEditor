@@ -20,7 +20,7 @@ namespace SimpleStateMachineEditor.ViewModel
     {
         internal string FileName { get; set; }
         internal int ReferenceCount { get; set; }
-        internal StateMachine StateMachine 
+        public StateMachine StateMachine 
         {
             get => _stateMachine;
             set

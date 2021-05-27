@@ -149,7 +149,8 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ViewModel.Transition transition in Action.Controller.StateMachine.Transitions)
             {
-                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
+                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null &&
+                    ToolWindow.Designer.LoadedIcons.ContainsKey(transition) && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
                 {
                     ActionIcon icon = transitionIcon.ActionIcons.Where(actionIcon => actionIcon.ReferencedObject == Action).Single();
                     icon.ActionIsHighlighted = true;
@@ -161,7 +162,8 @@ namespace SimpleStateMachineEditor.Icons
         {
             foreach (ViewModel.Transition transition in Action.Controller.StateMachine.Transitions)
             {
-                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
+                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null &&
+                    ToolWindow.Designer.LoadedIcons.ContainsKey(transition) && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
                 {
                     ActionIcon icon = transitionIcon.ActionIcons.Where(actionIcon => actionIcon.ReferencedObject == Action).Single();
                     icon.ActionIsHighlighted = false;

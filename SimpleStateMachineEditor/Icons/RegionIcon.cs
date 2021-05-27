@@ -18,7 +18,7 @@ namespace SimpleStateMachineEditor.Icons
     internal class RegionIcon : PositionableIcon
     {
         public override int ContextMenuId => PackageIds.RegionIconContextMenuId;
-        internal readonly static Size IconSize = new Size(61, 61);
+        internal readonly static Size IconSize = new Size(62, 62);
 
 
         internal RegionIcon(DesignerControl designer, ViewModel.Region region, System.Windows.Point? center, System.Windows.Point? leftTop) :
@@ -120,8 +120,11 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ObjectModel.TrackableObject trackableObject in (ReferencedObject as ViewModel.Region).Members)
             {
-                IDraggableIcon draggableIcon = Designer.LoadedIcons[trackableObject];
-                draggableIcon.HighlightedRegion = ReferencedObject as ViewModel.Region;
+                if (Designer.LoadedIcons.ContainsKey(trackableObject))
+                {
+                    ISelectableIcon selectableIcon = Designer.LoadedIcons[trackableObject];
+                    selectableIcon.HighlightedRegion = ReferencedObject as ViewModel.Region;
+                }
             }
         }
 
@@ -131,8 +134,11 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ObjectModel.TrackableObject trackableObject in (ReferencedObject as ViewModel.Region).Members)
             {
-                IDraggableIcon draggableIcon = Designer.LoadedIcons[trackableObject];
-                draggableIcon.HighlightedRegion = null;
+                if (Designer.LoadedIcons.ContainsKey(trackableObject))
+                {
+                    ISelectableIcon selectableIcon = Designer.LoadedIcons[trackableObject];
+                    selectableIcon.HighlightedRegion = null;
+                }
             }
         }
 

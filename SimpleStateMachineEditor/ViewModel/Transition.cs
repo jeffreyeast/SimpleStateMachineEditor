@@ -470,5 +470,10 @@ namespace SimpleStateMachineEditor.ViewModel
                     break;
             }
         }
+
+        public override string ToString()
+        {
+            return $@"{(SourceState?.Name ?? "<null>")}<({(TriggerEvent?.Name ?? "<null>")})>{(DestinationState?.Name ?? "<null>")}";
+        }
     }
 }

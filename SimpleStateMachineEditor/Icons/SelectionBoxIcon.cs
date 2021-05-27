@@ -44,7 +44,7 @@ namespace SimpleStateMachineEditor.Icons
             Designer.IconSurface.Children.Remove(DraggableShape);
         }
 
-        public override void Drag(Point offset)
+        public override void Drag(Point mousePosition, Point offset)
         {
             PathFigure pathFigure = new PathFigure() { StartPoint = Designer.MouseStateMachine.DragOrigin, };
             pathFigure.Segments.Add(new LineSegment() { Point = new Point(Designer.MouseStateMachine.DragOrigin.X, Designer.MouseStateMachine.DragOrigin.Y + offset.Y ), });

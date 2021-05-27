@@ -12,41 +12,28 @@ using System.Xml.Serialization;
 namespace SimpleStateMachineEditor.ViewModel
 {
     //++
-    //      The Region class represents a state.
+    //      The Layer class represents a set of objects that are viewed and editted together
     //--
-    public class Region : ObjectModel.PositionableObject
+    public class Layer : ObjectModel.NamedObject
     {
-        [DisplayName("Display colors")]
-        [Description("Foreground and background colors")]
-        public Utility.DisplayColors DisplayColors
-        {
-            get => _displayColors;
-            set
-            {
-                if ((_displayColors == null ^ value == null) ||  !_displayColors.Equals(value))
-                {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "DisplayColors", _displayColors?.ToString()));
-                    _displayColors = value;
-                    OnPropertyChanged("DisplayColors");
-                }
-            }
-        }
-        Utility.DisplayColors _displayColors;
+        [ReadOnly(true)]
+        public bool IsDefaultLayer { get; set; }
 
-        [Description("Icons in this region are not shown on the display")]
-        public bool IsHidden
+        [Browsable(false)]
+        [XmlIgnore]
+        public bool IsCurrentLayer
         {
-            get => _isHidden;
+            get => _isCurrentLayer;
             set
             {
-                if (_isHidden != value)
+                if (_isCurrentLayer != value)
                 {
-                    _isHidden = value;
-                    OnPropertyChanged("IsHidden");
+                    _isCurrentLayer = value;
+                    OnPropertyChanged("IsCurrentLayer");
                 }
             }
         }
-        bool _isHidden;
+        bool _isCurrentLayer;
 
         [Browsable(false)]
         [XmlIgnore]
@@ -93,9 +80,8 @@ namespace SimpleStateMachineEditor.ViewModel
 
         //  Constructor for use by serialization ONLY
 
-        public Region()
+        public Layer()
         {
-            DisplayColors = Utility.BrushesToList.DisplayColors.Where(dc => dc.Foreground.ColorName == "White" && dc.Background.ColorName == "OrangeRed").Single();
             Members = new ObservableCollection<TrackableObject>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = new List<int>();
@@ -104,9 +90,9 @@ namespace SimpleStateMachineEditor.ViewModel
 
         //  Constructor for new object creation through commands
 
-        private Region(ViewModelController controller, string rootName) : base(controller, controller.StateMachine.Regions, rootName)
+        private Layer(ViewModelController controller, string rootName, bool isDefaultLayer) : base(controller, controller.StateMachine.Layers, rootName)
         {
-            DisplayColors = Utility.BrushesToList.DisplayColors.Where(dc => dc.Foreground.ColorName == "White" && dc.Background.ColorName == "OrangeRed").Single();
+            IsDefaultLayer = isDefaultLayer;
             Members = new ObservableCollection<TrackableObject>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
@@ -115,12 +101,10 @@ namespace SimpleStateMachineEditor.ViewModel
 
         //  Constructor for use by Redo
 
-        internal Region(ViewModel.ViewModelController controller, UndoRedo.AddRegionRecord redoRecord) : base(controller, redoRecord)
+        internal Layer(ViewModel.ViewModelController controller, UndoRedo.AddLayerRecord redoRecord) : base(controller, redoRecord)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                DisplayColors = redoRecord.DisplayColors;
-                IsHidden = redoRecord.IsHidden;
                 Members = new ObservableCollection<TrackableObject>();
                 Members.CollectionChanged += Members_CollectionChanged;
                 OldMembers = new List<string>();
@@ -133,11 +117,11 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        internal static Region Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage)
+        internal static Layer Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, bool isDefaultLayer)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                return new Region(controller, optionsPage.RegionRootName);
+                return new Layer(controller, optionsPage.LayerRootName, isDefaultLayer);
             }
         }
 
@@ -162,24 +146,6 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 case "Members":
                     value = Members.Select(m => m.Id.ToString()).ToArray<string>();
-                    break;
-
-                default:
-                    base.GetProperty(propertyName, out value);
-                    break;
-            }
-        }
-
-        internal override void GetProperty(string propertyName, out string value)
-        {
-            switch (propertyName)
-            {
-                case "DisplayColors":
-                    value = DisplayColors.ToString();
-                    break;
-
-                case "IsHidden":
-                    value = IsHidden.ToString();
                     break;
 
                 default:
@@ -238,22 +204,6 @@ namespace SimpleStateMachineEditor.ViewModel
             base.OnRemoving();
         }
 
-        internal override void SetProperty(string propertyName, string newValue)
-        {
-            switch (propertyName)
-            {
-                case "DisplayColors":
-                    DisplayColors = Utility.DisplayColors.Parse(newValue);
-                    break;
-                case "IsHidden":
-                    IsHidden = bool.Parse(newValue);
-                    break;
-                default:
-                    base.SetProperty(propertyName, newValue);
-                    break;
-            }
-        }
-
         internal override void SetProperty(string propertyName, IEnumerable<string> newValue)
         {
             switch (propertyName)
@@ -275,6 +225,7 @@ namespace SimpleStateMachineEditor.ViewModel
                             Members.Add(member);
                         }
                     }
+
                     if (IsChangeAllowed)
                     {
                         Controller?.LogUndoAction(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "Members", savedOldMembers));
@@ -288,7 +239,7 @@ namespace SimpleStateMachineEditor.ViewModel
         }
 
         /// <summary>
-        /// Invoked when an icon is "dropped" onto a region icon.
+        /// Invoked when an icon is "dropped" onto a layer icon.
         /// </summary>
         /// <param name="referencedObject"></param>
         internal void ToggleMember(TrackableObject member)

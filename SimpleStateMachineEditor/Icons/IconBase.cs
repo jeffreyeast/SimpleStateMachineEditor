@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
+using SimpleStateMachineEditor.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ using System.Windows.Threading;
 
 namespace SimpleStateMachineEditor.Icons
 {
-    internal abstract class IconBase : INotifyPropertyChanged, IOleCommandTarget
+    internal abstract class IconBase : INotifyPropertyChanged, IOleCommandTarget, ObjectModel.IRemovableObject
     {
         internal const int HoverDelay = 250;     // Milliseconds
 
@@ -78,7 +79,23 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
         bool _isHovering;
+
+        public bool IsLayerHighlighted
+        {
+            get => _isLayerHighlighted;
+            set
+            {
+                if (_isLayerHighlighted != value)
+                {
+                    _isLayerHighlighted = value;
+                    OnPropertyChanged("IsLayerHighlighted");
+                }
+            }
+        }
+        bool _isLayerHighlighted;
+
         public event PropertyChangedEventHandler PropertyChanged;
+        public event RemovingHandler Removing;
 
 
 
@@ -86,6 +103,10 @@ namespace SimpleStateMachineEditor.Icons
         {
             Designer = designer;
             ReferencedObject = referencedObject;
+            if (ReferencedObject != null)
+            {
+                ReferencedObject.Removing += ReferencedObjectIsBeingRemovedHandler;
+            }
             if (size.HasValue)
             {
                 Size = size.Value;
@@ -101,14 +122,14 @@ namespace SimpleStateMachineEditor.Icons
 
         }
 
-        public double Bottom => ReferencedObject is ObjectModel.PositionableObject positionableObject ? positionableObject.LeftTopPosition.Y + Size.Height : throw new InvalidOperationException();
+        public double Bottom => ReferencedObject is ObjectModel.IPositionableObject positionableObject ? positionableObject.LeftTopPosition.Y + Size.Height : throw new InvalidOperationException();
 
         public virtual Point CenterPosition
         {
-            get => ReferencedObject is ObjectModel.PositionableObject positionableObject ? new Point(positionableObject.LeftTopPosition.X + Size.Width / 2, positionableObject.LeftTopPosition.Y + Size.Height / 2) : throw new InvalidOperationException();
+            get => ReferencedObject is ObjectModel.IPositionableObject positionableObject ? new Point(positionableObject.LeftTopPosition.X + Size.Width / 2, positionableObject.LeftTopPosition.Y + Size.Height / 2) : throw new InvalidOperationException();
             set
             {
-                if (ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                if (ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                 {
                     positionableObject.LeftTopPosition = new System.Windows.Point(Math.Max(0, value.X - Size.Width / 2), Math.Max(0, value.Y - Size.Height / 2));
                 }
@@ -155,7 +176,7 @@ namespace SimpleStateMachineEditor.Icons
 
         protected virtual void OnBodyLoaded(object sender, RoutedEventArgs e)
         {
-            Body.Unloaded += OnBodyUnloaded;
+            Body.Loaded -= OnBodyLoaded;
             Body.MouseEnter += MouseEnterHandler;
             Body.MouseLeave += MouseLeaveHandler;
             ReferencedObject.PropertyChanged += ReferencedObject_PropertyChangedHandler;
@@ -164,18 +185,10 @@ namespace SimpleStateMachineEditor.Icons
             MouseHoverTimer.Interval = new TimeSpan(0, 0, 0, 0, HoverDelay);
             MouseHoverTimer.Tick += OnHover;
 
-            if (ReferencedObject is ObjectModel.PositionableObject positionableObject)
+            if (ReferencedObject is ObjectModel.IPositionableObject positionableObject)
             {
                 Body.Margin = new Thickness(positionableObject.LeftTopPosition.X, positionableObject.LeftTopPosition.Y, 0, 0);
             }
-        }
-
-        protected virtual void OnBodyUnloaded(object sender, RoutedEventArgs e)
-        {
-            Body.Unloaded -= OnBodyUnloaded;
-            Body.MouseEnter -= MouseEnterHandler;
-            Body.MouseLeave -= MouseLeaveHandler;
-            ReferencedObject.PropertyChanged -= ReferencedObject_PropertyChangedHandler;
         }
 
         protected virtual void OnHover(object sender, EventArgs e)
@@ -191,6 +204,32 @@ namespace SimpleStateMachineEditor.Icons
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        protected virtual void OnRemoving()
+        {
+            if (ReferencedObject != null)
+            {
+                ReferencedObject.Removing -= ReferencedObjectIsBeingRemovedHandler;
+            }
+            if (Body != null && Body.IsLoaded)
+            {
+                Body.MouseEnter -= MouseEnterHandler;
+                Body.MouseLeave -= MouseLeaveHandler;
+                ReferencedObject.PropertyChanged -= ReferencedObject_PropertyChangedHandler;
+            }
+
+            if (Body is ObjectModel.IRemovableObject removableBody)
+            {
+                removableBody.Remove();
+            }
+
+            if (DraggableShape is ObjectModel.IRemovableObject removableDraggableShape)
+            {
+                removableDraggableShape.Remove();
+            }
+
+            Removing?.Invoke(this);
+        }
+
         public virtual int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
             if (pguidCmdGroup == PackageGuids.guidSimpleStateMachineEditorPackageCmdSet)
@@ -203,13 +242,13 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
 
-        public double Right => ReferencedObject is ObjectModel.PositionableObject positionableObject ? positionableObject.LeftTopPosition.X + Size.Width : throw new InvalidOperationException();
+        public double Right => ReferencedObject is ObjectModel.IPositionableObject positionableObject ? positionableObject.LeftTopPosition.X + Size.Width : throw new InvalidOperationException();
 
         private void ReferencedObject_PropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "LeftTopPosition")
             {
-                if (ReferencedObject is ObjectModel.PositionableObject positionableObject)
+                if (ReferencedObject is ObjectModel.IPositionableObject positionableObject)
                 {
                     Body.Margin = new Thickness(positionableObject.LeftTopPosition.X, positionableObject.LeftTopPosition.Y, 0, 0);
                 }
@@ -218,6 +257,17 @@ namespace SimpleStateMachineEditor.Icons
                     throw new InvalidProgramException();
                 }
             }
+        }
+
+        private void ReferencedObjectIsBeingRemovedHandler(IRemovableObject item)
+        {
+            Remove();
+        }
+
+        public virtual void Remove()
+        {
+            Debug.WriteLine($@">>>IconBase.Remove {GetType().ToString()}: {ReferencedObject?.ToString() ?? "<unknown>"}");
+            OnRemoving();
         }
 
         public override string ToString()

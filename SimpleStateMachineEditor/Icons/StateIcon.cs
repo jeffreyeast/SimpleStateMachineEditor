@@ -9,22 +9,63 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace SimpleStateMachineEditor.Icons
 {
     internal class StateIcon : PositionableIcon
     {
         public override int ContextMenuId => PackageIds.StateIconContextMenuId;
-        internal readonly static Size IconSize = new Size(61, 61);
+        internal readonly static Size IconSize = new Size(62, 62);
         internal readonly static double Radius = 30;
 
-
+        LayerIcon CandidateLayerIcon;
 
 
         internal StateIcon(DesignerControl designer, ViewModel.State state, System.Windows.Point? center, System.Windows.Point? leftTop) :
             base(designer, state, center ?? new System.Windows.Point(Math.Max(0, leftTop.Value.X + IconSize.Width / 2), Math.Max(0, leftTop.Value.Y + IconSize.Width / 2)), IconSize)
         {
         }
+
+        public override void CommitDrag(Point dragTerminationPoint, Point offset)
+        {
+            //  This is really messy. We're doing the same thing with region icons in IconBase.  This ought to be generalized somehow.
+
+            //  If the drag ended over a layer icon, then perform a layer membership operation
+
+            IEnumerable<LayerIcon> occludedLayerIcons = Utility.DrawingAids.FindOccludedIcons<LayerIcon>(Designer.LayerIconsListBox,
+                                                                                                         Utility.DrawingAids.NormalizePoint(Designer.LayerIconsListBox, Designer.IconSurface, dragTerminationPoint));
+            if (occludedLayerIcons.Count() > 0)
+            {
+                CancelDrag();
+                LayerIcon layerIcon = occludedLayerIcons.First();
+                ViewModel.Layer layer = layerIcon.ReferencedObject as ViewModel.Layer;
+
+                using (new UndoRedo.AtomicBlock(Designer.Model, "Modify layer membership"))
+                {
+                    if (Designer.Model.StateMachine.IsChangeAllowed)
+                    {
+                        if (layer.Members.Contains(ReferencedObject))
+                        {
+                            if (!layer.IsDefaultLayer)
+                            {
+                                layer.Members.Remove(ReferencedObject);
+                            }
+                        }
+                        else
+                        {
+                            layer.Members.Add(ReferencedObject);
+                        }
+                        Designer.Model.StateMachine.EndChange();
+                    }
+                }
+            }
+            else
+            {
+                base.CommitDrag(dragTerminationPoint, offset);
+            }
+        }
+
 
         protected override FrameworkElement CreateDraggableShape()
         {
@@ -42,6 +83,40 @@ namespace SimpleStateMachineEditor.Icons
                 DataContext = this,
                 Style = Designer.Resources["StateIconStyle"] as Style,
             };
+        }
+
+        public override void Drag(Point mousePosition, Point offset)
+        {
+            base.Drag(mousePosition, offset);
+            if (CandidateLayerIcon != null)
+            {
+                CandidateLayerIcon.MembershipAction = LayerIcon.MembershipActions.None;
+                CandidateLayerIcon = null;
+            }
+
+            // If the mouse is over a layer icon, let the user know
+
+            IEnumerable<LayerIcon> occludedLayerIcons = Utility.DrawingAids.FindOccludedIcons<LayerIcon>(Designer.LayerIconsListBox, 
+                                                                                                         Utility.DrawingAids.NormalizePoint(Designer.LayerIconsListBox, Designer.IconSurface, mousePosition));
+
+            if (occludedLayerIcons.Count() == 1)
+            {
+                LayerIcon layerIcon = occludedLayerIcons.First();
+                ViewModel.Layer layer = layerIcon.ReferencedObject as ViewModel.Layer;
+
+                if (layer.Members.Contains(ReferencedObject))
+                {
+                    if (!layer.IsDefaultLayer)
+                    {
+                        layerIcon.MembershipAction = LayerIcon.MembershipActions.Remove;
+                    }
+                }
+                else
+                {
+                    layerIcon.MembershipAction = LayerIcon.MembershipActions.Add;
+                }
+                CandidateLayerIcon = layerIcon;
+            }
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -72,13 +147,26 @@ namespace SimpleStateMachineEditor.Icons
             return base.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
+        protected override void OnEndDrag()
+        {
+            base.OnEndDrag();
+            if (CandidateLayerIcon != null)
+            {
+                CandidateLayerIcon.MembershipAction = LayerIcon.MembershipActions.None;
+                CandidateLayerIcon = null;
+            }
+        }
+
         protected override void OnHover(object sender, EventArgs e)
         {
             base.OnHover(sender, e);
 
             foreach (ViewModel.Transition transition in (ReferencedObject as ViewModel.State).TransitionsFrom)
             {
-                (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = true;
+                if (Designer.LoadedIcons.ContainsKey(transition))
+                {
+                    (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = true;
+                }
             }
 
             foreach (ViewModel.EventType eventType in Designer.Model.StateMachine.EventTypes)
@@ -93,13 +181,21 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ViewModel.Transition transition in (ReferencedObject as ViewModel.State).TransitionsFrom)
             {
-                (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = false;
+                if (Designer.LoadedIcons.ContainsKey(transition))
+                {
+                    (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = false;
+                }
             }
 
             foreach (ViewModel.EventType eventType in Designer.Model.StateMachine.EventTypes)
             {
                 (Designer.LoadedIcons[eventType] as EventTypeIcon).TriggerUsageState = EventTypeIcon.DropStates.Disabled;
             }
+        }
+
+        protected override void OnStartDrag()
+        {
+            base.OnStartDrag();
         }
 
         public override int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SimpleStateMachineEditor"
+             xmlns:iconcontrols="clr-namespace:SimpleStateMachineEditor.IconControls"
              mc:Ignorable="d" 
              AllowDrop="True"
              Focusable="True"
@@ -40,6 +41,9 @@
                 <TextBlock Grid.Row="1" Text="{Binding Path=ReferencedObject.Description}" FontWeight="Light" Margin="15,0,0,0"/>
             </Grid>
         </ControlTemplate>
+
+        <Style x:Key="LayerIconStyle" TargetType="UserControl">
+        </Style>
 
         <Style x:Key="NameStyle" TargetType="Label">
             <Setter Property="Background" Value="Transparent"/>
@@ -87,6 +91,9 @@
                 <DataTrigger Binding="{Binding Path=IsRegionHighlighted}" Value="True">
                     <Setter Property="Background" Value="{Binding Path=HighlightedRegion.DisplayColors.Background.Brush}" />
                 </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsLayerHighlighted}" Value="True">
+                    <Setter Property="Background" Value="Gray" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -108,13 +115,23 @@
         </Style>
 
     </UserControl.Resources>
-    
-    <Grid>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <Grid x:Name="IconSurface" Background="{x:Static SystemColors.WindowBrush}" Focusable="True"
+
+    <Grid Background="{x:Static SystemColors.WindowBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer x:Name="IconSurfaceScrollViewer" Grid.ColumnSpan="3" Grid.RowSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="IconSurface" Focusable="True" Background="Transparent"
+                MouseRightButtonUp="MouseRightButtonUpHandler"
                 MouseLeftButtonDown="MouseLeftButtonDownHandler"
-                MouseLeftButtonUp="MouseLeftButtonUpHandler"
-                MouseRightButtonUp="MouseRightButtonUpHandler">
+                MouseLeftButtonUp="MouseLeftButtonUpHandler">
                 <Grid.LayoutTransform>
                     <ScaleTransform CenterX="0" CenterY="0" 
                         ScaleX="{Binding ElementName=ZoomSlider, Path=Value}"
@@ -123,14 +140,53 @@
             </Grid>
         </ScrollViewer>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+        <Border Grid.Column="1" Grid.Row="1" Panel.ZIndex="0" BorderBrush="LightGray" BorderThickness="1" Padding="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" >
+            <StackPanel  Orientation="Horizontal">
+                <ListBox x:Name="LayerIconsListBox" BorderThickness="0"
+                    ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:DesignerControl}, Path=Model.StateMachine.Layers}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <iconcontrols:LayerIconControl/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <EventSetter Event="Loaded" Handler="LayerListBoxItemLoadedHandler"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+
+                <Button Background="{x:Static SystemColors.WindowBrush}" BorderBrush="Black" BorderThickness="1" Height="30" Width="30" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddLayer">
+                    <Button.Content>
+                        <Rectangle Width="30" Height="30" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                            <Rectangle.Fill>
+                                <VisualBrush>
+                                    <VisualBrush.Visual>
+                                        <StackPanel>
+                                            <Label Content="+"/>
+                                        </StackPanel>
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 MouseWheel="ZoomSliderMouseWheel">
-            <Label Content="10%"/>
+
+        <Label Content="10%"/>
             <Slider x:Name="ZoomSlider" Width="100" Minimum="0.1" Maximum="2" Value="1"
                 ToolTip="Zoom"
                 MouseDoubleClick="ZoomSliderDoubleClickHandler"/>
             <Label Content="200%"/>
         </StackPanel>
-
     </Grid>
 </UserControl>

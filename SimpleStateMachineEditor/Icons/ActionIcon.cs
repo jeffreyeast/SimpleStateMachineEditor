@@ -122,7 +122,7 @@ namespace SimpleStateMachineEditor.Icons
             return null;
         }
 
-        public override void Drag(Point offset)
+        public override void Drag(Point mousePosition, Point offset)
         {
             Point center = CenterPosition;
             Size iconSize = Size;
@@ -134,7 +134,7 @@ namespace SimpleStateMachineEditor.Icons
         public override void StartDrag()
         {
             Designer.IconSurface.Children.Add(DraggableShape);
-            Drag(new Point(0, 0));
+            Drag(new Point (0, 0), new Point(0, 0));
         }
 
     }

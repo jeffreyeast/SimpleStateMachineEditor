@@ -91,6 +91,25 @@ namespace SimpleStateMachineEditor.Utility
             return null;
         }
 
+        internal static IEnumerable<T> FindOccludedIcons<T>(Visual root, Point targetPoint)
+        {
+            //  We're going to use the point at the center of the subject icon for the test. Only icons of the designated type are returned.
+
+            List<T> occludedIcons = new List<T>();
+
+            VisualTreeHelper.HitTest(root, null, new HitTestResultCallback((HitTestResult result) =>
+            {
+                if (result.VisualHit is FrameworkElement fe && fe.DataContext is T icon && icon.GetType() == typeof(T) && !occludedIcons.Contains(icon))
+                {
+                    occludedIcons.Add(icon);
+                }
+                return HitTestResultBehavior.Continue;
+            }),
+                new PointHitTestParameters(targetPoint));
+
+            return occludedIcons;
+        }
+
         public static double LengthOfFigure(PathFigure figure)
         {
             double length = 0;

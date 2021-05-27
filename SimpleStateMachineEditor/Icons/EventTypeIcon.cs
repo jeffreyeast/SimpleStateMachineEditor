@@ -15,7 +15,7 @@ namespace SimpleStateMachineEditor.Icons
     internal class EventTypeIcon : PositionableIcon
     {
         public override int ContextMenuId => PackageIds.EventTypeIconContextMenuId;
-        internal readonly static Size IconSize = new Size(61, 61);
+        internal readonly static Size IconSize = new Size(62, 62);
 
 
         public enum DropStates
@@ -135,9 +135,9 @@ namespace SimpleStateMachineEditor.Icons
             }
         }
 
-        public override void Drag(Point offset)
+        public override void Drag(Point mousePosition, Point offset)
         {
-            base.Drag(offset);
+            base.Drag(mousePosition, offset);
 
             TransitionIcon transitionIcon = Designer.FindOccludedTransitionIcon(this, new Point((ReferencedObject as ViewModel.EventType).LeftTopPosition.X + offset.X, (ReferencedObject as ViewModel.EventType).LeftTopPosition.Y + offset.Y));
 
@@ -177,7 +177,7 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ViewModel.Transition transition in Designer.Model.StateMachine.Transitions)
             {
-                if (transition.TriggerEvent == ReferencedObject)
+                if (transition.TriggerEvent == ReferencedObject && Designer.LoadedIcons.ContainsKey(transition))
                 {
                     (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = true;
                 }
@@ -190,7 +190,7 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ViewModel.Transition transition in Designer.Model.StateMachine.Transitions)
             {
-                if (transition.TriggerEvent == ReferencedObject)
+                if (transition.TriggerEvent == ReferencedObject && Designer.LoadedIcons.ContainsKey(transition))
                 {
                     (Designer.LoadedIcons[transition] as TransitionIcon).IsHighlighted = false;
                 }

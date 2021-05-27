@@ -317,7 +317,7 @@ The sample implementation class for Hello World is:
         {
             protected override void DoSayHello()
             {
-                Console.WriteLine("Hello World!");
+                Debug.WriteLine("Hello World!");
             }
         }
     }
