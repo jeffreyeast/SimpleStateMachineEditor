@@ -12,20 +12,36 @@
       </LeftTopPosition>
     </EventType>
   </EventTypes>
-  <Regions />
+  <Layers>
+    <Layer Id="7" Name="Layer1">
+      <IsDefaultLayer>true</IsDefaultLayer>
+      <MemberIds>
+        <int>2</int>
+        <int>4</int>
+      </MemberIds>
+    </Layer>
+  </Layers>
   <States>
     <State Id="2" Name="Start">
-      <LeftTopPosition>
-        <X>124.5</X>
-        <Y>114.5</Y>
-      </LeftTopPosition>
+      <LayerPositions>
+        <LayerPosition Id="8" LayerId="7">
+          <LeftTopPosition>
+            <X>124.5</X>
+            <Y>114.5</Y>
+          </LeftTopPosition>
+        </LayerPosition>
+      </LayerPositions>
       <StateType>Normal</StateType>
     </State>
     <State Id="4" Name="Done">
-      <LeftTopPosition>
-        <X>404.5</X>
-        <Y>114.5</Y>
-      </LeftTopPosition>
+      <LayerPositions>
+        <LayerPosition Id="9" LayerId="7">
+          <LeftTopPosition>
+            <X>404.5</X>
+            <Y>114.5</Y>
+          </LeftTopPosition>
+        </LayerPosition>
+      </LayerPositions>
       <StateType>Finish</StateType>
     </State>
   </States>

@@ -10,6 +10,7 @@ namespace HelloWorld
     using System.Collections.Generic;
     using SimpleStateMachine;
 
+    ///<summary>Sample state machine</summary>
     public abstract class HelloWorldStateMachine : StateMachineWithoutReturnValueBase
     {
         public enum EventTypes
@@ -20,21 +21,18 @@ namespace HelloWorld
         static readonly string[] EventTypeNames = new string[]
         {
             "SayHelloWorld",
-
         };
 
         static readonly string[] StateNames = new string[]
         {
             "Done",
             "Start",
-
         };
 
         protected override int StartState => Array.IndexOf(StateNames, "Start");
 
         static readonly StateTypes[] StateClassifications = new StateTypes[]
         {
-
             StateTypes.Finish,
             StateTypes.Normal,
         };

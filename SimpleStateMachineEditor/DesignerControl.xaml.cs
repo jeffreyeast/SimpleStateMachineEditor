@@ -236,7 +236,9 @@ namespace SimpleStateMachineEditor
                     {
                         DefaultLayer.Members.Add(state);
                         state.CurrentLayer = DefaultLayer;
-                        state.LayerPositions.Add(ObjectModel.LayerPosition.Create(Model, DefaultLayer));
+                        ObjectModel.LayerPosition layerPosition = ObjectModel.LayerPosition.Create(Model, DefaultLayer);
+                        layerPosition.LeftTopPosition = state.LegacyLeftTopPosition;
+                        state.LayerPositions.Add(layerPosition);
                     }
 
                     Model.StateMachine.EndChange();
