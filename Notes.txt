@@ -298,6 +298,7 @@
    DONE
  - getting a bunch of binding errors when we create a layer icon. I think it's because the initial datacontext is set to Layer, rather than LayerIcon, as it is later on
  - when you remove an icon from the currently active layer, it should disappear
+   FIXED
  - Can't change name of a layer icon
    FIXED
  - Need to highlight the current layer
@@ -308,3 +309,13 @@
 5/26/2021
 
  - Consider keeping track of the current layer and zoom level and restoring them on startup
+
+5/27/2021
+ 
+  - Select transition start state has two problems: loses trigger event and draws incorrectly
+    FIXED
+  - Should you be able to drag an action from one transition to another?
+
+5/28/2021
+
+  - Check if two states have the same location and have a transition between them, if the transition can be successfully drawn

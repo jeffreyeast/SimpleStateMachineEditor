@@ -12,7 +12,7 @@ namespace SimpleStateMachineEditor.ObjectModel
     /// <summary>
     /// This is the poor-man's dictionary for layer positions. We can't use a Dictionary because XML can't serialize it
     /// </summary>
-    public class LayerPosition : INotifyPropertyChanged
+    public class LayerPosition : TrackableObject
     {
         [XmlIgnore]
         public ViewModel.Layer Layer { get; set; }
@@ -25,27 +25,59 @@ namespace SimpleStateMachineEditor.ObjectModel
         }
         int _layerId = -1;
 
-        public Point Position 
+        public Point LeftTopPosition 
         {
-            get => _position;
+            get => _leftTopPosition;
             set
             {
-                if (_position.X != value.X || _position.Y != value.Y)
+                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed)
                 {
-                    _position = value;
-                    OnPropertyChanged("Position");
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", LeftTopPosition.ToString()));
+                    _leftTopPosition = value;
+                    OnPropertyChanged("LeftTopPosition");
+                    EndChange();
                 }
             }
         }
-        Point _position;
+        Point _leftTopPosition;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        //  Legacy save files used Position, not LeftTopPosition
 
-
-
-
-        internal void DeserializeCleanup(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        [XmlElement(elementName:"Position")]
+        public Point LegacyPosition 
         {
+            get => _leftTopPosition;
+            set => _leftTopPosition = value; 
+        }
+
+
+        //  Constructor for use by serialization ONLY
+
+        public LayerPosition()
+        {
+        }
+
+        //  Constructor for new object creation through commands
+
+        private LayerPosition(ViewModel.ViewModelController controller, ViewModel.Layer layer) : base(controller)
+        {
+            Layer = layer;
+        }
+
+        //  Constructor for use by Redo
+
+        internal static LayerPosition Create(ViewModel.ViewModelController controller, ViewModel.Layer layer)
+        {
+            using (new UndoRedo.DontLogBlock(controller))
+            {
+                return new LayerPosition(controller, layer);
+            }
+        }
+
+        internal override void DeserializeCleanup(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        {
+            base.DeserializeCleanup(controller, stateMachine);
+
             Layer = stateMachine.Find(_layerId) as ViewModel.Layer;
             if (Layer == null)
             {
@@ -53,9 +85,30 @@ namespace SimpleStateMachineEditor.ObjectModel
             }
         }
 
-        private void OnPropertyChanged(string propertyName)
+        internal override void GetProperty(string propertyName, out string value)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            switch (propertyName)
+            {
+                case "LeftTopPosition":
+                    value = LeftTopPosition.ToString();
+                    break;
+                default:
+                    base.GetProperty(propertyName, out value);
+                    break;
+            }
+        }
+
+        internal override void SetProperty(string propertyName, string newValue)
+        {
+            switch (propertyName)
+            {
+                case "LeftTopPosition":
+                    LeftTopPosition = System.Windows.Point.Parse(newValue);
+                    break;
+                default:
+                    base.SetProperty(propertyName, newValue);
+                    break;
+            }
         }
     }
 }

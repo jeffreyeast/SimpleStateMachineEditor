@@ -48,19 +48,6 @@ namespace SimpleStateMachineEditor.Icons
         public FrameworkElement DraggableShape { get; set; }
         protected System.Windows.Point ContextMenuActivationLocation { get; private set; }
         DispatcherTimer MouseHoverTimer;
-        public bool IsHidden
-        {
-            get => _isHidden;
-            set
-            {
-                if (_isHidden != value)
-                {
-                    _isHidden = value;
-                    OnPropertyChanged("IsHidden");
-                }
-            }
-        }
-        bool _isHidden;
         public bool IsHovering
         {
             get => _isHovering;

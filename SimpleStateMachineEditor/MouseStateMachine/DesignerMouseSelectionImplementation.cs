@@ -65,6 +65,21 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Execute();
         }
 
+        internal void MouseRightButtonDown(Point mousePosition)
+        {
+            MousePosition = mousePosition;
+            PostNormalPriorityEvent(EventTypes.RightButtonDown);
+            Execute();
+        }
+
+        internal void MouseRightButtonDownOnIcon(Point mousePosition, Icons.ISelectableIcon icon)
+        {
+            MousePosition = mousePosition;
+            SelectedIcon = icon;
+            PostNormalPriorityEvent(EventTypes.RightButtonDownOnIcon);
+            Execute();
+        }
+
         internal void MouseRightButtonUp(Point mousePosition)
         {
             MousePosition = mousePosition;
@@ -83,9 +98,18 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         internal void StartDraggingTransition(Icons.TransitionIcon icon)
         {
             SelectedIcon = icon;
-            DragOrigin = (icon.ReferencedObject as ViewModel.Transition).SourceState == null ?
-                Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).DestinationState].CenterPosition :
-                Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).SourceState].CenterPosition;
+            switch (icon.DragType)
+            {
+                case Icons.TransitionIcon.DragTypes.Adding:
+                case Icons.TransitionIcon.DragTypes.ChangingDestination:
+                    DragOrigin = Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).SourceState].CenterPosition;
+                    break;
+                case Icons.TransitionIcon.DragTypes.ChangingSource:
+                    DragOrigin = Designer.LoadedIcons[(icon.ReferencedObject as ViewModel.Transition).DestinationState].CenterPosition;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
             PostNormalPriorityEvent(EventTypes.DraggingTransition);
             Execute();
         }

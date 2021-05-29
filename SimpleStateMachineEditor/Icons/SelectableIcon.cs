@@ -20,28 +20,12 @@ namespace SimpleStateMachineEditor.Icons
                 base.Body = value;
                 if (Body != null)
                 {
-                    Body.MouseLeftButtonDown += IconSelectedHandler;
+                    Body.MouseLeftButtonDown += MouseLeftButtonDownHandler;
+                    Body.MouseRightButtonDown += MouseRightButtonDownHandler;
                     Body.MouseRightButtonUp += MouseRightButtonUpHandler;
                 }
             }
         }
-
-        public bool IsRegionHighlighted => HighlightedRegion != null;
-
-        public ViewModel.Region HighlightedRegion
-        {
-            get => _highlightedRegion;
-            set
-            {
-                if (_highlightedRegion != value)
-                {
-                    _highlightedRegion = value;
-                    OnPropertyChanged("HighlightedRegion");
-                    OnPropertyChanged("IsRegionHighlighted");
-                }
-            }
-        }
-        ViewModel.Region _highlightedRegion;
 
 
 
@@ -50,17 +34,25 @@ namespace SimpleStateMachineEditor.Icons
         {
         }
 
-        protected void IconSelectedHandler(object sender, MouseButtonEventArgs e)
+        public bool IsSelectable => (Designer.SelectedObjects.Count == 1 && (IsSelected || Designer.SelectedObjects[0] is ViewModel.StateMachine)) || Designer.SelectedIcons.Count == 0;
+
+        public bool IsSelected => Designer.SelectedObjects.Contains(ReferencedObject);
+
+        public void IsSelectedChanged()
+        {
+            OnPropertyChanged("IsSelected");
+        }
+
+        protected void MouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
         {
             Designer.SelectableIconMouseLeftButtonDownHandler(e.GetPosition(Designer.IconSurface), this);
             e.Handled = true;
         }
 
-        public bool IsSelected => Designer.SelectedIcons.ContainsKey(ReferencedObject);
-
-        public void IsSelectedChanged()
+        private void MouseRightButtonDownHandler(object sender, MouseButtonEventArgs e)
         {
-            OnPropertyChanged("IsSelected");
+            Designer.SelectableIconMouseRightButtonDownHandler(e.GetPosition(Designer.IconSurface), this);
+            e.Handled = true;
         }
 
         private void MouseRightButtonUpHandler(object sender, MouseButtonEventArgs e)
@@ -73,7 +65,8 @@ namespace SimpleStateMachineEditor.Icons
         {
             if (Body != null)
             {
-                Body.MouseLeftButtonDown -= IconSelectedHandler;
+                Body.MouseLeftButtonDown -= MouseLeftButtonDownHandler;
+                Body.MouseRightButtonDown -= MouseRightButtonDownHandler;
                 Body.MouseRightButtonUp -= MouseRightButtonUpHandler;
             }
             base.OnRemoving();

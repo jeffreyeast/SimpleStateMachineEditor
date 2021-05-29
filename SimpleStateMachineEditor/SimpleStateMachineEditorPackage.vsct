@@ -94,13 +94,6 @@
         </Strings>
       </Menu>
 
-      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuId" type="Context">
-        <Strings>
-          <MenuText>Context Menu</MenuText>
-          <ButtonText>Context Menu</ButtonText>
-        </Strings>
-      </Menu>
-
       <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuId" type="Context">
         <Strings>
           <MenuText>Context Menu</MenuText>
@@ -139,7 +132,6 @@
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" priority="0x0600" />
-      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="TransitionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="VerticalAlignmentSubmenuGroupId" priority="0x0600" />
@@ -162,15 +154,6 @@
         <Strings>
           <ButtonText>Add new event type</ButtonText>
           <ToolTipText>Add new trigger event type</ToolTipText>
-        </Strings>
-      </Button>
-
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0100" type="Button">
-        <Icon guid="ImageCatalogGuid" id="AddGroup" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
-        <Strings>
-          <ButtonText>Add new region</ButtonText>
-          <ToolTipText>Add new grouping region</ToolTipText>
         </Strings>
       </Button>
 
@@ -274,18 +257,6 @@
         </Strings>
       </Button>
 
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsButCommandId" priority="0x0100" type="Button">
-        <Strings>
-          <ButtonText>Hide icons for all regions but this one</ButtonText>
-        </Strings>
-      </Button>
-
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsCommandId" priority="0x0100" type="Button">
-        <Strings>
-          <ButtonText>Hide icons for this region</ButtonText>
-        </Strings>
-      </Button>
-
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewDestinationCommandId" priority="0x0100" type="Button">
         <Strings>
           <ButtonText>Select new transition end state</ButtonText>
@@ -295,12 +266,6 @@
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewSourceCommandId" priority="0x0100" type="Button">
         <Strings>
           <ButtonText>Select new transition start state</ButtonText>
-        </Strings>
-      </Button>
-
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0100" type="Button">
-        <Strings>
-          <ButtonText>Show all icons</ButtonText>
         </Strings>
       </Button>
 
@@ -371,10 +336,6 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
     </CommandPlacement>
 
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0004">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarAddGroupId" />
-    </CommandPlacement>
-
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarRemoveGroupId" priority="0x0005">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateMachineToolbarId" />
     </CommandPlacement>
@@ -405,26 +366,8 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddRegionCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
-    </CommandPlacement>
-
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddStateCommandId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
-    </CommandPlacement>
-
-    <!-- View menu Menu -->
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xf000">
-      <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_VIEW" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" />
     </CommandPlacement>
 
 
@@ -470,36 +413,6 @@
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <!-- Region Context Menu -->
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsButCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="HideIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="ShowAllIconsCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="SortCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="RegionIconContextMenuGroupId" />
     </CommandPlacement>
 
     <!-- State Context Menu -->
@@ -620,14 +533,12 @@
       <IDSymbol name="DesignControlToolsSubmenuId" value="0x1023" />
       <IDSymbol name="HorizontalAlignmentSubmenuMenuId" value="0x1024" />
       <IDSymbol name="VerticalAlignmentSubmenuMenuId" value="0x1025" />
-      <IDSymbol name="RegionIconContextMenuId" value="0x1026" />
       <IDSymbol name="StateIconContextMenuId" value="0x1027" />
       <IDSymbol name="EventTypeIconContextMenuId" value="0x1028" />
       <IDSymbol name="TransitionIconContextMenuId" value="0x1029" />
       <IDSymbol name="StateMachineToolbarAddGroupId" value="0x102a" />
       <IDSymbol name="StateMachineToolbarRemoveGroupId" value="0x102b" />
       <IDSymbol name="DesignControlSubmenuGroupId" value="0x102d" />
-      <IDSymbol name="RegionIconContextMenuGroupId" value="0x102e" />
       <IDSymbol name="StateIconContextMenuGroupId" value="0x102f" />
       <IDSymbol name="EventTypeIconContextMenuGroupId" value="0x1030" />
       <IDSymbol name="TransitionIconContextMenuGroupId" value="0x1031" />
@@ -643,7 +554,6 @@
       <IDSymbol name="LayerIconContextMenuGroupId" value="0x103b" />
 
       <IDSymbol name="AddEventTypeCommandId" value="0x0100" />
-      <IDSymbol name="AddRegionCommandId" value="0x0101" />
       <IDSymbol name="AddStateCommandId" value="0x0102" />
       <IDSymbol name="AddTransitionCommandId" value="0x0103" />
       <IDSymbol name="AlignBottomCommandId" value="0x0104" />
@@ -655,12 +565,9 @@
       <IDSymbol name="DeleteCommandId" value="0x010a" />
       <IDSymbol name="DistributeHorizontallyCommandId" value="0x010b" />
       <IDSymbol name="DistributeVerticallyCommandId" value="0x010c" />
-      <IDSymbol name="HideIconsButCommandId" value="0x010d" />
-      <IDSymbol name="HideIconsCommandId" value="0x010e" />
       <IDSymbol name="SelectNewDestinationCommandId" value="0x010f" />
       <IDSymbol name="SelectNewSourceCommandId" value="0x0110" />
       <IDSymbol name="SetIconDisplayColorsComboId" value="0x111" />
-      <IDSymbol name="ShowAllIconsCommandId" value="0x0112" />
       <IDSymbol name="SortCommandId" value="0x0113" />
       <IDSymbol name="StartStateCommandId" value="0x0114" />
       <IDSymbol value="0x0115" name="cmdidActionsToolWindowCommand" />

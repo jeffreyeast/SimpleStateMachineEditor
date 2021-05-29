@@ -112,24 +112,6 @@ namespace SimpleStateMachineEditor.IconControls
         }
         string _layerRootName;
 
-
-        [Category("General")]
-        [DisplayName("Default icon group name")]
-        [Description("Root name for newly-created icon region groups")]
-        public string RegionRootName
-        {
-            get => _regionRootName;
-            set
-            {
-                if (_regionRootName != value)
-                {
-                    _regionRootName = value;
-                    OnPropertyChanged("RegionRootName");
-                }
-            }
-        }
-        string _regionRootName;
-
         [Category("General")]
         [DisplayName("Default staet name")]
         [Description("Root name for newly-created states")]
@@ -162,7 +144,6 @@ namespace SimpleStateMachineEditor.IconControls
             _actionRootName = "DoSomething";
             _eventTypeRootName = "E";
             _layerRootName = "Layer";
-            _regionRootName = "Region";
             _stateRootName = "S";
         }
 

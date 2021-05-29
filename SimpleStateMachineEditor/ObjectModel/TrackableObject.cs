@@ -83,6 +83,16 @@ namespace SimpleStateMachineEditor.ObjectModel
             Controller.DeserializeCleanup(this);
         }
 
+        internal virtual void DeserializeCleanupPhase2(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        {
+            //  Some objects in legacy .SFSA files may not have derived from TrackableObject, but do now.  Assign such objects unique Ids.
+
+            if (Id == -1)
+            {
+                Id = controller.NextId;
+            }
+        }
+
         internal void EndChange()
         {
             Controller?.NoteGuiChangeEnd();

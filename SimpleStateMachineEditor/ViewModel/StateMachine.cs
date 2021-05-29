@@ -25,8 +25,6 @@ namespace SimpleStateMachineEditor.ViewModel
         [Browsable(false)]
         public ObservableCollection<Layer> Layers { get; private set; }
         [Browsable(false)]
-        public ObservableCollection<Region> Regions { get; private set; }
-        [Browsable(false)]
         public ObservableCollection<State> States { get; private set; }
         [Browsable(false)]
         public ObservableCollection<Transition> Transitions { get; private set; }
@@ -49,7 +47,7 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         string _generatedClassName;
 
-        [Description("Specifies how to handle events that do not match the trigger event for any of the current state's transitions. False raises UnexpectgedEventException, True ignores the event and continues execution.")]
+        [Description("Specifies how to handle events that do not match the trigger event for any of the current state's transitions. False raises UnexpectedEventException, True ignores the event and continues execution.")]
         public bool IgnoreUnmatchedEvents
         {
             get => _ignoreUnmatchedEvents;
@@ -150,8 +148,6 @@ namespace SimpleStateMachineEditor.ViewModel
             EventTypes.CollectionChanged += CollectionChangedHandler;
             Layers = new ObservableCollection<Layer>();
             Layers.CollectionChanged += CollectionChangedHandler;
-            Regions = new ObservableCollection<Region>();
-            Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
             States.CollectionChanged += CollectionChangedHandler;
             Transitions = new ObservableCollection<Transition>();
@@ -168,8 +164,6 @@ namespace SimpleStateMachineEditor.ViewModel
             EventTypes.CollectionChanged += CollectionChangedHandler;
             Layers = new ObservableCollection<Layer>();
             Layers.CollectionChanged += CollectionChangedHandler;
-            Regions = new ObservableCollection<Region>();
-            Regions.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
             States.CollectionChanged += CollectionChangedHandler;
             Transitions = new ObservableCollection<Transition>();
@@ -235,10 +229,6 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 l.DeserializeCleanup(controller, this);
             }
-            foreach (Region r in Regions)
-            {
-                r.DeserializeCleanup(controller, this);
-            }
             foreach (State s in States)
             {
                 s.DeserializeCleanup(controller, this);
@@ -253,6 +243,16 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 _startState.IsStartState = true;
             }
+
+            // Legacy .SFSA files didn't use a TrackableObject for the LayerPosition objects.
+
+            foreach (State s in States)
+            {
+                foreach (ObjectModel.LayerPosition layerPosition in s.LayerPositions)
+                {
+                    layerPosition.DeserializeCleanupPhase2(controller, this);
+                }
+            }
         }
 
         internal ObjectModel.TrackableObject Find(int id)
@@ -263,10 +263,6 @@ namespace SimpleStateMachineEditor.ViewModel
             if (trackableObject == null)
             {
                 trackableObject = EventTypes.Where(e => e.Id == id).FirstOrDefault();
-            }
-            if (trackableObject == null)
-            {
-                trackableObject = Regions.Where(r => r.Id == id).FirstOrDefault();
             }
             if (trackableObject == null)
             {
@@ -323,9 +319,12 @@ namespace SimpleStateMachineEditor.ViewModel
 
             XmlElementAttribute legacyLeftTopPosition = new XmlElementAttribute("LegacyLeftTopPosition", typeof(System.Windows.Point));
             attributes.XmlElements.Add(legacyLeftTopPosition);
+            XmlElementAttribute legacyPosition = new XmlElementAttribute("LegacyPosition", typeof(System.Windows.Point));
+            attributes.XmlElements.Add(legacyPosition);
 
             XmlAttributeOverrides overrides = new XmlAttributeOverrides();
             overrides.Add(typeof(ObjectModel.LayeredPositionableObject), "LegacyLeftTopPosition", attributes);
+            overrides.Add(typeof(ObjectModel.LayerPosition), "LegacyPosition", attributes);
 
             XmlSerializer serializer = new XmlSerializer(GetType(), overrides);
             serializer.Serialize(xmlStream, this);

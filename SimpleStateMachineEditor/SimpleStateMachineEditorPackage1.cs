@@ -32,14 +32,12 @@ namespace SimpleStateMachineEditor
         public const int DesignControlToolsSubmenuId = 0x1023;
         public const int HorizontalAlignmentSubmenuMenuId = 0x1024;
         public const int VerticalAlignmentSubmenuMenuId = 0x1025;
-        public const int RegionIconContextMenuId = 0x1026;
         public const int StateIconContextMenuId = 0x1027;
         public const int EventTypeIconContextMenuId = 0x1028;
         public const int TransitionIconContextMenuId = 0x1029;
         public const int StateMachineToolbarAddGroupId = 0x102A;
         public const int StateMachineToolbarRemoveGroupId = 0x102B;
         public const int DesignControlSubmenuGroupId = 0x102D;
-        public const int RegionIconContextMenuGroupId = 0x102E;
         public const int StateIconContextMenuGroupId = 0x102F;
         public const int EventTypeIconContextMenuGroupId = 0x1030;
         public const int TransitionIconContextMenuGroupId = 0x1031;
@@ -54,7 +52,6 @@ namespace SimpleStateMachineEditor
         public const int LayerIconContextMenuId = 0x103A;
         public const int LayerIconContextMenuGroupId = 0x103B;
         public const int AddEventTypeCommandId = 0x0100;
-        public const int AddRegionCommandId = 0x0101;
         public const int AddStateCommandId = 0x0102;
         public const int AddTransitionCommandId = 0x0103;
         public const int AlignBottomCommandId = 0x0104;
@@ -66,12 +63,9 @@ namespace SimpleStateMachineEditor
         public const int DeleteCommandId = 0x010A;
         public const int DistributeHorizontallyCommandId = 0x010B;
         public const int DistributeVerticallyCommandId = 0x010C;
-        public const int HideIconsButCommandId = 0x010D;
-        public const int HideIconsCommandId = 0x010E;
         public const int SelectNewDestinationCommandId = 0x010F;
         public const int SelectNewSourceCommandId = 0x0110;
         public const int SetIconDisplayColorsComboId = 0x0111;
-        public const int ShowAllIconsCommandId = 0x0112;
         public const int SortCommandId = 0x0113;
         public const int StartStateCommandId = 0x0114;
         public const int cmdidActionsToolWindowCommand = 0x0115;

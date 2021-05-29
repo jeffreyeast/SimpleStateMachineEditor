@@ -13,6 +13,8 @@ using System.ComponentModel.Design;
 
 namespace SimpleStateMachineEditor.UndoRedo
 {
+#region UndoRedoRecord
+
     internal abstract class UndoRedoRecord : IOleUndoUnit
     {
         public static readonly Guid UndoRedoClassID = new Guid("F8507D32-10D6-4EE0-B861-6895066A3304");
@@ -22,7 +24,7 @@ namespace SimpleStateMachineEditor.UndoRedo
             AddAction,
             AddEventType,
             AddLayer,
-            AddRegion,
+            AddLayerMember,
             AddState,
             AddTransition,
             ChangeProperty,
@@ -30,11 +32,11 @@ namespace SimpleStateMachineEditor.UndoRedo
             DeleteAction,
             DeleteEventType,
             DeleteLayer,
-            DeleteRegion,
             DeleteState,
             DeleteTransition,
             MoveTransition,
             Parent,
+            RemoveLayerMember,
             SetLayer,
         }
 
@@ -72,7 +74,9 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
-
+    #endregion
+    
+#region BaseClasses
     internal abstract class DocumentedObjectRecord : TrackableObjectRecord
     {
         internal string Description;
@@ -85,12 +89,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 
     internal abstract class LayeredPositionableObjectRecord : NamedObjectRecord
     {
-        internal System.Windows.Point LeftTopPosition;
         internal int CurrentLayerId;
 
         protected LayeredPositionableObjectRecord(ActionTypes actionType, ViewModel.ViewModelController controller, ObjectModel.LayeredPositionableObject positionableObject) : base(actionType, controller, positionableObject)
         {
-            LeftTopPosition = positionableObject.LeftTopPosition;
             CurrentLayerId = positionableObject.CurrentLayer.Id;
         }
     }
@@ -124,7 +126,9 @@ namespace SimpleStateMachineEditor.UndoRedo
             Id = trackableObject.Id;
         }
     }
+#endregion
 
+#region ParentRecord
     // Grouping construct for multiple-undo records
 
     internal class ParentRecord : UndoRedoRecord, IOleParentUndoUnit
@@ -244,6 +248,9 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
+    #endregion
+
+#region ActionRecords
     // Action Records
 
     internal class AddActionRecord : NamedObjectRecord
@@ -304,6 +311,10 @@ namespace SimpleStateMachineEditor.UndoRedo
             }
         }
     }
+
+#endregion
+
+#region EventTypeRecords
 
     // Event Type Records
 
@@ -366,7 +377,49 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
+#endregion
+
+#region LayerRecords
     // Layer Records
+
+    internal class AddLayerMemberRecord : TrackableObjectRecord
+    {
+        protected override string UnitDescription => "Add layer member";
+        protected override int UnitType => (int)ActionTypes.AddLayerMember;
+
+        int NewMemberId;
+        System.Windows.Point LeftTopPosition;
+
+
+
+        internal AddLayerMemberRecord(ViewModel.ViewModelController controller, ViewModel.Layer layer, ObjectModel.LayeredPositionableObject newMember) : base(ActionTypes.AddLayerMember, controller, layer)
+        {
+            NewMemberId = newMember.Id;
+            LeftTopPosition = newMember.LeftTopPosition;
+#if DEBUGUNDOREDO
+            Debug.WriteLine($@">>> AddLayerMemberRecord.AddLayerMemberRecord: Created {UnitDescription} record, ID: {Id}, NewMemberId: {NewMemberId}");
+#endif
+        }
+
+        public override void Do(IOleUndoManager pUndoManager)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine(">>> AddLayerMemberRecord.Do");
+#endif
+            if (Controller.StateMachine.IsChangeAllowed)
+            {
+                ViewModel.Layer layer = Controller.StateMachine.Find(Id) as ViewModel.Layer;
+                ObjectModel.LayeredPositionableObject newMember = Controller.StateMachine.Find(NewMemberId) as ObjectModel.LayeredPositionableObject;
+                ObjectModel.LayerPosition layerPosition = ObjectModel.LayerPosition.Create(Controller, layer);
+                newMember.LayerPositions.Add(layerPosition);
+                layerPosition.LeftTopPosition = LeftTopPosition;
+                layer.Members.Add(newMember);
+                Controller.StateMachine.EndChange();
+
+                Controller.UndoManager.Add(new RemoveLayerMemberRecord(Controller, layer, newMember));
+            }
+        }
+    }
 
     internal class AddLayerRecord : NamedObjectRecord
     {
@@ -430,6 +483,41 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
+    internal class RemoveLayerMemberRecord : TrackableObjectRecord
+    {
+        protected override string UnitDescription => "Remove layer member";
+        protected override int UnitType => (int)ActionTypes.RemoveLayerMember;
+
+        int MemberId;
+
+
+
+        internal RemoveLayerMemberRecord(ViewModel.ViewModelController controller, ViewModel.Layer layer, ObjectModel.TrackableObject member) : base(ActionTypes.RemoveLayerMember, controller, layer)
+        {
+            MemberId = member.Id;
+#if DEBUGUNDOREDO
+            Debug.WriteLine($@">>> DeleteLayerMemberRecord.DeleteLayerMemberRecord: Created {UnitDescription} record, ID: {Id}, NewMemberId: {MemberId}");
+#endif
+        }
+
+        public override void Do(IOleUndoManager pUndoManager)
+        {
+#if DEBUGUNDOREDO
+            Debug.WriteLine(">>> DeleteLayerMemberRecord.Do");
+#endif
+            if (Controller.StateMachine.IsChangeAllowed)
+            {
+                ViewModel.Layer layer = Controller.StateMachine.Find(Id) as ViewModel.Layer;
+                ObjectModel.LayeredPositionableObject member = Controller.StateMachine.Find(MemberId) as ObjectModel.LayeredPositionableObject;
+                Controller.UndoManager.Add(new AddLayerMemberRecord(Controller, layer, member));
+                layer.Members.Remove(member);
+                ObjectModel.LayerPosition layerPosition = member.LayerPositions.Where(lp => lp.Layer == layer).Single();
+                member.LayerPositions.Remove(layerPosition);
+                Controller.StateMachine.EndChange();
+            }
+        }
+    }
+
     internal class SetLayerActiveRecord : TrackableObjectRecord
     {
         protected override string UnitDescription => "Set layer";
@@ -460,75 +548,9 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
     }
 
+#endregion
 
-    // Region Records
-
-    internal class AddRegionRecord : PositionableObjectRecord
-    {
-        protected override string UnitDescription => "Add region";
-        protected override int UnitType => (int)ActionTypes.AddRegion;
-
-        public Utility.DisplayColors DisplayColors;
-        public bool IsHidden;
-        public int[] MemberIds;
-
-
-        internal AddRegionRecord(ViewModel.ViewModelController controller, ViewModel.Region region) : base(ActionTypes.AddRegion, controller, region)
-        {
-            DisplayColors = region.DisplayColors;
-            IsHidden = region.IsHidden;
-            MemberIds = region.Members.Select(m => m.Id).ToArray();
-
-#if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> AddRegionRecord.AddRegionRecord: Created {UnitDescription} record, ID: {Id}, Name: {Name}");
-#endif
-        }
-
-        public override void Do(IOleUndoManager pUndoManager)
-        {
-#if DEBUGUNDOREDO
-            Debug.WriteLine(">>> AddRegionRecord.Do");
-#endif
-            if (Controller.StateMachine.IsChangeAllowed)
-            {
-                ViewModel.Region newRegion = new Region(Controller, this);
-                Controller.StateMachine.Regions.Add(newRegion);
-                Controller.StateMachine.EndChange();
-
-                Controller.UndoManager.Add(new DeleteRegionRecord(Controller, newRegion));
-            }
-        }
-    }
-
-    internal class DeleteRegionRecord : PositionableObjectRecord
-    {
-        protected override string UnitDescription => "Delete region";
-        protected override int UnitType => (int)ActionTypes.DeleteRegion;
-
-
-        internal DeleteRegionRecord(ViewModel.ViewModelController controller, ViewModel.Region region) : base(ActionTypes.DeleteRegion, controller, region)
-        {
-#if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> DeleteRegionRecord.DeleteRegionRecord: Created {UnitDescription} record, ID: {Id}, Name: {Name}");
-#endif
-        }
-
-        public override void Do(IOleUndoManager pUndoManager)
-        {
-#if DEBUGUNDOREDO
-            Debug.WriteLine(">>> DeleteRegionRecord.Do");
-#endif
-            if (Controller.StateMachine.IsChangeAllowed)
-            {
-                ViewModel.Region targetRegion = Controller.StateMachine.Regions.Where(r => r.Id == Id).First();
-                Controller.StateMachine.Regions.Remove(targetRegion);
-                Controller.StateMachine.EndChange();
-
-                Controller.UndoManager.Add(new AddRegionRecord(Controller, targetRegion));
-            }
-        }
-    }
-
+#region StateRecords
 
     // State Records
 
@@ -593,6 +615,10 @@ namespace SimpleStateMachineEditor.UndoRedo
             }
         }
     }
+
+#endregion
+
+#region TransitionRecords
 
     //  Transition Records
 
@@ -664,6 +690,10 @@ namespace SimpleStateMachineEditor.UndoRedo
             }
         }
     }
+
+#endregion
+
+#region PropertyChangeRecords
 
     //  General property-changed record
 
@@ -754,4 +784,5 @@ namespace SimpleStateMachineEditor.UndoRedo
         }
 #endif
     }
+#endregion
 }

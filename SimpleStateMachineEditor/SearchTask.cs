@@ -37,13 +37,11 @@ namespace SimpleStateMachineEditor
         private IEnumerable<ObjectModel.TrackableObject> GatherObjects()
         {
             List<ObjectModel.TrackableObject> objects = new List<ObjectModel.TrackableObject>(Designer.Model.StateMachine.EventTypes.Count +
-                                                                                              Designer.Model.StateMachine.Regions.Count +
                                                                                               Designer.Model.StateMachine.States.Count +
                                                                                               Designer.Model.StateMachine.Transitions.Count);
 
             objects.AddRange(Designer.Model.StateMachine.Actions);
             objects.AddRange(Designer.Model.StateMachine.EventTypes);
-            objects.AddRange(Designer.Model.StateMachine.Regions);
             objects.AddRange(Designer.Model.StateMachine.States);
             objects.AddRange(Designer.Model.StateMachine.Transitions);
 

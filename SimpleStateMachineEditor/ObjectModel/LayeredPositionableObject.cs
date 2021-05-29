@@ -23,7 +23,7 @@ namespace SimpleStateMachineEditor.ObjectModel
                 {
                     throw new InvalidOperationException();
                 }
-                return LayerPositions.Where(p => p.Layer == CurrentLayer).Single().Position;
+                return LayerPositions.Where(p => p.Layer == CurrentLayer).Single().LeftTopPosition;
             }
             set
             {
@@ -31,20 +31,9 @@ namespace SimpleStateMachineEditor.ObjectModel
                 {
                     throw new InvalidOperationException();
                 }
-                ObjectModel.LayerPosition layerPosition = LayerPositions.Where(p => p.Layer == CurrentLayer).FirstOrDefault();
-                if (layerPosition == null && IsChangeAllowed)
-                {
-                    layerPosition = new LayerPosition() { Layer = CurrentLayer };
-                    LayerPositions.Add(layerPosition);
-                }
-                else if ((layerPosition.Position.X == value.X && layerPosition.Position.Y == value.Y) || !IsChangeAllowed)
-                {
-                    return;
-                }
-                Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", layerPosition.Position.ToString()));
-                layerPosition.Position = value;
+                ObjectModel.LayerPosition layerPosition = LayerPositions.Where(p => p.Layer == CurrentLayer).Single();
+                layerPosition.LeftTopPosition = value;
                 OnPropertyChanged("LeftTopPosition");
-                EndChange();
             }
         }
 
@@ -93,7 +82,6 @@ namespace SimpleStateMachineEditor.ObjectModel
             using (new UndoRedo.DontLogBlock(controller))
             {
                 CurrentLayer = controller.StateMachine.Find(redoRecord.CurrentLayerId) as ViewModel.Layer;
-                LeftTopPosition = redoRecord.LeftTopPosition;
             }
         }
 

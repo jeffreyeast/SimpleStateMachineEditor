@@ -12,11 +12,6 @@
     <UserControl.Resources>
 
         <Style x:Key="EventTypeIconStyle" TargetType="UserControl">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
 
         <Style x:Key="HoverStyle" TargetType="Panel">
@@ -54,14 +49,6 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="RegionIconStyle" TargetType="UserControl">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="SelectedObjectBorderStyle" TargetType="Border">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
@@ -88,9 +75,6 @@
                 <DataTrigger Binding="{Binding Path=IsSelected}" Value="False">
                     <Setter Property="BorderBrush" Value="{x:Null}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=IsRegionHighlighted}" Value="True">
-                    <Setter Property="Background" Value="{Binding Path=HighlightedRegion.DisplayColors.Background.Brush}" />
-                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=IsLayerHighlighted}" Value="True">
                     <Setter Property="Background" Value="Gray" />
                 </DataTrigger>
@@ -98,20 +82,10 @@
         </Style>
 
         <Style x:Key="StateIconStyle" TargetType="UserControl">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
 
 
         <Style x:Key="TransitionIconStyle" TargetType="UserControl">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=IsHidden}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
 
     </UserControl.Resources>
@@ -129,6 +103,7 @@
         
         <ScrollViewer x:Name="IconSurfaceScrollViewer" Grid.ColumnSpan="3" Grid.RowSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <Grid x:Name="IconSurface" Focusable="True" Background="Transparent"
+                MouseRightButtonDown="MouseRightButtonDownHandler"
                 MouseRightButtonUp="MouseRightButtonUpHandler"
                 MouseLeftButtonDown="MouseLeftButtonDownHandler"
                 MouseLeftButtonUp="MouseLeftButtonUpHandler">

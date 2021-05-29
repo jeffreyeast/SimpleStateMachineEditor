@@ -27,10 +27,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStateMachine", "SimpleStateMachine\SimpleStateMachine.csproj", "{2ED28A77-BA97-4D1E-A709-423C709CAE69}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{27D56A43-BB66-4676-B91F-65F14EF8EFED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2ED28A77-BA97-4D1E-A709-423C709CAE69} = {2ED28A77-BA97-4D1E-A709-423C709CAE69}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuntimeTests", "RuntimeTests\RuntimeTests.csproj", "{45BF7DB0-0B42-4A25-9196-9BDF9E522F27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuntimeTests", "RuntimeTests\RuntimeTests.csproj", "{45BF7DB0-0B42-4A25-9196-9BDF9E522F27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuntimeTestsCore", "RuntimeTestsCore\RuntimeTestsCore.csproj", "{43949497-E6F5-4CBE-AF21-7936E34072CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuntimeTestsCore", "RuntimeTestsCore\RuntimeTestsCore.csproj", "{43949497-E6F5-4CBE-AF21-7936E34072CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexicalAnalyzer", "LexicalAnalyzer\LexicalAnalyzer.csproj", "{02E3547E-EE9C-42F1-A0DE-CC186FF90CE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +71,10 @@ Global
 		{43949497-E6F5-4CBE-AF21-7936E34072CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43949497-E6F5-4CBE-AF21-7936E34072CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43949497-E6F5-4CBE-AF21-7936E34072CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02E3547E-EE9C-42F1-A0DE-CC186FF90CE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02E3547E-EE9C-42F1-A0DE-CC186FF90CE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02E3547E-EE9C-42F1-A0DE-CC186FF90CE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02E3547E-EE9C-42F1-A0DE-CC186FF90CE4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

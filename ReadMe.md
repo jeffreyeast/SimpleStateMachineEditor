@@ -41,8 +41,7 @@ The .Net Core runtime, SimpleStateMachineCore.dll, will be found under SimpleSta
 The Simple State Machine Editor consists of two pieces: a Visual Studio extension (SimpleStateMachineEditor.VSIX) and a runtime (.Net Framework: SimpleStateMachine.dll, 
 .Net Core: SimpleStateMachineCore.dll).
 
-The extension can be installed from the Visual Studio Marketplace, or by building the extension and opening it (either by double-clicking or by the Open command on the right-click context 
-menu from the file explorer).
+The extension can be installed from the Visual Studio Marketplace, or by building the extension and opening the SimpleStateMachineEditor.vsix file (either by double-clicking on it, or by right-clicking and selecting the Open command using file explorer).
 
 The runtime is available as a Nuget package, SimpleStateMachine.
 # The Designer
@@ -108,12 +107,32 @@ The Actions Tool Window is only visible when a Simple State Machine Designer win
 | Enter descriptive text           | Click on the description cell of the target method and press F2. Alternatively, double click the description cell. Enter the text and press *Enter* when finished. |
 
 
-### Display Regions
-Complex state machines can become hard to view in the designer. Too many states, too many event types and too many transitions. The designer includes an object call a *region* to manage display complexity.  Regions are groups of icons. The designer allows you to hide the icons in a region. Hidden icons (and their transitions) simply don't show on the display. You can unhide a region to see its icons.
+### Display Layers
+Complex state machines can be difficult to view in the designer. Too many states, too many event types and too many transitions. Consider the sample Lexical Analyer's default designer view:
 
-You create a region the same way you create a state or event type. To add an object to a region, drag its icon over the region's icon.  To remove it from a region, drag its icon over the region a second time.  
+![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerDefaultLayer.png)
 
-Icons can be members of zero, one or multiple regions. An icon will be visible if its region's icons are visible (even if the icon belongs to hidden regions). 
+It is hard to distinguish exactly what is going on.  But the portion of the state machine dedicated to a particular lexeme type is easy to follow. Here is a view of the states involved in scanning string tokens:
+
+![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerStringLayer.png)
+
+The designer gives you the ability to group states into *layers*. Each layer can be viewed independently.  The *Default* layer (*Layer1*) always includes all the states. You can create as many layers as you wish. Each state is always included in the default layer, but can also be a member of as many other layers as you find useful. 
+
+The layer icons are shown at the bottom right corner of the designer window.  The highlighted icon identifies the layer currently being displayed in the designer.
+
+| To... | Do this... |
+| ----- | ---------- |
+| Create a layer | Click on the *+* sign layer icon (to the right of the other layer icons) |
+| Show a layer | Click on the target layer's icon |
+| Remove a layer | Right click the layer's icon and choose *Remove* from the short cut menu |
+| Add a state to a layer | Drag the state to the target layer's icon |
+| Add multiple states to a layer | Select the states and drag one over the target layer's icon |
+| Remove a state from a layer | Drag the state to the target layer's icon |
+| Rename a layer | Select the layer by clicking on it, then change it's name in the Properties window |
+| View the icons in a layer | Hover the mouse over the target layer's icon. The member states icons will be highlighted |
+
+Event types are not layered -- every event type shows in every layer. This allows you to reference any event type in any layer view.
+
 ### Hovering
 The designer makes extensive use of the mouse cursor "hovering" over an icon. It highlights related objects while the mouse is hovering over an icon. For example, hovering over an event type icon will highlight the transitions whose trigger is that event type.
 
@@ -123,7 +142,7 @@ The designer makes extensive use of the mouse cursor "hovering" over an icon. It
 | Event type | The transitions whose trigger event is the event type |
 | Transition | The transition and its starting and ending states |
 | Method name in the Actions Tool Window | All transiton actions where the action is used |
-| Region | All members of the region |
+| Layer | All members of the layer |
 
 ### Search
 The designer window includes a standard Visual Studio search box at the top of the window. You use this to search state and event type names. Matching names are highlighted in the designer.
@@ -343,6 +362,10 @@ This example demonstrates creating a state machine and it's implementation class
 ![Image of Visual Studio with the designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/HelloWorld.png)
 
 ## Lexical Analyzer
+The Lexical Analyzer sample is a simple lexeme scanner. It scans text and produces lexemes representing tokens. It recognizes identifiers, numbers, strings and punctuation, while ignoring white space and comments.
+
+![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerDefaultLayer.png)
+
 ## Mouse Tracking
 The MouseSelection state machine handles all the mouse events for the designer window. This includes object selection, dragging objects and invoking short cut menus. The source is included in the SimpleStateMachineEditor project. The class implementation file is 
 SimpleStateMachineEditor/MouseStateMachine/DesignerMouseSelectionImplementation.cs.
@@ -351,9 +374,7 @@ SimpleStateMachineEditor/MouseStateMachine/DesignerMouseSelectionImplementation.
 
 # Known Issues
 ## Designer
-1. Right-clicking on the editor pane, or directly on an icon, should bring up a context menu near where you click. However, sometimes the context menu shows up at the very top-left corner of 
-the window. The problem appears randomly, however once it starts, it remains for the life of the window. A work-around is to close and reopen the .SFSA designer window.
-2. The Action Tool Window is only visible when a .SFSA designer window is active.  This can make placing it problematic when it's a member of a window group and you want to adjust it's position or move it to another group.
+1. The Action Tool Window is only visible when a .SFSA designer window is active.  This can make placing it problematic when it's a member of a window group and you want to adjust it's position or move it to another group.
 An easy solution is to float the window, then position it in the desired window group.
 ## Runtime
 No known issues.

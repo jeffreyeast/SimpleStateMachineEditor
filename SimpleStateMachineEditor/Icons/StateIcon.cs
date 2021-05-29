@@ -29,7 +29,7 @@ namespace SimpleStateMachineEditor.Icons
 
         public override void CommitDrag(Point dragTerminationPoint, Point offset)
         {
-            //  This is really messy. We're doing the same thing with region icons in IconBase.  This ought to be generalized somehow.
+            //  This is really messy. This ought to be generalized somehow.
 
             //  If the drag ended over a layer icon, then perform a layer membership operation
 
@@ -41,23 +41,13 @@ namespace SimpleStateMachineEditor.Icons
                 LayerIcon layerIcon = occludedLayerIcons.First();
                 ViewModel.Layer layer = layerIcon.ReferencedObject as ViewModel.Layer;
 
-                using (new UndoRedo.AtomicBlock(Designer.Model, "Modify layer membership"))
+                if (layer.Members.Contains(ReferencedObject))
                 {
-                    if (Designer.Model.StateMachine.IsChangeAllowed)
-                    {
-                        if (layer.Members.Contains(ReferencedObject))
-                        {
-                            if (!layer.IsDefaultLayer)
-                            {
-                                layer.Members.Remove(ReferencedObject);
-                            }
-                        }
-                        else
-                        {
-                            layer.Members.Add(ReferencedObject);
-                        }
-                        Designer.Model.StateMachine.EndChange();
-                    }
+                    Designer.RemoveLayerMember(layer, ReferencedObject as ViewModel.State);
+                }
+                else
+                {
+                    Designer.AddLayerMember(layer, ReferencedObject as ViewModel.State);
                 }
             }
             else
@@ -208,14 +198,14 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         case PackageIds.AddTransitionCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (Designer.SelectedIcons.Count == 1)
+                            if (IsSelectable)
                             {
                                 prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
                             break;
                         case PackageIds.StartStateCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (Designer.SelectedIcons.Count == 1)
+                            if (IsSelectable)
                             {
                                 prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
                             }

@@ -14,19 +14,22 @@ namespace SimpleStateMachineEditor.ObjectModel
         [Description("Relative position of the icon in the display pane")]
         public System.Windows.Point LeftTopPosition
         {
-            get => _leftTopPosition;
+            get => _leftTopPosition.HasValue ? _leftTopPosition.Value : new System.Windows.Point(0, 0);
             set
             {
-                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed)
+                if ((!_leftTopPosition.HasValue || _leftTopPosition.Value.X != value.X || _leftTopPosition.Value.Y != value.Y) && IsChangeAllowed)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
+                    if (_leftTopPosition.HasValue)
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
+                    }
                     _leftTopPosition = value;
                     OnPropertyChanged("LeftTopPosition");
                     EndChange();
                 }
             }
         }
-        System.Windows.Point _leftTopPosition;
+        System.Windows.Point? _leftTopPosition;
 
 
 

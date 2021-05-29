@@ -30,33 +30,10 @@ namespace SimpleStateMachineEditor.Icons
             Designer.IconSurface.Children.Remove(DraggableShape);
             OnEndDrag();
 
-            //  Check to see if they dragged an icon over a region
+            //  This is simply dropping the icon onto the surface
 
-            IEnumerable<RegionIcon> occludedRegionIcons = Designer.FindOccludedIcons<RegionIcon>(dragTerminationPoint);
-
-            if (occludedRegionIcons.Count() > 0)
-            {
-                //  They're dropping the icon onto one or more regions
-
-                using (new UndoRedo.AtomicBlock(Designer.Model, "Drop onto region"))
-                {
-                    foreach (var regionIcon in occludedRegionIcons)
-                    {
-                        if (regionIcon != this)
-                        {
-                            (regionIcon.ReferencedObject as ViewModel.Region).ToggleMember(ReferencedObject);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //  This is simply dropping the icon onto the surface
-
-                CenterPosition = new System.Windows.Point(Math.Max(0, CenterPosition.X + offset.X), Math.Max(0, CenterPosition.Y + offset.Y));
-                OnCommitDrag(dragTerminationPoint);
-
-            }
+            CenterPosition = new System.Windows.Point(Math.Max(0, CenterPosition.X + offset.X), Math.Max(0, CenterPosition.Y + offset.Y));
+            OnCommitDrag(dragTerminationPoint);
         }
 
         public virtual void Drag(Point mousePosition, Point offset)

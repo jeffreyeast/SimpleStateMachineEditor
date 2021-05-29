@@ -1,0 +1,6 @@
+﻿5/23/2021
+
+- Some thought-provoking issues:
+	- how do you feed the first event into the machine? This machien is different from the others you've done, in that it doesn't really run to completion before returning.
+	- why do all action methods have to return a value?
+	- can the return value be a struct, or must it be a class?

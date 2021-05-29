@@ -66,6 +66,19 @@ namespace SimpleStateMachineEditor.Icons
         }
         bool _isHighlighted;
 
+        internal enum DragTypes
+        {
+            Nothing,
+            Adding,
+            ChangingDestination,
+            ChangingSource,
+        }
+        internal DragTypes DragType { get; set; }
+
+
+
+
+
         internal TransitionIcon(DesignerControl designer, ViewModel.Transition transition, System.Windows.Point? center, System.Windows.Point? leftTop) :
             base(designer, transition, null, null)
         {
@@ -111,15 +124,19 @@ namespace SimpleStateMachineEditor.Icons
             Point startPoint;
             Point endPoint;
 
-            if ((ReferencedObject as ViewModel.Transition).SourceState == null)
+            switch (DragType)
             {
-                endPoint = Designer.LoadedIcons[(ReferencedObject as ViewModel.Transition).DestinationState].CenterPosition;
-                startPoint = new Point(endPoint.X + offset.X, endPoint.Y + offset.Y);
-            }
-            else
-            {
-                startPoint = Designer.LoadedIcons[(ReferencedObject as ViewModel.Transition).SourceState].CenterPosition;
-                endPoint = new Point(startPoint.X + offset.X, startPoint.Y + offset.Y);
+                case DragTypes.Adding:
+                case DragTypes.ChangingDestination:
+                    startPoint = Designer.LoadedIcons[(ReferencedObject as ViewModel.Transition).SourceState].CenterPosition;
+                    endPoint = new Point(startPoint.X + offset.X, startPoint.Y + offset.Y);
+                    break;
+                case DragTypes.ChangingSource:
+                    endPoint = Designer.LoadedIcons[(ReferencedObject as ViewModel.Transition).DestinationState].CenterPosition;
+                    startPoint = new Point(endPoint.X + offset.X, endPoint.Y + offset.Y);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
 
             PathGeometry pathGeometry = new PathGeometry();
@@ -232,7 +249,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewDestinationCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition && transition.SourceState != null && transition.DestinationState != null && Designer.SelectedIcons.Count == 1)
+                            if (ReferencedObject is ViewModel.Transition transition && transition.SourceState != null && transition.DestinationState != null && IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -241,7 +258,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewSourceCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.SourceState != null && transition1.DestinationState != null && Designer.SelectedIcons.Count == 1)
+                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.SourceState != null && transition1.DestinationState != null && IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }

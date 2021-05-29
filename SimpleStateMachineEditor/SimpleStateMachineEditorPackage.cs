@@ -152,7 +152,6 @@ namespace SimpleStateMachineEditor
             //  Register the commands on the toolbar
 
             await Commands.AddEventTypeCommand.InitializeAsync(this);
-            await Commands.AddRegionCommand.InitializeAsync(this);
             await Commands.AddStateCommand.InitializeAsync(this);
             await Commands.AddTransitionCommand.InitializeAsync(this);
             await Commands.DeleteCommand.InitializeAsync(this);
