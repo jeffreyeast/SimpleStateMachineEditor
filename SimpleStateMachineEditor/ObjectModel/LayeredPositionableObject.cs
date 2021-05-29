@@ -64,14 +64,12 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
             CurrentLayer = currentLayer;
-            LeftTopPosition = new Point(0, 0);
         }
 
         internal LayeredPositionableObject(ViewModel.ViewModelController controller, IEnumerable<NamedObject> existingObjectList, string rootName, ViewModel.Layer currentLayer) : base(controller, existingObjectList, rootName)
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
             CurrentLayer = currentLayer;
-            LeftTopPosition = new Point(0, 0);
         }
 
         //  Constructor for the use of Redo

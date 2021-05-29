@@ -140,17 +140,24 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void AddLayerMember(ViewModel.Layer layer, ObjectModel.LayeredPositionableObject newMember)
+        internal void AddLayerMember(ViewModel.Layer layer, ObjectModel.LayeredPositionableObject newMember, Point? position = null)
         {
             if (Model.StateMachine.IsChangeAllowed)
             {
                 using (new UndoRedo.AtomicBlock(Model, "Add layer member"))
                 {
                     Model.LogUndoAction(new UndoRedo.RemoveLayerMemberRecord(Model, layer, newMember));
-                    layer.Members.Add(newMember);
                     ObjectModel.LayerPosition layerPosition = ObjectModel.LayerPosition.Create(Model, layer);
-                    layerPosition.LeftTopPosition = newMember.LeftTopPosition;
+                    if (position.HasValue)
+                    {
+                        layerPosition.LeftTopPosition = position.Value;
+                    }
+                    else
+                    {
+                        layerPosition.LeftTopPosition = newMember.LeftTopPosition;
+                    }
                     newMember.LayerPositions.Add(layerPosition);
+                    layer.Members.Add(newMember);
                 }
 
                 Model.StateMachine.EndChange();
@@ -169,16 +176,14 @@ namespace SimpleStateMachineEditor
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
                     }
-                    newState.LeftTopPosition = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                    Point position = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                    AddLayerMember(DefaultLayer, newState, position);
                     if (CurrentLayer != DefaultLayer)
                     {
-                        newState.CurrentLayer = DefaultLayer;
-                        newState.LeftTopPosition = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
-                        newState.CurrentLayer = CurrentLayer;
+                        AddLayerMember(CurrentLayer, newState, position);
                     }
 
                     Model.StateMachine.States.Add(newState);
-
                 }
 
                 Model.StateMachine.EndChange();
@@ -1143,12 +1148,9 @@ namespace SimpleStateMachineEditor
                 case NotifyCollectionChangedAction.Add:
                     foreach (ViewModel.EventType newEventType in e.NewItems)
                     {
-                        Icons.EventTypeIcon eventTypeIcon = new Icons.EventTypeIcon(this, newEventType, null, newEventType.LeftTopPosition);
-                        IconSurface.Children.Add(eventTypeIcon.Body);
-                        LoadedIcons.Add(newEventType, eventTypeIcon);
-
+                        LoadViewModelIcon(newEventType);
                         ClearSelectedItems();
-                        SelectIcon(eventTypeIcon);
+                        SelectIcon(LoadedIcons[newEventType]);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
@@ -1194,51 +1196,17 @@ namespace SimpleStateMachineEditor
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    using (new UndoRedo.AtomicBlock(Model, "Add states to layer"))
-                    {
-                        if (Model.StateMachine.IsChangeAllowed)
-                        {
-                            foreach (ViewModel.State state in e.NewItems)
-                            {
-                                DefaultLayer.Members.Add(state);
-                                Model.LogUndoAction(new UndoRedo.RemoveLayerMemberRecord(Model, DefaultLayer, state));
-                                if (CurrentLayer != DefaultLayer)
-                                {
-                                    CurrentLayer.Members.Add(state);
-                                    Model.LogUndoAction(new UndoRedo.RemoveLayerMemberRecord(Model, CurrentLayer, state));
-                                }
-                            }
-                            Model.StateMachine.EndChange();
-                        }
-                    }
-
                     foreach (ViewModel.State newState in e.NewItems)
                     {
-                        Icons.StateIcon stateIcon = new Icons.StateIcon(this, newState, null, newState.LeftTopPosition);
-                        IconSurface.Children.Add(stateIcon.Body);
-                        LoadedIcons.Add(newState, stateIcon);
-
-                        ClearSelectedItems();
-                        SelectIcon(stateIcon);
+                        if (CurrentLayer.Members.Contains(newState))
+                        {
+                            LoadViewModelIcon(newState);
+                            ClearSelectedItems();
+                            SelectIcon(LoadedIcons[newState]);
+                        }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    using (new UndoRedo.AtomicBlock(Model, "Remove states from layer"))
-                    {
-                        if (Model.StateMachine.IsChangeAllowed)
-                        {
-                            foreach (ViewModel.State state in e.OldItems)
-                            {
-                                foreach (ViewModel.Layer layer in Model.StateMachine.Layers)
-                                {
-                                    layer.Members.Remove(state);
-                                    Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layer, state));
-                                }
-                            }
-                            Model.StateMachine.EndChange();
-                        }
-                    }
-
                     foreach (ViewModel.State state in e.OldItems)
                     {
                         UnloadViewModelIcon(state);
@@ -1256,12 +1224,12 @@ namespace SimpleStateMachineEditor
                 case NotifyCollectionChangedAction.Add:
                     foreach (ViewModel.Transition newTransition in e.NewItems)
                     {
-                        Icons.TransitionIcon transitionIcon = new Icons.TransitionIcon(this, newTransition, null, null);
-                        IconSurface.Children.Add(transitionIcon.Body);
-                        LoadedIcons.Add(newTransition, transitionIcon);
-
-                        ClearSelectedItems();
-                        SelectIcon(transitionIcon);
+                        LoadViewModelIcon(newTransition);
+                        if (LoadedIcons.ContainsKey(newTransition))
+                        {
+                            ClearSelectedItems();
+                            SelectIcon(LoadedIcons[newTransition]);
+                        }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
