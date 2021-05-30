@@ -60,21 +60,27 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             "DraggingSelection",
             "DraggingSelectionBox",
             "Idle",
+            "IsIconPositional",
             "LeftButtonIsDown",
             "LeftButtonIsDownOnIcon",
+            "LeftIsDownOnActionIcon",
             "RightButtonIsDownOnIcon",
+            "TestIfActionIcon",
             "TestingIfIconSelected1",
             "TestingIfIconSelected2",
-            "TestingPositionability1",
             "TestingShiftKey1",
             "TestingShiftKey2",
             "TestingShiftKey3",
+            "WaitingOnLeftButtonUp",
         };
 
         protected override int StartState => Array.IndexOf(StateNames, "Idle");
 
         static readonly StateTypes[] StateClassifications = new StateTypes[]
         {
+            StateTypes.Normal,
+            StateTypes.Normal,
+            StateTypes.Normal,
             StateTypes.Normal,
             StateTypes.Normal,
             StateTypes.Normal,
@@ -111,6 +117,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         protected abstract void SelectStateMachine();
         protected abstract void StartDrag();
         protected abstract void StopTrackingMouse();
+        protected abstract void TestIfActionIcon();
         protected abstract void TestIfPositionableIcon();
         protected abstract void TestIsIconSelected();
         protected abstract void TestShiftKeyState();
@@ -145,7 +152,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(2, new Action[] { RemoveSelectionBox, StopTrackingMouse, }),  // Esc(2)
                     new Transition<Action>(1, new Action[] { }),  // LeftButtonDown(3)
                     new Transition<Action>(1, new Action[] { }),  // LeftButtonDownOnIcon(4)
-                    new Transition<Action>(11, new Action[] { RemoveSelectionBox, StopTrackingMouse, TestShiftKeyState, }),  // LeftButtonUp(5)
+                    new Transition<Action>(13, new Action[] { RemoveSelectionBox, StopTrackingMouse, TestShiftKeyState, }),  // LeftButtonUp(5)
                     new Transition<Action>(1, new Action[] { DragSelectionBox, }),  // MouseMove(6)
                     new Transition<Action>(1, new Action[] { }),  // No(7)
                     new Transition<Action>(1, new Action[] { }),  // RightButtonDown(8)
@@ -158,63 +165,18 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(2, new Action[] { }),  // *(0)
                     new Transition<Action>(0, new Action[] { TrackMouseMovement, ClearSelection, SelectDraggingIcon, StartDrag, DragIcon, }),  // DraggingTransition(1)
                     new Transition<Action>(2, new Action[] { }),  // Esc(2)
-                    new Transition<Action>(3, new Action[] { SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDown(3)
-                    new Transition<Action>(4, new Action[] { SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(4, new Action[] { SaveDragOrigin, TrackMouseMovement, }),  // LeftButtonDown(3)
+                    new Transition<Action>(3, new Action[] { SaveDragOrigin, TrackMouseMovement, TestIfPositionableIcon, }),  // LeftButtonDownOnIcon(4)
                     new Transition<Action>(2, new Action[] { }),  // LeftButtonUp(5)
                     new Transition<Action>(2, new Action[] { }),  // MouseMove(6)
                     new Transition<Action>(2, new Action[] { }),  // No(7)
                     new Transition<Action>(2, new Action[] { }),  // RightButtonDown(8)
-                    new Transition<Action>(5, new Action[] { }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(7, new Action[] { }),  // RightButtonDownOnIcon(9)
                     new Transition<Action>(2, new Action[] { ClearSelection, DisplayStateMachineContextMenu, }),  // RightButtonUp(10)
                     new Transition<Action>(2, new Action[] { DisplayIconContextMenu, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(2, new Action[] { }),  // Yes(12)
                 },
-                { // LeftButtonIsDown(3)
-                    new Transition<Action>(3, new Action[] { }),  // *(0)
-                    new Transition<Action>(3, new Action[] { }),  // DraggingTransition(1)
-                    new Transition<Action>(2, new Action[] { StopTrackingMouse, }),  // Esc(2)
-                    new Transition<Action>(3, new Action[] { }),  // LeftButtonDown(3)
-                    new Transition<Action>(3, new Action[] { }),  // LeftButtonDownOnIcon(4)
-                    new Transition<Action>(2, new Action[] { StopTrackingMouse, SelectStateMachine, }),  // LeftButtonUp(5)
-                    new Transition<Action>(1, new Action[] { EnableSelectionBox, DragIcon, }),  // MouseMove(6)
-                    new Transition<Action>(3, new Action[] { }),  // No(7)
-                    new Transition<Action>(3, new Action[] { }),  // RightButtonDown(8)
-                    new Transition<Action>(3, new Action[] { }),  // RightButtonDownOnIcon(9)
-                    new Transition<Action>(3, new Action[] { }),  // RightButtonUp(10)
-                    new Transition<Action>(3, new Action[] { }),  // RightButtonUpOnIcon(11)
-                    new Transition<Action>(3, new Action[] { }),  // Yes(12)
-                },
-                { // LeftButtonIsDownOnIcon(4)
-                    new Transition<Action>(4, new Action[] { }),  // *(0)
-                    new Transition<Action>(4, new Action[] { }),  // DraggingTransition(1)
-                    new Transition<Action>(4, new Action[] { }),  // Esc(2)
-                    new Transition<Action>(4, new Action[] { }),  // LeftButtonDown(3)
-                    new Transition<Action>(4, new Action[] { }),  // LeftButtonDownOnIcon(4)
-                    new Transition<Action>(9, new Action[] { StopTrackingMouse, TestShiftKeyState, }),  // LeftButtonUp(5)
-                    new Transition<Action>(8, new Action[] { TestIfPositionableIcon, }),  // MouseMove(6)
-                    new Transition<Action>(4, new Action[] { }),  // No(7)
-                    new Transition<Action>(4, new Action[] { }),  // RightButtonDown(8)
-                    new Transition<Action>(4, new Action[] { }),  // RightButtonDownOnIcon(9)
-                    new Transition<Action>(4, new Action[] { }),  // RightButtonUp(10)
-                    new Transition<Action>(4, new Action[] { }),  // RightButtonUpOnIcon(11)
-                    new Transition<Action>(4, new Action[] { }),  // Yes(12)
-                },
-                { // RightButtonIsDownOnIcon(5)
-                    new Transition<Action>(5, new Action[] { }),  // *(0)
-                    new Transition<Action>(5, new Action[] { }),  // DraggingTransition(1)
-                    new Transition<Action>(5, new Action[] { }),  // Esc(2)
-                    new Transition<Action>(5, new Action[] { }),  // LeftButtonDown(3)
-                    new Transition<Action>(5, new Action[] { }),  // LeftButtonDownOnIcon(4)
-                    new Transition<Action>(5, new Action[] { }),  // LeftButtonUp(5)
-                    new Transition<Action>(5, new Action[] { }),  // MouseMove(6)
-                    new Transition<Action>(5, new Action[] { }),  // No(7)
-                    new Transition<Action>(5, new Action[] { }),  // RightButtonDown(8)
-                    new Transition<Action>(5, new Action[] { }),  // RightButtonDownOnIcon(9)
-                    new Transition<Action>(5, new Action[] { }),  // RightButtonUp(10)
-                    new Transition<Action>(7, new Action[] { TestIsIconSelected, }),  // RightButtonUpOnIcon(11)
-                    new Transition<Action>(5, new Action[] { }),  // Yes(12)
-                },
-                { // TestingIfIconSelected1(6)
+                { // IsIconPositional(3)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
@@ -222,14 +184,104 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonUp(5)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(6)
-                    new Transition<Action>(10, new Action[] { TestShiftKeyState, }),  // No(7)
+                    new Transition<Action>(8, new Action[] { TestIfActionIcon, }),  // No(7)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(5, new Action[] { }),  // Yes(12)
+                },
+                { // LeftButtonIsDown(4)
+                    new Transition<Action>(4, new Action[] { }),  // *(0)
+                    new Transition<Action>(4, new Action[] { }),  // DraggingTransition(1)
+                    new Transition<Action>(2, new Action[] { StopTrackingMouse, }),  // Esc(2)
+                    new Transition<Action>(4, new Action[] { }),  // LeftButtonDown(3)
+                    new Transition<Action>(4, new Action[] { }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(2, new Action[] { StopTrackingMouse, SelectStateMachine, }),  // LeftButtonUp(5)
+                    new Transition<Action>(1, new Action[] { EnableSelectionBox, DragIcon, }),  // MouseMove(6)
+                    new Transition<Action>(4, new Action[] { }),  // No(7)
+                    new Transition<Action>(4, new Action[] { }),  // RightButtonDown(8)
+                    new Transition<Action>(4, new Action[] { }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(4, new Action[] { }),  // RightButtonUp(10)
+                    new Transition<Action>(4, new Action[] { }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(4, new Action[] { }),  // Yes(12)
+                },
+                { // LeftButtonIsDownOnIcon(5)
+                    new Transition<Action>(5, new Action[] { }),  // *(0)
+                    new Transition<Action>(5, new Action[] { }),  // DraggingTransition(1)
+                    new Transition<Action>(5, new Action[] { }),  // Esc(2)
+                    new Transition<Action>(5, new Action[] { }),  // LeftButtonDown(3)
+                    new Transition<Action>(5, new Action[] { }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(11, new Action[] { StopTrackingMouse, TestShiftKeyState, }),  // LeftButtonUp(5)
+                    new Transition<Action>(9, new Action[] { TestIsIconSelected, }),  // MouseMove(6)
+                    new Transition<Action>(5, new Action[] { }),  // No(7)
+                    new Transition<Action>(5, new Action[] { }),  // RightButtonDown(8)
+                    new Transition<Action>(5, new Action[] { }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(5, new Action[] { }),  // RightButtonUp(10)
+                    new Transition<Action>(5, new Action[] { }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(5, new Action[] { }),  // Yes(12)
+                },
+                { // LeftIsDownOnActionIcon(6)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
+                    new Transition<Action>(2, new Action[] { StopTrackingMouse, }),  // Esc(2)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDown(3)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(2, new Action[] { StopTrackingMouse, ClearSelection, SelectDraggingIcon, }),  // LeftButtonUp(5)
+                    new Transition<Action>(0, new Action[] { SelectDraggingIcon, StartDrag, DragIcon, }),  // MouseMove(6)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // No(7)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Yes(12)
+                },
+                { // RightButtonIsDownOnIcon(7)
+                    new Transition<Action>(7, new Action[] { }),  // *(0)
+                    new Transition<Action>(7, new Action[] { }),  // DraggingTransition(1)
+                    new Transition<Action>(7, new Action[] { }),  // Esc(2)
+                    new Transition<Action>(7, new Action[] { }),  // LeftButtonDown(3)
+                    new Transition<Action>(7, new Action[] { }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(7, new Action[] { }),  // LeftButtonUp(5)
+                    new Transition<Action>(7, new Action[] { }),  // MouseMove(6)
+                    new Transition<Action>(7, new Action[] { }),  // No(7)
+                    new Transition<Action>(7, new Action[] { }),  // RightButtonDown(8)
+                    new Transition<Action>(7, new Action[] { }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(7, new Action[] { }),  // RightButtonUp(10)
+                    new Transition<Action>(10, new Action[] { TestIsIconSelected, }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(7, new Action[] { }),  // Yes(12)
+                },
+                { // TestIfActionIcon(8)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDown(3)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonUp(5)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(6)
+                    new Transition<Action>(14, new Action[] { StopTrackingMouse, }),  // No(7)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(6, new Action[] { }),  // Yes(12)
+                },
+                { // TestingIfIconSelected1(9)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDown(3)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonUp(5)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(6)
+                    new Transition<Action>(12, new Action[] { TestShiftKeyState, }),  // No(7)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(0, new Action[] { StartDrag, DragIcon, }),  // Yes(12)
                 },
-                { // TestingIfIconSelected2(7)
+                { // TestingIfIconSelected2(10)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
@@ -244,22 +296,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(2, new Action[] { SelectDraggingIcon, DisplayIconContextMenu, }),  // Yes(12)
                 },
-                { // TestingPositionability1(8)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDown(3)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonUp(5)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(6)
-                    new Transition<Action>(2, new Action[] { ClearSelection, SelectDraggingIcon, StopTrackingMouse, }),  // No(7)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
-                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
-                    new Transition<Action>(6, new Action[] { TestIsIconSelected, }),  // Yes(12)
-                },
-                { // TestingShiftKey1(9)
+                { // TestingShiftKey1(11)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
@@ -274,7 +311,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(2, new Action[] { SelectDraggingIcon, }),  // Yes(12)
                 },
-                { // TestingShiftKey2(10)
+                { // TestingShiftKey2(12)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
@@ -289,7 +326,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(0, new Action[] { SelectDraggingIcon, StartDrag, DragIcon, }),  // Yes(12)
                 },
-                { // TestingShiftKey3(11)
+                { // TestingShiftKey3(13)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Esc(2)
@@ -303,6 +340,21 @@ namespace SimpleStateMachineEditor.MouseStateMachine
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
                     new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
                     new Transition<Action>(2, new Action[] { SelectOccludedIcons, }),  // Yes(12)
+                },
+                { // WaitingOnLeftButtonUp(14)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // *(0)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // DraggingTransition(1)
+                    new Transition<Action>(2, new Action[] { }),  // Esc(2)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDown(3)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // LeftButtonDownOnIcon(4)
+                    new Transition<Action>(2, new Action[] { ClearSelection, SelectDraggingIcon, }),  // LeftButtonUp(5)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // MouseMove(6)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // No(7)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDown(8)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonDownOnIcon(9)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUp(10)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // RightButtonUpOnIcon(11)
+                    new Transition<Action>(0, new Action[] { base.InvalidTransition, }),  // Yes(12)
                 },
             };
         }

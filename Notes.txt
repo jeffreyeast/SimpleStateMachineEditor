@@ -319,3 +319,10 @@
 5/28/2021
 
   - Check if two states have the same location and have a transition between them, if the transition can be successfully drawn
+
+5/29/2021
+
+  - The regressions are fast and furious around states and layers and layer positions.  Redo of Add State doesn't make the state icon appear.
+    FIXED
+  - REGRESSION: Can't drag an action to reorder it
+    FIXED

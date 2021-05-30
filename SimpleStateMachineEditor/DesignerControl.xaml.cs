@@ -349,9 +349,9 @@ namespace SimpleStateMachineEditor
                 switch (operationDescription)
                 {
                     case AddTransitionDescription:
-                        Model.LogUndoAction(new UndoRedo.DeleteTransitionRecord(Model, transition));
                         transition.DestinationState = nearestState;
                         Model.StateMachine.Transitions.Add(transition);
+                        Model.LogUndoAction(new UndoRedo.DeleteTransitionRecord(Model, transition));
                         break;
 
                     case ChangeTransitionDestinationDescription:
@@ -781,6 +781,15 @@ namespace SimpleStateMachineEditor
                         Icons.StateIcon stateIcon = new Icons.StateIcon(this, state, null, state.LeftTopPosition);
                         IconSurface.Children.Add(stateIcon.Body);
                         LoadedIcons.Add(state, stateIcon);
+
+                        foreach (ViewModel.Transition transition in state.TransitionsFrom)
+                        {
+                            LoadViewModelIcon(trackableObject);
+                        }
+                        foreach (ViewModel.Transition transition in state.TransitionsTo)
+                        {
+                            LoadViewModelIcon(trackableObject);
+                        }
                     }
                 }
                 else if (trackableObject is ViewModel.Transition transition)
@@ -818,6 +827,7 @@ namespace SimpleStateMachineEditor
                 if (_currentLayer == null)
                 {
                     _currentLayer = DefaultLayer;
+                    _currentLayer.Members.CollectionChanged += CurrentLayerMembersCollectionChangedHandler;
                     _currentLayer.IsCurrentLayer = true;
                 }
 

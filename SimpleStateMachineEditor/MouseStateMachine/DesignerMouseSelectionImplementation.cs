@@ -264,6 +264,11 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Keyboard.ClearFocus();
         }
 
+        protected override void TestIfActionIcon()
+        {
+            PostHighPriorityEvent(SelectedIcon is Icons.ActionIcon ? EventTypes.Yes : EventTypes.No);
+        }
+
         protected override void TestIfPositionableIcon()
         {
             PostHighPriorityEvent(SelectedIcon is Icons.PositionableIcon ? EventTypes.Yes : EventTypes.No);
