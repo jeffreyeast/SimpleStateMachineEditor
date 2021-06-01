@@ -50,10 +50,10 @@ The solution explicitly references the following Nuget packages. These should be
 If you find it still won't build, try creating a new solution with a VSIX project and build that. Then go back and try to rebuild the SimpleStateMachineEditor. There's some black magic going on behind the scenes, and I found this helped on my machine. If all
 else fails, try adding the following lines to the SimpleStateMachineEditor.csproj file:
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.10.1055" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.10.1055" />
+    </ItemGroup>
 
 # Installation
 The Simple State Machine Editor consists of two pieces: a Visual Studio extension (SimpleStateMachineEditor.VSIX) and a runtime (.Net Framework: SimpleStateMachine.dll, 
