@@ -45,7 +45,7 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         public TrackableObject()
         {
-            Id = -1;
+            Id = -2;
             GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
@@ -132,7 +132,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             throw new ArgumentException($@"Property '{propertyName}' not recognized");
         }
 
-        internal virtual void SetProperty(string propertyName, IEnumerable<string> newValue)
+        internal virtual void SetProperty(string propertyName, IList<string> newValue)
         {
             if (newValue.Count() == 1)
             {

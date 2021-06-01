@@ -60,14 +60,14 @@
     <Compile Include="EditorPane.cs" />
     <Compile Include="Commands\AddEventTypeCommand.cs" />
     <Compile Include="Generators\SfsaGenerator.cs" />
-    <Compile Include="IconControls\ActionIconControl.xaml.cs">
-      <DependentUpon>ActionIconControl.xaml</DependentUpon>
+    <Compile Include="IconControls\ActionReferenceIconControl.xaml.cs">
+      <DependentUpon>ActionReferenceIconControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="IconControls\EditableStringConverter.cs" />
     <Compile Include="IconControls\LayerIconControl.xaml.cs">
       <DependentUpon>LayerIconControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Icons\ActionIcon.cs" />
+    <Compile Include="Icons\ActionReferenceIcon.cs" />
     <Compile Include="Icons\ISelectableIcon.cs" />
     <Compile Include="Icons\LayerIcon.cs" />
     <Compile Include="Icons\SelectableIcon.cs" />
@@ -129,7 +129,15 @@
     <Compile Include="Toolbox\TransitionToolboxControl.xaml.cs">
       <DependentUpon>TransitionToolboxControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UndoRedo\Action.cs" />
+    <Compile Include="UndoRedo\TransitionRecords.cs" />
+    <Compile Include="UndoRedo\LayerRecords.cs" />
+    <Compile Include="UndoRedo\StateRecords.cs" />
+    <Compile Include="UndoRedo\ParentRecord.cs" />
+    <Compile Include="UndoRedo\ActionRecords.cs" />
+    <Compile Include="UndoRedo\EventTypeRecords.cs" />
+    <Compile Include="UndoRedo\BaseRecords.cs" />
+    <Compile Include="UndoRedo\UndoRedoRecord.cs" />
+    <Compile Include="UndoRedo\PropertyChangeRecords.cs" />
     <Compile Include="UndoRedo\DontLogBlock.cs" />
     <Compile Include="UndoRedo\AtomicBlock.cs" />
     <Compile Include="Utility\BrushesToList.cs" />
@@ -144,6 +152,7 @@
     <Compile Include="Utility\OleAutomation.cs" />
     <Compile Include="ViewModelCoordinator.cs" />
     <Compile Include="ViewModel\Action.cs" />
+    <Compile Include="ViewModel\ActionReference.cs" />
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
     <Compile Include="ViewModel\Layer.cs" />
@@ -221,7 +230,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="IconControls\ActionIconControl.xaml">
+    <Page Include="IconControls\ActionReferenceIconControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

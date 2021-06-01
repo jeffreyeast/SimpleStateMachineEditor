@@ -146,7 +146,7 @@ namespace SimpleStateMachineEditor
             {
                 using (new UndoRedo.AtomicBlock(Model, "Add layer member"))
                 {
-                    Model.LogUndoAction(new UndoRedo.RemoveLayerMemberRecord(Model, layer, newMember));
+                    Model.LogUndoAction(new UndoRedo.DeleteLayerMemberRecord(Model, layer, newMember));
                     ObjectModel.LayerPosition layerPosition = ObjectModel.LayerPosition.Create(Model, layer);
                     if (position.HasValue)
                     {
@@ -430,38 +430,24 @@ namespace SimpleStateMachineEditor
             }
         }
 
-        internal void DeleteIcon(Icons.ISelectableIcon icon)
+        private void DeleteActionReference(ViewModel.Transition transition, ViewModel.ActionReference actionReference, int slot)
         {
-            using (new UndoRedo.AtomicBlock(Model, "Delete"))
+            if (Model.StateMachine.IsChangeAllowed)
             {
-                if (icon is Icons.ActionIcon actionIcon && Model.StateMachine.IsChangeAllowed)
+                using (new UndoRedo.AtomicBlock(Model, "Remove action"))
                 {
-                    actionIcon.Transition.Actions.RemoveAt(actionIcon.TransitionIcon.ActionIcons.IndexOf(actionIcon));
-                    Model.StateMachine.EndChange();
+                    transition.ActionReferences.RemoveAt(slot);
+                    Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Model, actionReference, slot));
                 }
-                else if (icon.ReferencedObject is ViewModel.State state && Model.StateMachine.States.Contains(state) && Model.StateMachine.IsChangeAllowed)
-                {
-                    ViewModel.Transition[] transitions = state.TransitionsFrom.ToArray();
-                    foreach (ViewModel.Transition t in transitions)
-                    {
-                        if (LoadedIcons.ContainsKey(t))
-                        {
-                            DeleteIcon(LoadedIcons[t]);
-                        }
-                    }
-                    transitions = state.TransitionsTo.ToArray();
-                    foreach (ViewModel.Transition t in transitions)
-                    {
-                        if (LoadedIcons.ContainsKey(t))
-                        {
-                            DeleteIcon(LoadedIcons[t]);
-                        }
-                    }
-                    Model.StateMachine.States.Remove(state);
-                    Model.LogUndoAction(new UndoRedo.AddStateRecord (Model, state));
-                    Model.StateMachine.EndChange();
-                }
-                else if (icon.ReferencedObject is ViewModel.EventType eventType && Model.StateMachine.EventTypes.Contains(eventType) && Model.StateMachine.IsChangeAllowed)
+                Model.StateMachine.EndChange();
+            }
+        }
+
+        private void  DeleteEventType(ViewModel.EventType eventType)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, "Remove event type"))
                 {
                     foreach (ViewModel.Transition t in Model.StateMachine.Transitions)
                     {
@@ -470,29 +456,107 @@ namespace SimpleStateMachineEditor
                             t.TriggerEvent = null;
                         }
                     }
+                    eventType.Remove();
                     Model.StateMachine.EventTypes.Remove(eventType);
                     Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
-                    Model.StateMachine.EndChange();
                 }
-                else if (icon.ReferencedObject is ViewModel.Layer layer && Model.StateMachine.Layers.Contains(layer))
+                Model.StateMachine.EndChange();
+            }
+        }
+
+        internal void DeleteIcon(Icons.ISelectableIcon icon)
+        {
+            if (icon is Icons.ActionReferenceIcon actionReferenceIcon && icon.ReferencedObject is ViewModel.ActionReference actionReference)
+            {
+                DeleteActionReference(actionReferenceIcon.Transition, actionReference, actionReference.Transition.ActionReferences.IndexOf(actionReference));
+            }
+            else if (icon.ReferencedObject is ViewModel.State state)
+            {
+                DeleteState(state);
+            }
+            else if (icon.ReferencedObject is ViewModel.EventType eventType)
+            {
+                DeleteEventType(eventType);
+            }
+            else if (icon.ReferencedObject is ViewModel.Layer layer)
+            {
+                if (!layer.IsDefaultLayer)
                 {
-                    if (!layer.IsDefaultLayer && Model.StateMachine.IsChangeAllowed)
+                    DeleteLayer(layer);
+                }
+            }
+            else if (icon.ReferencedObject is ViewModel.Transition transition)
+            {
+                DeleteTransition(transition);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private void DeleteLayer(ViewModel.Layer layer)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, "Remove layer"))
+                {
+                    foreach (ViewModel.State state in Model.StateMachine.States)
                     {
-                        Model.StateMachine.Layers.Remove(layer);
-                        Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
-                        Model.StateMachine.EndChange();
+                        ObjectModel.LayerPosition layerPosition;
+
+                        while ((layerPosition = state.LayerPositions.Where(lp => lp.Layer == layer).FirstOrDefault()) != null)
+                        {
+                            layerPosition.Remove();
+                            state.LayerPositions.Remove(layerPosition);
+                            Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, state));
+                        }
                     }
+                    layer.Remove();
+                    Model.StateMachine.Layers.Remove(layer);
+                    Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
                 }
-                else if (icon.ReferencedObject is ViewModel.Transition transition && Model.StateMachine.Transitions.Contains(transition) && Model.StateMachine.IsChangeAllowed)
+                Model.StateMachine.EndChange();
+            }
+        }
+
+        private void DeleteState(ViewModel.State state)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, "Remove state"))
                 {
+                    while (state.TransitionsFrom.Count > 0)
+                    {
+                        DeleteTransition(state.TransitionsFrom.First());
+                    }
+                    while (state.TransitionsTo.Count > 0)
+                    {
+                        DeleteTransition(state.TransitionsTo.First());
+                    }
+                    foreach (ObjectModel.LayerPosition layerPosition in state.LayerPositions)
+                    {
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, state));
+                    }
+                    state.Remove();
+                    Model.StateMachine.States.Remove(state);
+                    Model.LogUndoAction(new UndoRedo.AddStateRecord(Model, state));
+                }
+                Model.StateMachine.EndChange();
+            }
+        }
+
+        private void DeleteTransition(ViewModel.Transition transition)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, "Remove transition"))
+                {
+                    transition.Remove();
                     Model.StateMachine.Transitions.Remove(transition);
                     Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
-                    Model.StateMachine.EndChange();
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+                Model.StateMachine.EndChange();
             }
         }
 

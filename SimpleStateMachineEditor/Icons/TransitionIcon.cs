@@ -22,7 +22,7 @@ namespace SimpleStateMachineEditor.Icons
     {
         public override int ContextMenuId => PackageIds.TransitionIconContextMenuId;
 
-        public ObservableCollection<ActionIcon> ActionIcons { get; private set; }
+        public ObservableCollection<ActionReferenceIcon> ActionIcons { get; private set; }
 
         public override Point CenterPosition
         {
@@ -82,11 +82,11 @@ namespace SimpleStateMachineEditor.Icons
         internal TransitionIcon(DesignerControl designer, ViewModel.Transition transition, System.Windows.Point? center, System.Windows.Point? leftTop) :
             base(designer, transition, null, null)
         {
-            transition.Actions.CollectionChanged += TransitionActionsCollectionChangedHandler;
-            ActionIcons = new ObservableCollection<ActionIcon>();
-            foreach(ViewModel.Action action in transition.Actions)
+            transition.ActionReferences.CollectionChanged += TransitionActionsCollectionChangedHandler;
+            ActionIcons = new ObservableCollection<ActionReferenceIcon>();
+            foreach(ViewModel.ActionReference actionReference in transition.ActionReferences)
             {
-                ActionIcons.Add(new ActionIcon(designer, this, action));
+                ActionIcons.Add(new ActionReferenceIcon(designer, this, actionReference));
             }
         }
 
@@ -189,11 +189,12 @@ namespace SimpleStateMachineEditor.Icons
 
             if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed)
             {
-                if (!inhibitDeletion && transition.Actions.Contains(action))
+                if (!inhibitDeletion && transition.ActionReferences.Any(ar => ar.Action == action))
                 {
                     //  The action is already associated with the transition, so we interpret the request as "remove the action"
 
-                    transition.Actions.Remove(action);
+                    ViewModel.ActionReference actionReference = transition.ActionReferences.Where(ar => ar.Action == action).Single();
+                    transition.ActionReferences.Remove(actionReference);
                 }
                 else
                 {
@@ -204,10 +205,10 @@ namespace SimpleStateMachineEditor.Icons
                     IconControls.StateIconControl originControl = Designer.LoadedIcons[originState].Body as IconControls.StateIconControl;
                     List<double> segmentMidpointDistancesFromOrigin = new List<double>();
 
-                    foreach (ActionIcon actionIcon in ActionIcons)
+                    foreach (ActionReferenceIcon actionReferenceIcon in ActionIcons)
                     {
-                        Point leftTop = Utility.DrawingAids.NormalizePoint(originControl, actionIcon.ListBoxItem, new Point(0, 0));
-                        Point rightBottom = Utility.DrawingAids.NormalizePoint(originControl, actionIcon.ListBoxItem, new Point(actionIcon.ListBoxItem.ActualWidth, actionIcon.ListBoxItem.ActualHeight));
+                        Point leftTop = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(0, 0));
+                        Point rightBottom = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(actionReferenceIcon.ListBoxItem.ActualWidth, actionReferenceIcon.ListBoxItem.ActualHeight));
                         double distance = Utility.DrawingAids.Distance((leftTop.X + rightBottom.X) / 2, (leftTop.Y + rightBottom.Y) / 2, 0, 0);
                         segmentMidpointDistancesFromOrigin.Add(distance);
                     }
@@ -222,7 +223,9 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         if (clickDistance <= segmentMidpointDistancesFromOrigin[i])
                         {
-                            transition.Actions.Insert(i, action);
+                            ViewModel.ActionReference newActionReference = new ViewModel.ActionReference(Designer.Model, transition, action);
+                            transition.ActionReferences.Insert(i, newActionReference);
+                            transition.Controller.LogUndoAction(new UndoRedo.DeleteActionReferenceRecord(transition.Controller, newActionReference));
                             slot = i;
                             break;
                         }
@@ -280,11 +283,11 @@ namespace SimpleStateMachineEditor.Icons
                 case NotifyCollectionChangedAction.Add:
                     for (int i = 0; i < e.NewItems.Count; i++)
                     {
-                        ActionIcons.Insert(e.NewStartingIndex + i, new ActionIcon(Designer, this, e.NewItems[i] as ViewModel.Action));
+                        ActionIcons.Insert(e.NewStartingIndex + i, new ActionReferenceIcon(Designer, this, e.NewItems[i] as ViewModel.ActionReference));
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (ViewModel.Action action in e.OldItems)
+                    foreach (ViewModel.ActionReference actionReference in e.OldItems)
                     {
                         ActionIcons.RemoveAt(e.OldStartingIndex);
                     }

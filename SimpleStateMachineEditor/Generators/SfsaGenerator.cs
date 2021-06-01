@@ -247,9 +247,9 @@ namespace {FileNamespace}
         {
             string transitionString = $@"
                     new Transition<Action>({sortedStates.IndexOf(transition.DestinationState)}, new Action[] {{ ";
-            foreach (ViewModel.Action action in transition.Actions)
+            foreach (ViewModel.ActionReference actionReference in transition.ActionReferences)
             {
-                transitionString += action.Name + ", ";
+                transitionString += actionReference.Action.Name + ", ";
             }
             transitionString += $@"}}),";
             return transitionString;

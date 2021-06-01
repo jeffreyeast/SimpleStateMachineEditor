@@ -102,7 +102,7 @@
                         </ListBox.ItemsPanel>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <local:ActionIconControl/>
+                                <local:ActionReferenceIconControl/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>

@@ -138,7 +138,7 @@ namespace SimpleStateMachineEditor.IconControls
             double P2x = Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X;
             double P2y = Designer.LoadedIcons[Transition.DestinationState].CenterPosition.Y;
 
-            if (Transition.SourceState == Transition.DestinationState)
+            if (Math.Abs(P1x - P2x) < Icons.StateIcon.IconSize.Width && Math.Abs(P1y - P2y) < Icons.StateIcon.IconSize.Height)
             {
                 TextRotationAngle = 0;
 
@@ -291,9 +291,9 @@ namespace SimpleStateMachineEditor.IconControls
 
         private void ActionIconLoadedHandler(object sender, RoutedEventArgs e)
         {
-            if (sender is ListBoxItem listBoxItem && listBoxItem.Content is Icons.ActionIcon actionIcon)
+            if (sender is ListBoxItem listBoxItem && listBoxItem.Content is Icons.ActionReferenceIcon actionReferenceIcon)
             {
-                actionIcon.ListBoxItem = listBoxItem;
+                actionReferenceIcon.ListBoxItem = listBoxItem;
             }
         }
 

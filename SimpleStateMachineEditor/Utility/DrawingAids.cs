@@ -23,10 +23,45 @@ namespace SimpleStateMachineEditor.Utility
 
         internal static double Distance(Point p1, Point p2, Point subject)
         {
-            //  Return the distance from a point to a line between P1 and P2
+            //  Return the distance from a point to a line between P1 and P2. Credit to Ben Gotow on StackOverflow
 
-            return Math.Abs((p2.X - p1.X) * (p1.Y - subject.Y) - (p1.X - subject.X) * (p2.Y - p1.Y)) / 
-                Math.Sqrt((p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p1.Y));
+            if (p1.X == p2.X && p1.Y == p2.Y)
+            {
+                return Distance(p1, subject);
+            }
+
+            double A = subject.X - p1.X;
+            double B = subject.Y - p1.Y;
+            double C = p2.X - p1.X;
+            double D = p2.Y - p1.Y;
+
+            double dot = A * C + B * D;
+            double len_sq = C * C + D * D;
+            double param = dot / len_sq;
+
+            double xx;
+            double yy;
+
+            if (param < 0)
+            {
+                xx = p1.X;
+                yy = p1.Y;
+            }
+            else if (param > 1)
+            {
+                xx = p2.X;
+                yy = p2.Y;
+            }
+            else
+            {
+                xx = p1.X + param * C;
+                yy = p1.Y + param * D;
+            }
+
+            double dx = subject.X - xx;
+            double dy = subject.Y - yy;
+
+            return Math.Sqrt(dx * dx + dy * dy);
         }
 
         public static PathFigure DrawArrowHead(Point startPoint, Point endPoint, double arrowLength = 10)

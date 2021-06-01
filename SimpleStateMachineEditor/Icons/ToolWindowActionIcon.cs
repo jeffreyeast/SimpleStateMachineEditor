@@ -147,26 +147,22 @@ namespace SimpleStateMachineEditor.Icons
             MouseHoverTimer.Stop();
             IsHovering = true;
 
-            foreach (ViewModel.Transition transition in Action.Controller.StateMachine.Transitions)
+            foreach (TransitionIcon transitionIcon in ToolWindow.Designer.LoadedIcons.Values.OfType<Icons.TransitionIcon>())
             {
-                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null &&
-                    ToolWindow.Designer.LoadedIcons.ContainsKey(transition) && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
+                foreach (ActionReferenceIcon actionReferenceIcon in transitionIcon.ActionIcons.Where(ar => (ar.ReferencedObject as ViewModel.ActionReference).Action == Action))
                 {
-                    ActionIcon icon = transitionIcon.ActionIcons.Where(actionIcon => actionIcon.ReferencedObject == Action).Single();
-                    icon.ActionIsHighlighted = true;
+                    actionReferenceIcon.ActionIsHighlighted = true;
                 }
             }
         }
 
         private void OnHoverEnd()
         {
-            foreach (ViewModel.Transition transition in Action.Controller.StateMachine.Transitions)
+            foreach (TransitionIcon transitionIcon in ToolWindow.Designer.LoadedIcons.Values.OfType<Icons.TransitionIcon>())
             {
-                if (transition.Actions.Contains(Action) && ToolWindow.Designer != null &&
-                    ToolWindow.Designer.LoadedIcons.ContainsKey(transition) && ToolWindow.Designer.LoadedIcons[transition] is Icons.TransitionIcon transitionIcon)
+                foreach (ActionReferenceIcon actionReferenceIcon in transitionIcon.ActionIcons.Where(ar => (ar.ReferencedObject as ViewModel.ActionReference).Action == Action))
                 {
-                    ActionIcon icon = transitionIcon.ActionIcons.Where(actionIcon => actionIcon.ReferencedObject == Action).Single();
-                    icon.ActionIsHighlighted = false;
+                    actionReferenceIcon.ActionIsHighlighted = false;
                 }
             }
         }

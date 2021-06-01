@@ -284,7 +284,9 @@
  - There's problem when a state already has two transition and you want to swap the trigger events on them (e.g., Yes and No). You need a 3rd event to act as a placeholder.  It prevents you from having multiple
    transitions with the same trigger.
  - You can't select multiple transitions and delete them. It'll only let you select one.
+   BY DESIGN
  - There's no way to set the display colors of a region
+   REGIONS WERE REMOVED
  - Sometimes a transition becomes non-response to mouse clicks or hovering
  - Do all actions need to return a value for a state machine with return value?  Seems sorta restrictive.
  - Can the type of a state machine be a struct?
@@ -293,7 +295,9 @@
 
  - The IsChangeAllowed tests are a little bogus -- when would change not be allowed (during startup and something to do with editting in the text window). But in DeleteIcon, it'll yield a notimplementedexception.
  - Right click should not clear the selection
+   FIXED -- mouse selection now matches (or is closer to) that of VS
  - Should regions be members of layers?
+   REMOVED REGIONS
  - Switching layers should be logged, otherwise undoredo may get screwed up with icon maintenance
    DONE
  - getting a bunch of binding errors when we create a layer icon. I think it's because the initial datacontext is set to Layer, rather than LayerIcon, as it is later on
@@ -315,10 +319,12 @@
   - Select transition start state has two problems: loses trigger event and draws incorrectly
     FIXED
   - Should you be able to drag an action from one transition to another?
+    DONE
 
 5/28/2021
 
   - Check if two states have the same location and have a transition between them, if the transition can be successfully drawn
+    FIXED
 
 5/29/2021
 
@@ -326,3 +332,13 @@
     FIXED
   - REGRESSION: Can't drag an action to reorder it
     FIXED
+
+5/30/2021
+
+ - BUG: Undo of deletion of a start state doesn't cause the start state designation to be preserved
+ - Moving an action, the math for the destination is funky. Seems like the closest transition computation is in error.
+   FIXED -- algorithm was using distance from a (infinite) line, not a line segment
+
+6/1/2021
+
+ - Consider groups of states

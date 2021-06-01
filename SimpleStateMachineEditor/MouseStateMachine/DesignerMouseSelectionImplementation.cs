@@ -266,7 +266,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
 
         protected override void TestIfActionIcon()
         {
-            PostHighPriorityEvent(SelectedIcon is Icons.ActionIcon ? EventTypes.Yes : EventTypes.No);
+            PostHighPriorityEvent(SelectedIcon is Icons.ActionReferenceIcon ? EventTypes.Yes : EventTypes.No);
         }
 
         protected override void TestIfPositionableIcon()

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SimpleStateMachineEditor.IconControls.ActionIconControl"
+﻿<UserControl x:Class="SimpleStateMachineEditor.IconControls.ActionReferenceIconControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SimpleStateMachineEditor.IconControls"
              xmlns:global="clr-namespace:SimpleStateMachineEditor"
              mc:Ignorable="d" 
-             d:DesignHeight="12" d:DesignWidth="120">
+             d:DesignHeight="16" d:DesignWidth="100">
     <UserControl.Resources>
         <Style x:Key="ActionNameStyle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="Normal"/>
@@ -16,7 +16,7 @@
                 <DataTrigger Binding="{Binding Path=ActionIsHighlighted}" Value="True">
                     <Setter Property="Background" Value="Gray"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=ReferencedObject.WasNameFound}" Value="True">
+                <DataTrigger Binding="{Binding Path=ReferencedObject.Action.WasNameFound}" Value="True">
                     <Setter Property="Background" Value="Gray"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=TransitionIcon.IsHovering}" Value="True">
@@ -34,6 +34,6 @@
     </UserControl.Resources>
 
     <Grid>
-        <TextBlock Text="{Binding Path=ReferencedObject.Name}" Style="{StaticResource ActionNameStyle}"/>
+        <TextBlock Text="{Binding Path=ReferencedObject.Action.Name}" Style="{StaticResource ActionNameStyle}"/>
     </Grid>
 </UserControl>

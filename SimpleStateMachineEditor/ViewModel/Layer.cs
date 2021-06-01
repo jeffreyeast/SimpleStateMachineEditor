@@ -65,7 +65,6 @@ namespace SimpleStateMachineEditor.ViewModel
         public Layer()
         {
             Members = new ObservableCollection<TrackableObject>();
-            Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = new List<int>();
         }
 
@@ -75,7 +74,6 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             IsDefaultLayer = isDefaultLayer;
             Members = new ObservableCollection<TrackableObject>();
-            Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
         }
 
@@ -83,17 +81,8 @@ namespace SimpleStateMachineEditor.ViewModel
 
         internal Layer(ViewModel.ViewModelController controller, UndoRedo.AddLayerRecord redoRecord) : base(controller, redoRecord)
         {
-            using (new UndoRedo.DontLogBlock(controller))
-            {
-                Members = new ObservableCollection<TrackableObject>();
-                Members.CollectionChanged += Members_CollectionChanged;
-                foreach (int memberId in redoRecord.MemberIds)
-                {
-                    TrackableObject member = Controller.StateMachine.Find(memberId);
-                    Members.Add(member);
-                }
-                MemberIds = null;
-            }
+            Members = new ObservableCollection<TrackableObject>();
+            LoadMembersFromIds(controller, controller.StateMachine, redoRecord.MemberIds);
         }
 
         internal static Layer Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, bool isDefaultLayer)
@@ -107,7 +96,11 @@ namespace SimpleStateMachineEditor.ViewModel
         internal override void DeserializeCleanup(ViewModelController controller, ViewModel.StateMachine stateMachine)
         {
             base.DeserializeCleanup(controller, stateMachine);
+            LoadMembersFromIds(controller, stateMachine, MemberIds);
+        }
 
+        private void LoadMembersFromIds(ViewModelController controller, ViewModel.StateMachine stateMachine, IEnumerable<int> idList)
+        {
             using (new UndoRedo.DontLogBlock(controller))
             {
 
@@ -117,44 +110,7 @@ namespace SimpleStateMachineEditor.ViewModel
                     Members.Add(member);
                 }
             }
-        }
-
-        private void Members_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
             MemberIds = null;
-
-            switch (e.Action)
-            {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    foreach (TrackableObject member in e.NewItems)
-                    {
-                        member.Removing += MemberIsBeingRemovedHandler;
-                    }
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    foreach (TrackableObject member in e.OldItems)
-                    {
-                        member.Removing -= MemberIsBeingRemovedHandler;
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        private void MemberIsBeingRemovedHandler(IRemovableObject member)
-        {
-            member.Removing -= MemberIsBeingRemovedHandler;
-            Members.Remove(member as ObjectModel.TrackableObject);
-        }
-
-        protected override void OnRemoving()
-        {
-            foreach (TrackableObject member in Members)
-            {
-                member.Removing -= MemberIsBeingRemovedHandler;
-            }
-            base.OnRemoving();
         }
     }
 }
