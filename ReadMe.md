@@ -37,6 +37,24 @@ The extension, SimpleStateMachineEditor.VSIX, will be found under SimpleStateMac
 The .Net Framework runtime, SimpleStateMachine.dll, will be found under SimpleStateMachineEditor\SimpleStateMachine\bin.
 
 The .Net Core runtime, SimpleStateMachineCore.dll, will be found under SimpleStateMachineEditor\SimpleStateMachineCore\bin.
+
+You may have an issue with getting it to build on a machine that has never built a Visual Studio extension before. You need to have chosen the *Visual Studio Extension development* option (under *Other toolsets*) when you installed Visual Studio. 
+Run the Visual Studio Installer and ensure this option is checked.
+
+Ensure you have the following extension installed (*Extensions\Manage Extensions*):
+- Extensibility Essentials 2019
+
+The solution explicitly references the following Nuget packages. These should be automatically restored for you during the build process:
+- Template Builder
+
+If you find it still won't build, try creating a new solution with a VSIX project and build that. Then go back and try to rebuild the SimpleStateMachineEditor. There's some black magic going on behind the scenes, and I found this helped on my machine. If all
+else fails, try adding the following lines to the SimpleStateMachineEditor.csproj file:
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.10.1055" />
+  </ItemGroup>
+
 # Installation
 The Simple State Machine Editor consists of two pieces: a Visual Studio extension (SimpleStateMachineEditor.VSIX) and a runtime (.Net Framework: SimpleStateMachine.dll, 
 .Net Core: SimpleStateMachineCore.dll).
