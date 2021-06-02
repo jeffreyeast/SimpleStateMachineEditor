@@ -51,7 +51,10 @@ namespace SimpleStateMachineEditor
         public const int ActionIconContextMenuGroupId = 0x1039;
         public const int LayerIconContextMenuId = 0x103A;
         public const int LayerIconContextMenuGroupId = 0x103B;
+        public const int GroupIconContextMenuId = 0x103C;
+        public const int GroupIconContextMenuGroupId = 0x103D;
         public const int AddEventTypeCommandId = 0x0100;
+        public const int AddGroupCommandId = 0x0101;
         public const int AddStateCommandId = 0x0102;
         public const int AddTransitionCommandId = 0x0103;
         public const int AlignBottomCommandId = 0x0104;
@@ -63,11 +66,13 @@ namespace SimpleStateMachineEditor
         public const int DeleteCommandId = 0x010A;
         public const int DistributeHorizontallyCommandId = 0x010B;
         public const int DistributeVerticallyCommandId = 0x010C;
-        public const int SelectNewDestinationCommandId = 0x010F;
-        public const int SelectNewSourceCommandId = 0x0110;
-        public const int SetIconDisplayColorsComboId = 0x0111;
-        public const int SortCommandId = 0x0113;
-        public const int StartStateCommandId = 0x0114;
-        public const int cmdidActionsToolWindowCommand = 0x0115;
+        public const int GroupCommandId = 0x010D;
+        public const int SelectNewDestinationCommandId = 0x010E;
+        public const int SelectNewSourceCommandId = 0x010F;
+        public const int SetIconDisplayColorsComboId = 0x0110;
+        public const int SortCommandId = 0x0111;
+        public const int StartStateCommandId = 0x0112;
+        public const int UngroupCommandId = 0x0113;
+        public const int cmdidActionsToolWindowCommand = 0x0114;
     }
 }

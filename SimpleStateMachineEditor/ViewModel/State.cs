@@ -15,7 +15,7 @@ namespace SimpleStateMachineEditor.ViewModel
     //++
     //      The State class represents a state.
     //--
-    public class State : ObjectModel.LayeredPositionableObject
+    public class State : ObjectModel.LayeredPositionableObject, ObjectModel.ITransitionEndpoint
     {
         public enum StateTypes
         {
@@ -62,6 +62,46 @@ namespace SimpleStateMachineEditor.ViewModel
         public ObservableCollection<Transition> TransitionsTo { get; private set; }
 
 
+        [XmlIgnore]
+        [Description("The group to which the state belongs")]
+        public Group AssociatedGroup
+        {
+            get => _associatedGroup;
+            set
+            {
+                if (_associatedGroup != value && IsChangeAllowed)
+                {
+                    if (_associatedGroup != null)
+                    {
+                        _associatedGroup.Removing -= AssociatedGroupWasRemovedHandler;
+                    }
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "AssociatedGroup", _associatedGroup?.Id.ToString() ?? ((int)-1).ToString()));
+                    _associatedGroup = value;
+                    if (_associatedGroup != null)
+                    {
+                        _associatedGroup.Removing += AssociatedGroupWasRemovedHandler;
+                    }
+                    OnPropertyChanged("AssociatedGroup");
+                    OnPropertyChanged("IsGrouped");
+                    EndChange();
+                }
+            }
+        }
+        Group _associatedGroup;
+
+        [Browsable(false)]
+        [XmlAttribute]
+        public int AssociatedGroupId
+        {
+            get => AssociatedGroup?.Id ?? _associatedGroupId;
+            set => _associatedGroupId = value;
+        }
+        int _associatedGroupId = -1;
+
+        public bool IsGrouped => AssociatedGroup != null;
+
+
+
 
         //  Constructor for use by serialization ONLY
 
@@ -102,12 +142,23 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        private void AssociatedGroupWasRemovedHandler(IRemovableObject item)
+        {
+            AssociatedGroup = null;
+        }
+
         internal static State Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, ViewModel.Layer currentLayer)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
                 return new State(controller, optionsPage.StateRootName, currentLayer);
             }
+        }
+
+        internal override void DeserializeCleanup(ViewModelController controller, StateMachine stateMachine)
+        {
+            base.DeserializeCleanup(controller, stateMachine);
+            AssociatedGroup = stateMachine.Find(_associatedGroupId) as ViewModel.Group;
         }
 
         private void GatherPeers(List<Transition> peerTransitions, Transition transition, IEnumerable<Transition> transitionList)
@@ -141,7 +192,7 @@ namespace SimpleStateMachineEditor.ViewModel
         //  This method calculates the relative position of a transition among all the transitions that originate or
         //  terminate at this state, which share a common opposite state.
 
-        internal int GetRelativePeerPosition(Transition transition)
+        public int GetRelativePeerPosition(Transition transition)
         {
             List<Transition> peerTransitions = new List<Transition>();
             GatherPeers(peerTransitions, transition, TransitionsTo);
@@ -158,7 +209,7 @@ namespace SimpleStateMachineEditor.ViewModel
             return position;
         }
 
-        internal bool HasTransitionMatchingTrigger(EventType triggerEvent)
+        public bool HasTransitionMatchingTrigger(EventType triggerEvent)
         {
             if (triggerEvent != null)
             {

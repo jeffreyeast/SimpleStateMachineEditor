@@ -29,6 +29,7 @@ namespace SimpleStateMachineEditor
     public partial class DesignerControl : UserControl, IOleCommandTarget
     {
         const string AddEventTypeDescription = "Add event type";
+        const string AddGroupDescription = "Add group";
         const string AddLayerDescription = "Add layer";
         const string AddStateDescription = "Add state";
         const string AddTransitionDescription = "Add transition";
@@ -119,6 +120,32 @@ namespace SimpleStateMachineEditor
                     }
                     newEventType.LeftTopPosition = new Point(center.Value.X - Icons.EventTypeIcon.IconSize.Width / 2, center.Value.Y - Icons.EventTypeIcon.IconSize.Height / 2);
                     Model.StateMachine.EventTypes.Add(newEventType);
+                }
+
+                Model.StateMachine.EndChange();
+            }
+        }
+
+        internal void AddGroup(Point? center = null)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, AddGroupDescription))
+                {
+                    ViewModel.Group newGroup = ViewModel.Group.Create(Model, OptionsPage, CurrentLayer);
+                    Model.LogUndoAction(new UndoRedo.DeleteGroupRecord(Model, newGroup));
+                    if (!center.HasValue)
+                    {
+                        center = FindEmptySpace(Icons.StateIcon.IconSize);
+                    }
+                    Point position = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                    AddLayerMember(DefaultLayer, newGroup, position);
+                    if (CurrentLayer != DefaultLayer)
+                    {
+                        AddLayerMember(CurrentLayer, newGroup, position);
+                    }
+
+                    Model.StateMachine.Groups.Add(newGroup);
                 }
 
                 Model.StateMachine.EndChange();
@@ -464,6 +491,24 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        private void DeleteGroup(ViewModel.Group group)
+        {
+            if (Model.StateMachine.IsChangeAllowed)
+            {
+                using (new UndoRedo.AtomicBlock(Model, "Remove group"))
+                {
+                    foreach (ObjectModel.LayerPosition layerPosition in group.LayerPositions)
+                    {
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, group));
+                    }
+                    group.Remove();
+                    Model.StateMachine.Groups.Remove(group);
+                    Model.LogUndoAction(new UndoRedo.AddGroupRecord(Model, group));
+                }
+                Model.StateMachine.EndChange();
+            }
+        }
+
         internal void DeleteIcon(Icons.ISelectableIcon icon)
         {
             if (icon is Icons.ActionReferenceIcon actionReferenceIcon && icon.ReferencedObject is ViewModel.ActionReference actionReference)
@@ -477,6 +522,10 @@ namespace SimpleStateMachineEditor
             else if (icon.ReferencedObject is ViewModel.EventType eventType)
             {
                 DeleteEventType(eventType);
+            }
+            else if (icon.ReferencedObject is ViewModel.Group group)
+            {
+                DeleteGroup(group);
             }
             else if (icon.ReferencedObject is ViewModel.Layer layer)
             {
@@ -838,6 +887,24 @@ namespace SimpleStateMachineEditor
                     IconSurface.Children.Add(eventTypeIcon.Body);
                     LoadedIcons.Add(eventType, eventTypeIcon);
                 }
+                else if (trackableObject is ViewModel.Group group)
+                {
+                    if (CurrentLayer.Members.Contains(group))
+                    {
+                        Icons.GroupIcon groupIcon = new Icons.GroupIcon(this, group, null, group.LeftTopPosition);
+                        IconSurface.Children.Add(groupIcon.Body);
+                        LoadedIcons.Add(group, groupIcon);
+
+                        foreach (ViewModel.Transition transition in group.TransitionsFrom)
+                        {
+                            LoadViewModelIcon(trackableObject);
+                        }
+                        foreach (ViewModel.Transition transition in group.TransitionsTo)
+                        {
+                            LoadViewModelIcon(trackableObject);
+                        }
+                    }
+                }
                 else if (trackableObject is ViewModel.State state)
                 {
                     if (CurrentLayer.Members.Contains(state))
@@ -948,6 +1015,7 @@ namespace SimpleStateMachineEditor
             if (StateMachine != null)
             {
                 StateMachine.EventTypes.CollectionChanged -= StateMachineEventTypesCollectionChangedHandler;
+                StateMachine.Groups.CollectionChanged -= StateMachineGroupsCollectionChangedHandler;
                 StateMachine.States.CollectionChanged -= StateMachineStatesCollectionChangedHandler;
                 StateMachine.Transitions.CollectionChanged -= StateMachineTransitionsCollectionChangedHandler;
             }
@@ -955,6 +1023,7 @@ namespace SimpleStateMachineEditor
             if (StateMachine != null && !isUnloading)
             {
                 StateMachine.EventTypes.CollectionChanged += StateMachineEventTypesCollectionChangedHandler;
+                StateMachine.Groups.CollectionChanged += StateMachineGroupsCollectionChangedHandler;
                 StateMachine.States.CollectionChanged += StateMachineStatesCollectionChangedHandler;
                 StateMachine.Transitions.CollectionChanged += StateMachineTransitionsCollectionChangedHandler;
             }
@@ -1231,6 +1300,29 @@ namespace SimpleStateMachineEditor
                     foreach (ViewModel.EventType eventType in e.OldItems)
                     {
                         UnloadViewModelIcon(eventType);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void StateMachineGroupsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ViewModel.Group newGroup in e.NewItems)
+                    {
+                        LoadViewModelIcon(newGroup);
+                        ClearSelectedItems();
+                        SelectIcon(LoadedIcons[newGroup]);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ViewModel.Group group in e.OldItems)
+                    {
+                        UnloadViewModelIcon(group);
                     }
                     break;
                 default:

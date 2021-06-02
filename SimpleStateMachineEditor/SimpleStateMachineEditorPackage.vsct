@@ -80,6 +80,13 @@
         </Strings>
       </Menu>
 
+      <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupIconContextMenuId" type="Context">
+        <Strings>
+          <MenuText>Context Menu</MenuText>
+          <ButtonText>Context Menu</ButtonText>
+        </Strings>
+      </Menu>
+
       <Menu guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuMenuId" type="Context">
         <Strings>
           <MenuText>Horizontal</MenuText>
@@ -130,6 +137,7 @@
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlViewMenuGroupId" priority="0xffff" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="ActionIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" priority="0x0600" />
+      <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="HorizontalAlignmentSubmenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" priority="0x0600" />
       <Group guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" priority="0x0600" />
@@ -154,6 +162,13 @@
         <Strings>
           <ButtonText>Add new event type</ButtonText>
           <ToolTipText>Add new trigger event type</ToolTipText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddGroupCommandId" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>Add new group</ButtonText>
+          <ToolTipText>Add new group</ToolTipText>
         </Strings>
       </Button>
 
@@ -257,6 +272,13 @@
         </Strings>
       </Button>
 
+      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupCommandId" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>Form new group</ButtonText>
+          <ToolTipText>Form a new group and add state to it</ToolTipText>
+        </Strings>
+      </Button>
+
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewDestinationCommandId" priority="0x0100" type="Button">
         <Strings>
           <ButtonText>Select new transition end state</ButtonText>
@@ -287,6 +309,14 @@
           <ButtonText>ActionsToolWindow</ButtonText>
         </Strings>
       </Button>
+
+      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="UngroupCommandId" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>Ungroup state</ButtonText>
+          <ToolTipText>Remove state from its associated group</ToolTipText>
+        </Strings>
+      </Button>
+
     </Buttons>
 
     <Combos>
@@ -366,6 +396,10 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
 
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddGroupCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
+    </CommandPlacement>
+
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AddStateCommandId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="DesignControlSubmenuGroupId" />
     </CommandPlacement>
@@ -405,6 +439,16 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="EventTypeIconContextMenuGroupId" />
     </CommandPlacement>
 
+    <!-- Group Context Menu -->
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupIconContextMenuGroupId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupIconContextMenuId" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="DeleteCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupIconContextMenuGroupId" />
+    </CommandPlacement>
+
     <!-- Layer Context Menu -->
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="LayerIconContextMenuGroupId" priority="0x0001">
@@ -430,6 +474,14 @@
     </CommandPlacement>
 
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="StartStateCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupCommandId" priority="0x0001">
+      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="UngroupCommandId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
@@ -552,8 +604,11 @@
       <IDSymbol name="ActionIconContextMenuGroupId" value="0x1039" />
       <IDSymbol name="LayerIconContextMenuId" value="0x103a" />
       <IDSymbol name="LayerIconContextMenuGroupId" value="0x103b" />
+      <IDSymbol name="GroupIconContextMenuId" value="0x103c" />
+      <IDSymbol name="GroupIconContextMenuGroupId" value="0x103d" />
 
       <IDSymbol name="AddEventTypeCommandId" value="0x0100" />
+      <IDSymbol name="AddGroupCommandId" value="0x0101" />
       <IDSymbol name="AddStateCommandId" value="0x0102" />
       <IDSymbol name="AddTransitionCommandId" value="0x0103" />
       <IDSymbol name="AlignBottomCommandId" value="0x0104" />
@@ -565,12 +620,14 @@
       <IDSymbol name="DeleteCommandId" value="0x010a" />
       <IDSymbol name="DistributeHorizontallyCommandId" value="0x010b" />
       <IDSymbol name="DistributeVerticallyCommandId" value="0x010c" />
-      <IDSymbol name="SelectNewDestinationCommandId" value="0x010f" />
-      <IDSymbol name="SelectNewSourceCommandId" value="0x0110" />
-      <IDSymbol name="SetIconDisplayColorsComboId" value="0x111" />
-      <IDSymbol name="SortCommandId" value="0x0113" />
-      <IDSymbol name="StartStateCommandId" value="0x0114" />
-      <IDSymbol value="0x0115" name="cmdidActionsToolWindowCommand" />
+      <IDSymbol name="GroupCommandId" value="0x010d" />
+      <IDSymbol name="SelectNewDestinationCommandId" value="0x010e" />
+      <IDSymbol name="SelectNewSourceCommandId" value="0x010f" />
+      <IDSymbol name="SetIconDisplayColorsComboId" value="0x110" />
+      <IDSymbol name="SortCommandId" value="0x0111" />
+      <IDSymbol name="StartStateCommandId" value="0x0112" />
+      <IDSymbol name="UngroupCommandId" value="0x0113" />
+      <IDSymbol value="0x0114" name="cmdidActionsToolWindowCommand" />
     </GuidSymbol>
   
   </Symbols>

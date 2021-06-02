@@ -13,23 +13,22 @@ using System.Windows.Media;
 
 namespace SimpleStateMachineEditor.Icons
 {
-    internal class StateIcon : LayeredPositionableIcon
+    internal class GroupIcon : LayeredPositionableIcon
     {
-        public override int ContextMenuId => PackageIds.StateIconContextMenuId;
-        internal readonly static Size IconSize = new Size(62, 62);
-        internal readonly static double Radius = 30;
+        public override int ContextMenuId => PackageIds.GroupIconContextMenuId;
+        internal readonly static Size IconSize = new Size(122, 122);
+        internal readonly static double Radius = 60;
 
 
 
-        internal StateIcon(DesignerControl designer, ViewModel.State state, System.Windows.Point? center, System.Windows.Point? leftTop) :
-            base(designer, state, center, leftTop, IconSize)
+        internal GroupIcon(DesignerControl designer, ViewModel.Group group, System.Windows.Point? center, System.Windows.Point? leftTop) :
+            base(designer, group, center, leftTop, IconSize)
         {
         }
 
-
         protected override FrameworkElement CreateDraggableShape()
         {
-            return new IconControls.StateIconControl()
+            return new IconControls.GroupIconControl()
             {
                 DataContext = this,
                 Opacity = 0.5,
@@ -38,7 +37,7 @@ namespace SimpleStateMachineEditor.Icons
 
         protected override Control CreateIcon()
         {
-            return new IconControls.StateIconControl()
+            return new IconControls.GroupIconControl()
             {
                 DataContext = this,
                 Style = Designer.Resources["StateIconStyle"] as Style,
@@ -53,19 +52,6 @@ namespace SimpleStateMachineEditor.Icons
             {
                 switch (nCmdID)
                 {
-                    case PackageIds.AddTransitionCommandId:
-                        Designer.AddTransition(ReferencedObject as ViewModel.State);
-                        return VSConstants.S_OK;
-                    case PackageIds.StartStateCommandId:
-                        if (Designer.Model.StateMachine.StartState == ReferencedObject)
-                        {
-                            Designer.SetStartState(null);
-                        }
-                        else
-                        {
-                            Designer.SetStartState(ReferencedObject as ViewModel.State);
-                        }
-                        return VSConstants.S_OK;
                     default:
                         break;
                 }
@@ -117,24 +103,6 @@ namespace SimpleStateMachineEditor.Icons
                 {
                     switch (prgCmds[i].cmdID)
                     {
-                        case PackageIds.AddTransitionCommandId:
-                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (IsSelectable)
-                            {
-                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
-                            }
-                            break;
-                        case PackageIds.StartStateCommandId:
-                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (IsSelectable)
-                            {
-                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
-                            }
-                            if (Designer.Model.StateMachine.StartState == ReferencedObject)
-                            {
-                                prgCmds[i].cmdf |= (uint)OLECMDF.OLECMDF_LATCHED;
-                            }
-                            break;
                         default:
                             break;
                     }

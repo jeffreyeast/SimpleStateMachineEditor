@@ -49,6 +49,7 @@
     <TemplateBuilderTargets Condition=" '$(TemplateBuilderTargets)'=='' ">$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\..\packages\TemplateBuilder.1.1.6.1\tools\ligershark.templates.targets ))</TemplateBuilderTargets>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Commands\AddGroupCommand.cs" />
     <Compile Include="Commands\AddTransitionCommand.cs" />
     <Compile Include="Commands\AlignmentCommand.cs" />
     <Compile Include="Commands\DeleteCommand.cs" />
@@ -67,10 +68,15 @@
     <Compile Include="IconControls\LayerIconControl.xaml.cs">
       <DependentUpon>LayerIconControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="IconControls\GroupIconControl.xaml.cs">
+      <DependentUpon>GroupIconControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Icons\ActionReferenceIcon.cs" />
     <Compile Include="Icons\ISelectableIcon.cs" />
     <Compile Include="Icons\LayerIcon.cs" />
     <Compile Include="Icons\SelectableIcon.cs" />
+    <Compile Include="Icons\GroupIcon.cs" />
+    <Compile Include="Icons\LayeredPositionableIcon.cs" />
     <Compile Include="Icons\ToolWindowActionIcon.cs" />
     <Compile Include="IconControls\ActionsToolWindow.cs" />
     <Compile Include="IconControls\ActionsToolWindowCommand.cs" />
@@ -110,6 +116,7 @@
     <Compile Include="ObjectModel\EditableString.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
     <Compile Include="ObjectModel\IRemovableObject.cs" />
+    <Compile Include="ObjectModel\ITransitionEndpoint.cs" />
     <Compile Include="ObjectModel\LayerPosition.cs" />
     <Compile Include="ObjectModel\LayeredPositionableObject.cs" />
     <Compile Include="SearchTask.cs" />
@@ -129,6 +136,7 @@
     <Compile Include="Toolbox\TransitionToolboxControl.xaml.cs">
       <DependentUpon>TransitionToolboxControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UndoRedo\GroupRecords.cs" />
     <Compile Include="UndoRedo\TransitionRecords.cs" />
     <Compile Include="UndoRedo\LayerRecords.cs" />
     <Compile Include="UndoRedo\StateRecords.cs" />
@@ -156,6 +164,7 @@
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
     <Compile Include="ViewModel\Layer.cs" />
+    <Compile Include="ViewModel\Group.cs" />
     <Compile Include="ViewModel\State.cs" />
     <Compile Include="ViewModel\StateMachine.cs" />
     <Compile Include="ViewModel\Transition.cs" />
@@ -249,6 +258,10 @@
     <Page Include="IconControls\SelectionBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IconControls\GroupIconControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="IconControls\StateIconControl.xaml">
       <SubType>Designer</SubType>

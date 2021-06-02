@@ -23,6 +23,8 @@ namespace SimpleStateMachineEditor.ViewModel
         [Browsable(false)]
         public ObservableCollection<EventType> EventTypes { get; private set; }
         [Browsable(false)]
+        public ObservableCollection<Group> Groups { get; private set; }
+        [Browsable(false)]
         public ObservableCollection<Layer> Layers { get; private set; }
         [Browsable(false)]
         public ObservableCollection<State> States { get; private set; }
@@ -146,6 +148,7 @@ namespace SimpleStateMachineEditor.ViewModel
             Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
             EventTypes.CollectionChanged += CollectionChangedHandler;
+            Groups = new ObservableCollection<Group>();
             Layers = new ObservableCollection<Layer>();
             Layers.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
@@ -162,6 +165,7 @@ namespace SimpleStateMachineEditor.ViewModel
             Actions.CollectionChanged += CollectionChangedHandler;
             EventTypes = new ObservableCollection<EventType>();
             EventTypes.CollectionChanged += CollectionChangedHandler;
+            Groups = new ObservableCollection<Group>();
             Layers = new ObservableCollection<Layer>();
             Layers.CollectionChanged += CollectionChangedHandler;
             States = new ObservableCollection<State>();
@@ -225,6 +229,10 @@ namespace SimpleStateMachineEditor.ViewModel
             {
                 e.DeserializeCleanup(Controller, this);
             }
+            foreach (Group g in Groups)
+            {
+                g.DeserializeCleanup(Controller, this);
+            }
             foreach (Layer l in Layers)
             {
                 l.DeserializeCleanup(controller, this);
@@ -253,6 +261,8 @@ namespace SimpleStateMachineEditor.ViewModel
                     layerPosition.DeserializeCleanupPhase2(controller, this);
                 }
             }
+
+            PopulateGroups();
         }
 
         internal ObjectModel.TrackableObject Find(int id)
@@ -309,6 +319,17 @@ namespace SimpleStateMachineEditor.ViewModel
                 default:
                     base.GetProperty(propertyName, out value);
                     break;
+            }
+        }
+
+        private void PopulateGroups()
+        {
+            foreach (State state in States)
+            {
+                if (state.AssociatedGroup != null)
+                {
+                    state.AssociatedGroup.Members.Add(state);
+                }
             }
         }
 
