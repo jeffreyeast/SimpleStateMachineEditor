@@ -132,7 +132,7 @@ namespace SimpleStateMachineEditor.Icons
 
             TransitionIcon closestTransitionIcon = FindClosestTransitionIcon(dragTerminationPoint);
 
-            if (closestTransitionIcon != null && Transition.IsChangeAllowed)
+            if (closestTransitionIcon != null && Transition.IsChangeAllowed())
             {
                 int oldSlot = TransitionIcon.ActionIcons.IndexOf(this);
                 ViewModel.Action action = (ReferencedObject as ViewModel.ActionReference).Action;
@@ -141,7 +141,7 @@ namespace SimpleStateMachineEditor.Icons
                 {
                     //  The user is attempting to re-order the actions for the transition
 
-                    ViewModel.State originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
+                    ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
 
                     using (new UndoRedo.AtomicBlock(Transition.Controller, "Move action"))
                     {
@@ -162,7 +162,7 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         //  The user is copying this action to another transition
 
-                        ViewModel.State originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
+                        ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
 
                         using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Copy action"))
                         {
@@ -173,7 +173,7 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         // The user is moving this action from this transition to another
 
-                        ViewModel.State originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
+                        ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
 
                         using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Move action"))
                         {

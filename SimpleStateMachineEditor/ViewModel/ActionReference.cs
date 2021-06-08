@@ -34,8 +34,8 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                Transition = controller.StateMachine.Find(redoRecord.TransitionId) as Transition;
-                Action = controller.StateMachine.Find(redoRecord.ActionId) as Action;
+                Transition = Find(redoRecord.TransitionId) as Transition;
+                Action = Find(redoRecord.ActionId) as Action;
             }
         }
 

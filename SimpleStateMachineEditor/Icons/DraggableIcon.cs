@@ -14,7 +14,7 @@ namespace SimpleStateMachineEditor.Icons
     internal abstract class DraggableIcon : SelectableIcon, IDraggableIcon
     {
 
-        internal DraggableIcon(DesignerControl designer, TrackableObject o, System.Windows.Point? center, Size? size) :
+        internal DraggableIcon(DesignerControl designer, ITrackableObject o, System.Windows.Point? center, Size? size) :
             base(designer, o, center, size)
         {
         }

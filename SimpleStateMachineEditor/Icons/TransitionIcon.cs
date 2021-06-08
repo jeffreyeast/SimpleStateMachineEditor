@@ -79,14 +79,17 @@ namespace SimpleStateMachineEditor.Icons
 
 
 
-        internal TransitionIcon(DesignerControl designer, ViewModel.Transition transition, System.Windows.Point? center, System.Windows.Point? leftTop) :
+        internal TransitionIcon(DesignerControl designer, ObjectModel.ITransition transition, System.Windows.Point? center, System.Windows.Point? leftTop) :
             base(designer, transition, null, null)
         {
-            transition.ActionReferences.CollectionChanged += TransitionActionsCollectionChangedHandler;
             ActionIcons = new ObservableCollection<ActionReferenceIcon>();
-            foreach(ViewModel.ActionReference actionReference in transition.ActionReferences)
+            if (transition is ViewModel.Transition t)
             {
-                ActionIcons.Add(new ActionReferenceIcon(designer, this, actionReference));
+                t.ActionReferences.CollectionChanged += TransitionActionsCollectionChangedHandler;
+                foreach (ViewModel.ActionReference actionReference in t.ActionReferences)
+                {
+                    ActionIcons.Add(new ActionReferenceIcon(designer, this, actionReference));
+                }
             }
         }
 
@@ -110,7 +113,7 @@ namespace SimpleStateMachineEditor.Icons
 
         protected override Control CreateIcon()
         {
-            Control newIconBody = new IconControls.TransitionIconControl(Designer, ReferencedObject as ViewModel.Transition)
+            Control newIconBody = new IconControls.TransitionIconControl(Designer, ReferencedObject as ObjectModel.ITransition)
             {
                 DataContext = this,
                 Style = Designer.Resources["TransitionIconStyle"] as Style,
@@ -183,11 +186,11 @@ namespace SimpleStateMachineEditor.Icons
         /// <param name="originState">The source or destination state, whichever is to the left of the other</param>
         /// <param name="clickPosition">The mouse click position, relative to the originState</param>
         /// <returns>The origin-0 relative position of the action within the transtion's action icons</returns>
-        internal int ProcessDroppedAction(ViewModel.Action action, ViewModel.State originState, Point clickPosition, bool inhibitDeletion)
+        internal int ProcessDroppedAction(ViewModel.Action action, ITransitionEndpoint originState, Point clickPosition, bool inhibitDeletion)
         {
             int slot = -1;
 
-            if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed)
+            if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed())
             {
                 if (!inhibitDeletion && transition.ActionReferences.Any(ar => ar.Action == action))
                 {
@@ -247,7 +250,11 @@ namespace SimpleStateMachineEditor.Icons
                     switch (prgCmds[i].cmdID)
                     {
                         case PackageIds.DeleteCommandId:
-                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED | OLECMDF.OLECMDF_ENABLED);
+                            prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED;
+                            if (ReferencedObject is ViewModel.Transition)
+                            {
+                                prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
+                            }
                             break;
 
                         case PackageIds.SelectNewDestinationCommandId:

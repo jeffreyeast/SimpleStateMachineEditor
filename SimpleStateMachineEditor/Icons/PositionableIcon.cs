@@ -22,7 +22,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignBottom()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the lowest bottom
 
@@ -52,7 +52,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignHorizontalCenter()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Use the icon whose context menu fired the command as the reference point
 
@@ -77,7 +77,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignLeft()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the furthest left
 
@@ -107,7 +107,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignRight()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the furthest right
 
@@ -137,7 +137,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignTop()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the highest top
 
@@ -167,7 +167,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignVerticalCenter()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Use the icon whose context menu fired the command as the reference point
 
@@ -192,7 +192,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void DistributeHorizontally()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the bounds
 
@@ -233,7 +233,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void DistributeVertically()
         {
-            if (ReferencedObject.IsChangeAllowed)
+            if (ReferencedObject.IsChangeAllowed())
             {
                 //  Find the bounds
 

@@ -115,7 +115,7 @@ namespace SimpleStateMachineEditor.Icons
             //  the event as the trigger for the transition. Otherwise, they're just moving the event type icon.
 
             TransitionIcon transitionIcon = Designer.FindOccludedTransitionIcon(this, dragTerminationPoint);
-            if (transitionIcon == null || !transitionIcon.ReferencedObject.IsChangeAllowed)
+            if (transitionIcon == null || !transitionIcon.ReferencedObject.IsChangeAllowed())
             {
                 base.CommitDrag(dragTerminationPoint, offset);
             }
@@ -175,7 +175,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHover(sender, e);
 
-            foreach (ViewModel.Transition transition in Designer.Model.StateMachine.Transitions)
+            foreach (ObjectModel.ITransition transition in Designer.LoadedIcons.Keys.OfType<ObjectModel.ITransition>())
             {
                 if (transition.TriggerEvent == ReferencedObject && Designer.LoadedIcons.ContainsKey(transition))
                 {
@@ -188,7 +188,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHoverEnd();
 
-            foreach (ViewModel.Transition transition in Designer.Model.StateMachine.Transitions)
+            foreach (ObjectModel.ITransition transition in Designer.LoadedIcons.Keys.OfType<ObjectModel.ITransition>())
             {
                 if (transition.TriggerEvent == ReferencedObject && Designer.LoadedIcons.ContainsKey(transition))
                 {

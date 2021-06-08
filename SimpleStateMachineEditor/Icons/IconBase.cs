@@ -24,7 +24,7 @@ namespace SimpleStateMachineEditor.Icons
         public abstract int ContextMenuId { get; }
         internal DesignerControl Designer { get; set; }
         public virtual Size Size { get; set; }
-        public ObjectModel.TrackableObject ReferencedObject { get; private set; }
+        public ObjectModel.ITrackableObject ReferencedObject { get; private set; }
         public virtual Control Body 
         {
             get => _body;
@@ -86,7 +86,7 @@ namespace SimpleStateMachineEditor.Icons
 
 
 
-        protected IconBase(DesignerControl designer, ObjectModel.TrackableObject referencedObject, System.Windows.Point? center, Size? size)
+        protected IconBase(DesignerControl designer, ObjectModel.ITrackableObject referencedObject, System.Windows.Point? center, Size? size)
         {
             Designer = designer;
             ReferencedObject = referencedObject;

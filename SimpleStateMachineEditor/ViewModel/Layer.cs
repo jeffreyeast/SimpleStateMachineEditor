@@ -37,7 +37,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
         [Browsable(false)]
         [XmlIgnore]
-        public ObservableCollection<TrackableObject> Members { get; private set; }
+        public ObservableCollection<ITrackableObject> Members { get; private set; }
 
         [Browsable(false)]
         public List<int> MemberIds 
@@ -64,7 +64,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public Layer()
         {
-            Members = new ObservableCollection<TrackableObject>();
+            Members = new ObservableCollection<ITrackableObject>();
             MemberIds = new List<int>();
         }
 
@@ -73,7 +73,14 @@ namespace SimpleStateMachineEditor.ViewModel
         private Layer(ViewModelController controller, string rootName, bool isDefaultLayer) : base(controller, controller.StateMachine.Layers, rootName)
         {
             IsDefaultLayer = isDefaultLayer;
-            Members = new ObservableCollection<TrackableObject>();
+            Members = new ObservableCollection<ITrackableObject>();
+            MemberIds = null;
+        }
+
+        private Layer(ViewModelController controller) : base(controller)
+        {
+            IsDefaultLayer = false;
+            Members = new ObservableCollection<ITrackableObject>();
             MemberIds = null;
         }
 
@@ -81,8 +88,11 @@ namespace SimpleStateMachineEditor.ViewModel
 
         internal Layer(ViewModel.ViewModelController controller, UndoRedo.AddLayerRecord redoRecord) : base(controller, redoRecord)
         {
-            Members = new ObservableCollection<TrackableObject>();
-            LoadMembersFromIds(controller, controller.StateMachine, redoRecord.MemberIds);
+            using (new UndoRedo.DontLogBlock(controller))
+            {
+                Members = new ObservableCollection<ITrackableObject>();
+                LoadMembersFromIds(controller, controller.StateMachine, redoRecord.MemberIds);
+            }
         }
 
         internal static Layer Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, bool isDefaultLayer)
@@ -93,10 +103,21 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        internal override void DeserializeCleanup(ViewModelController controller, ViewModel.StateMachine stateMachine)
+        internal static Layer Create(ViewModelController controller)
         {
-            base.DeserializeCleanup(controller, stateMachine);
-            LoadMembersFromIds(controller, stateMachine, MemberIds);
+            using (new UndoRedo.DontLogBlock(controller))
+            {
+                return new Layer(controller);
+            }
+        }
+
+        internal override void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModelController controller, StateMachine stateMachine)
+        {
+            base.DeserializeCleanup(phase, controller, stateMachine);
+            if (phase == DeserializeCleanupPhases.ObjectResolution)
+            {
+                LoadMembersFromIds(controller, stateMachine, MemberIds);
+            }
         }
 
         private void LoadMembersFromIds(ViewModelController controller, ViewModel.StateMachine stateMachine, IEnumerable<int> idList)
@@ -106,7 +127,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
                 foreach (int memberId in MemberIds)
                 {
-                    TrackableObject member = stateMachine.Find(memberId);
+                    TrackableObject member = Find(memberId);
                     Members.Add(member);
                 }
             }

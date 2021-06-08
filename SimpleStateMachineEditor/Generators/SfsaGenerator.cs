@@ -25,10 +25,10 @@ namespace SimpleStateMachineEditor.Generators
         }
 #endif
 
-        private List<ObjectModel.NamedObject> BuildSortedNamedObjectList(IEnumerable<ObjectModel.NamedObject> namedObjects)
+        private List<ObjectModel.INamedObject> BuildSortedNamedObjectList(IEnumerable<ObjectModel.INamedObject> namedObjects)
         {
-            List<ObjectModel.NamedObject> namedObjectList = namedObjects.ToList<ObjectModel.NamedObject>();
-            namedObjectList.Sort(new Comparison<ObjectModel.NamedObject>((ObjectModel.NamedObject x, ObjectModel.NamedObject y) =>
+            List<ObjectModel.INamedObject> namedObjectList = namedObjects.ToList<ObjectModel.INamedObject>();
+            namedObjectList.Sort(new Comparison<ObjectModel.INamedObject>((ObjectModel.INamedObject x, ObjectModel.INamedObject y) =>
             {
                 if (x.Name == null || y.Name == null)
                 {
@@ -93,7 +93,7 @@ namespace SimpleStateMachineEditor.Generators
             return Encoding.UTF8.GetBytes(modulePreamble + generatedCodeString);
         }
 
-        private string GenerateEnumDeclaration(IEnumerable<ObjectModel.NamedObject> objects)
+        private string GenerateEnumDeclaration(IEnumerable<ObjectModel.INamedObject> objects)
         {
             string result = "";
 
@@ -111,7 +111,7 @@ namespace SimpleStateMachineEditor.Generators
             return result;
         }
 
-        private string GenerateNameStrings(IEnumerable<ObjectModel.NamedObject> objects)
+        private string GenerateNameStrings(IEnumerable<ObjectModel.INamedObject> objects)
         {
             string result = "";
             foreach (var o in objects.OrderBy(o => o.Name))
@@ -126,8 +126,8 @@ namespace SimpleStateMachineEditor.Generators
         {
             string returnValueDescription = stateMachine.ReturnValue == "void" ? "" : $@"        /// <returns>A value of type {stateMachine.ReturnValue}</returns>
 ";
-            List<ObjectModel.NamedObject> sortedEventTypes = BuildSortedNamedObjectList(stateMachine.EventTypes);
-            List<ObjectModel.NamedObject> sortedStates = BuildSortedNamedObjectList(stateMachine.States);
+            List<ObjectModel.INamedObject> sortedEventTypes = BuildSortedNamedObjectList(stateMachine.EventTypes);
+            List<ObjectModel.INamedObject> sortedStates = BuildSortedNamedObjectList(stateMachine.States);
             string eventTypes = GenerateEnumDeclaration(sortedEventTypes);
             string eventTypeNames = GenerateNameStrings(sortedEventTypes);
             string stateNames = GenerateNameStrings(sortedStates);
@@ -230,7 +230,7 @@ namespace {FileNamespace}
             return template;
         }
 
-        private string GenerateStateTypes(List<ObjectModel.NamedObject> sortedStates)
+        private string GenerateStateTypes(List<ObjectModel.INamedObject> sortedStates)
         {
             string classifications = "";
 
@@ -243,7 +243,7 @@ namespace {FileNamespace}
             return classifications;
         }
 
-        private string GenerateTransition(ViewModel.Transition transition, List<ObjectModel.NamedObject> sortedStates)
+        private string GenerateTransition(ViewModel.Transition transition, List<ObjectModel.INamedObject> sortedStates)
         {
             string transitionString = $@"
                     new Transition<Action>({sortedStates.IndexOf(transition.DestinationState)}, new Action[] {{ ";
@@ -255,7 +255,7 @@ namespace {FileNamespace}
             return transitionString;
         }
 
-        private string GenerateTransitions(ViewModel.StateMachine stateMachine, List<ObjectModel.NamedObject> sortedEventTypes, List<ObjectModel.NamedObject> sortedStates)
+        private string GenerateTransitions(ViewModel.StateMachine stateMachine, List<ObjectModel.INamedObject> sortedEventTypes, List<ObjectModel.INamedObject> sortedStates)
         {
             string transitionList = "";
             string invalidTransitionString = $@"
@@ -265,12 +265,12 @@ namespace {FileNamespace}
             {
                 //  Check if this state has a transition with a wild-card trigger. If so, use that for all events that don't have explicit transitions.
 
-                ViewModel.Transition defaultTransition = state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName).FirstOrDefault();
+                ViewModel.Transition defaultTransition = state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName).OfType<ViewModel.Transition>().FirstOrDefault();
                 string defaultTransitionString = defaultTransition == null ? invalidTransitionString : GenerateTransition(defaultTransition, sortedStates);
 
                 //  Capture the transitions, order them by trigger event. Exclude any wildcard and transtions without a trigger.
 
-                ViewModel.Transition[] transitions = state.TransitionsFrom.Where(t => t.TriggerEvent != null && t.TriggerEvent.Name != ViewModel.EventType.WildcardEventTypeName).OrderBy(t => t.TriggerEvent.Name).ToArray<ViewModel.Transition>();
+                ViewModel.Transition[] transitions = state.TransitionsFrom.Where(t => t.TriggerEvent != null && t.TriggerEvent.Name != ViewModel.EventType.WildcardEventTypeName).OrderBy(t => t.TriggerEvent.Name).OfType<ViewModel.Transition>().ToArray<ViewModel.Transition>();
 
                 //  Now we can generate the transitions for this state
 

@@ -25,7 +25,7 @@ namespace SimpleStateMachineEditor.IconControls
     public partial class TransitionIconControl : UserControl, INotifyPropertyChanged, ObjectModel.IRemovableObject
     {
         DesignerControl Designer;
-        ViewModel.Transition Transition;
+        ObjectModel.ITransition Transition;
         public double TextRotationAngle 
         {
             get => _textRotationAngle;
@@ -71,7 +71,7 @@ namespace SimpleStateMachineEditor.IconControls
 
 
 
-        public TransitionIconControl(DesignerControl designer, ViewModel.Transition transition)
+        internal TransitionIconControl(DesignerControl designer, ObjectModel.ITransition transition)
         {
             Designer = designer;
             Transition = transition;
@@ -85,7 +85,8 @@ namespace SimpleStateMachineEditor.IconControls
         {
             e.Effects = DragDropEffects.None;
 
-            if (e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
+            if (Transition is ViewModel.Transition &&
+                e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
             {
                 Icons.ToolWindowActionIcon icon = e.Data.GetData(typeof(Icons.ToolWindowActionIcon)) as Icons.ToolWindowActionIcon;
                 if (icon.Action.Controller == Designer.Model)
@@ -106,7 +107,8 @@ namespace SimpleStateMachineEditor.IconControls
         {
             e.Effects = DragDropEffects.None;
 
-            if (e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
+            if (Transition is ViewModel.Transition &&
+                e.Data.GetFormats().Contains(typeof(Icons.ToolWindowActionIcon).ToString()))
             {
                 Icons.ToolWindowActionIcon icon = e.Data.GetData(typeof(Icons.ToolWindowActionIcon)) as Icons.ToolWindowActionIcon;
                 if (icon.Action.Controller == Designer.Model)
@@ -209,15 +211,18 @@ namespace SimpleStateMachineEditor.IconControls
 
         private void Drop_Handler(object sender, DragEventArgs e)
         {
-            Icons.ToolWindowActionIcon action = e.Data.GetData(typeof(Icons.ToolWindowActionIcon).ToString()) as Icons.ToolWindowActionIcon;
-
-            if (action != null && action.Action.Controller == Designer.Model)
+            if (Transition is ViewModel.Transition)
             {
-                ViewModel.State originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
-                (DataContext as Icons.TransitionIcon).ProcessDroppedAction(action.Action, originState, e.GetPosition(Designer.LoadedIcons[originState].Body), true);
-                e.Handled = true;
+                Icons.ToolWindowActionIcon action = e.Data.GetData(typeof(Icons.ToolWindowActionIcon).ToString()) as Icons.ToolWindowActionIcon;
+
+                if (action != null && action.Action.Controller == Designer.Model)
+                {
+                    ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
+                    (DataContext as Icons.TransitionIcon).ProcessDroppedAction(action.Action, originState, e.GetPosition(Designer.LoadedIcons[originState].Body), true);
+                    e.Handled = true;
+                }
+                (DataContext as Icons.TransitionIcon).IsDropCandidate = false;
             }
-            (DataContext as Icons.TransitionIcon).IsDropCandidate = false;
         }
 
         private void EndpointChangedHandler(object sender, EventArgs e)
@@ -243,7 +248,10 @@ namespace SimpleStateMachineEditor.IconControls
 
         private void OnRemoving()
         {
-            Transition.EndpointChanged -= EndpointChangedHandler;
+            if (Transition is ViewModel.Transition t)
+            {
+                t.EndpointChanged -= EndpointChangedHandler;
+            }
             Transition.EndpointPositionChanged -= EndpointPositionChangedHandler;
             TextGrid.SizeChanged -= TriggerEventName_SizeChangedHandler;
             Removing?.Invoke(this);
@@ -273,7 +281,10 @@ namespace SimpleStateMachineEditor.IconControls
         private void TransitionIconControl_LoadedHandler(object sender, RoutedEventArgs e)
         {
             Loaded -= TransitionIconControl_LoadedHandler;
-            Transition.EndpointChanged += EndpointChangedHandler;
+            if (Transition is ViewModel.Transition t)
+            {
+                t.EndpointChanged += EndpointChangedHandler;
+            }
             Transition.EndpointPositionChanged += EndpointPositionChangedHandler;
 
             if (Transition.SourceState != null && Transition.DestinationState != null)
@@ -299,7 +310,6 @@ namespace SimpleStateMachineEditor.IconControls
 
         public void Remove()
         {
-            Debug.WriteLine($@">>>TransitionIconControl.Remove: {Transition.ToString()}");
             OnRemoving();
         }
     }

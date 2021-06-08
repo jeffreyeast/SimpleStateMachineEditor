@@ -17,7 +17,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _leftTopPosition.HasValue ? _leftTopPosition.Value : new System.Windows.Point(0, 0);
             set
             {
-                if ((!_leftTopPosition.HasValue || _leftTopPosition.Value.X != value.X || _leftTopPosition.Value.Y != value.Y) && IsChangeAllowed)
+                if ((!_leftTopPosition.HasValue || _leftTopPosition.Value.X != value.X || _leftTopPosition.Value.Y != value.Y) && IsChangeAllowed())
                 {
                     if (_leftTopPosition.HasValue)
                     {

@@ -17,6 +17,6 @@ namespace SimpleStateMachineEditor.Icons
         bool IsSelectable { get; }
         bool IsSelected { get; }
         void IsSelectedChanged();
-        ObjectModel.TrackableObject ReferencedObject { get; }
+        ObjectModel.ITrackableObject ReferencedObject { get; }
     }
 }

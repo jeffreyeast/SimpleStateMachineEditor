@@ -25,6 +25,9 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="GroupIconStyle" TargetType="UserControl">
+        </Style>
+
         <ControlTemplate x:Key="HoverTemplate" TargetType="UserControl">
             <Grid  Style="{StaticResource HoverStyle}">
                 <Grid.RowDefinitions>
@@ -83,7 +86,6 @@
 
         <Style x:Key="StateIconStyle" TargetType="UserControl">
         </Style>
-
 
         <Style x:Key="TransitionIconStyle" TargetType="UserControl">
         </Style>

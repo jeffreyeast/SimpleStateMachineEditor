@@ -30,7 +30,7 @@ namespace SimpleStateMachineEditor.Icons
 
 
 
-        protected SelectableIcon(DesignerControl designer, TrackableObject referencedObject, Point? center, Size? size) : base(designer, referencedObject, center, size)
+        protected SelectableIcon(DesignerControl designer, ITrackableObject referencedObject, Point? center, Size? size) : base(designer, referencedObject, center, size)
         {
         }
 
@@ -72,6 +72,6 @@ namespace SimpleStateMachineEditor.Icons
             base.OnRemoving();
         }
 
-        TrackableObject ISelectableIcon.ReferencedObject => ReferencedObject;
+        ITrackableObject ISelectableIcon.ReferencedObject => ReferencedObject;
     }
 }

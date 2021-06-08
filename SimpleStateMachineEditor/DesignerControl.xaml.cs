@@ -40,9 +40,9 @@ namespace SimpleStateMachineEditor
         ViewModel.StateMachine StateMachine;
         internal IVsUIShell UiShell;
         ITrackSelection SelectionTracker;
-        internal List<ObjectModel.TrackableObject> SelectedObjects;
-        internal Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon> SelectedIcons;
-        internal Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon> LoadedIcons;
+        internal List<ObjectModel.ITrackableObject> SelectedObjects;
+        internal Dictionary<ObjectModel.ITrackableObject, Icons.ISelectableIcon> SelectedIcons;
+        internal Dictionary<ObjectModel.ITrackableObject, Icons.ISelectableIcon> LoadedIcons;
         Microsoft.VisualStudio.Shell.SelectionContainer SelectionContainer;
         public SimpleStateMachineEditorPackage Package;
         internal System.Windows.Point ContextMenuActivationLocation;
@@ -88,9 +88,9 @@ namespace SimpleStateMachineEditor
             UiShell = ((System.IServiceProvider)package).GetService(typeof(SVsUIShell)) as IVsUIShell;
             OptionsPage = Package.OptionsPropertiesPage;
             Model = model;
-            SelectedObjects = new List<ObjectModel.TrackableObject>();
-            LoadedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon>();
-            SelectedIcons = new Dictionary<ObjectModel.TrackableObject, Icons.ISelectableIcon>();
+            SelectedObjects = new List<ObjectModel.ITrackableObject>();
+            LoadedIcons = new Dictionary<ObjectModel.ITrackableObject, Icons.ISelectableIcon>();
+            SelectedIcons = new Dictionary<ObjectModel.ITrackableObject, Icons.ISelectableIcon>();
             SelectionContainer = new Microsoft.VisualStudio.Shell.SelectionContainer(true, false);
             SelectionContainer.SelectableObjects = SelectedObjects;
             SelectionContainer.SelectedObjects = SelectedObjects;
@@ -108,7 +108,7 @@ namespace SimpleStateMachineEditor
 
         internal void AddEventType(Point? center = null)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, AddEventTypeDescription))
                 {
@@ -128,17 +128,23 @@ namespace SimpleStateMachineEditor
 
         internal void AddGroup(Point? center = null)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, AddGroupDescription))
                 {
                     ViewModel.Group newGroup = ViewModel.Group.Create(Model, OptionsPage, CurrentLayer);
                     Model.LogUndoAction(new UndoRedo.DeleteGroupRecord(Model, newGroup));
+                    ViewModel.Layer newLayer = ViewModel.Layer.Create(Model);
+                    Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
+                    newLayer.Name = newGroup.Name;
+                    newGroup.CoNamedObject = newLayer;
+                    newLayer.CoNamedObject = newGroup;
                     if (!center.HasValue)
                     {
                         center = FindEmptySpace(Icons.StateIcon.IconSize);
                     }
                     Point position = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                    Model.StateMachine.Layers.Add(newLayer);
                     AddLayerMember(DefaultLayer, newGroup, position);
                     if (CurrentLayer != DefaultLayer)
                     {
@@ -154,7 +160,7 @@ namespace SimpleStateMachineEditor
 
         private void AddLayer(object sender, RoutedEventArgs e)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, AddLayerDescription))
                 {
@@ -169,12 +175,13 @@ namespace SimpleStateMachineEditor
 
         internal void AddLayerMember(ViewModel.Layer layer, ObjectModel.LayeredPositionableObject newMember, Point? position = null)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if ((!(layer.CoNamedObject is ViewModel.Group) || !(newMember is ViewModel.State state) || state.AssociatedGroup == null) &&
+                Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Add layer member"))
                 {
-                    Model.LogUndoAction(new UndoRedo.DeleteLayerMemberRecord(Model, layer, newMember));
                     ObjectModel.LayerPosition layerPosition = ObjectModel.LayerPosition.Create(Model, layer);
+                    Model.LogUndoAction(new UndoRedo.DeleteLayerMemberRecord(Model, layerPosition, newMember));
                     if (position.HasValue)
                     {
                         layerPosition.LeftTopPosition = position.Value;
@@ -185,6 +192,11 @@ namespace SimpleStateMachineEditor
                     }
                     newMember.LayerPositions.Add(layerPosition);
                     layer.Members.Add(newMember);
+
+                    if (layer.CoNamedObject is ViewModel.Group group && newMember is ViewModel.State state1)
+                    {
+                        state1.AssociatedGroup = group;
+                    }
                 }
 
                 Model.StateMachine.EndChange();
@@ -193,7 +205,7 @@ namespace SimpleStateMachineEditor
 
         internal void AddState(Point? center = null)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, AddStateDescription))
                 {
@@ -259,7 +271,7 @@ namespace SimpleStateMachineEditor
         {
             using (new UndoRedo.DontLogBlock(Model))
             {
-                if (Model.StateMachine.IsChangeAllowed)
+                if (Model.StateMachine.IsChangeAllowed())
                 {
                     DefaultLayer = ViewModel.Layer.Create(Model, OptionsPage, true);
                     Model.StateMachine.Layers.Add(DefaultLayer);
@@ -369,16 +381,19 @@ namespace SimpleStateMachineEditor
                 throw new InvalidProgramException();
             }
 
-            if (transition.IsChangeAllowed)
+            if (transition.IsChangeAllowed())
             {
                 CurrentParentUndoUnit.GetDescription(out string operationDescription);
 
                 switch (operationDescription)
                 {
                     case AddTransitionDescription:
-                        transition.DestinationState = nearestState;
-                        Model.StateMachine.Transitions.Add(transition);
+                        using (new UndoRedo.DontLogBlock(Model))
+                        {
+                            transition.DestinationState = nearestState;
+                        }
                         Model.LogUndoAction(new UndoRedo.DeleteTransitionRecord(Model, transition));
+                        Model.StateMachine.Transitions.Add(transition);
                         break;
 
                     case ChangeTransitionDestinationDescription:
@@ -459,7 +474,7 @@ namespace SimpleStateMachineEditor
 
         private void DeleteActionReference(ViewModel.Transition transition, ViewModel.ActionReference actionReference, int slot)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove action"))
                 {
@@ -472,7 +487,7 @@ namespace SimpleStateMachineEditor
 
         private void  DeleteEventType(ViewModel.EventType eventType)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove event type"))
                 {
@@ -483,7 +498,6 @@ namespace SimpleStateMachineEditor
                             t.TriggerEvent = null;
                         }
                     }
-                    eventType.Remove();
                     Model.StateMachine.EventTypes.Remove(eventType);
                     Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
                 }
@@ -493,15 +507,18 @@ namespace SimpleStateMachineEditor
 
         private void DeleteGroup(ViewModel.Group group)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove group"))
                 {
-                    foreach (ObjectModel.LayerPosition layerPosition in group.LayerPositions)
+                    DeleteLayer(group.CoNamedObject as ViewModel.Layer);
+                    while (group.LayerPositions.Count > 0)
                     {
-                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, group));
+                        ObjectModel.LayerPosition layerPosition = group.LayerPositions.First();
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition, group));
+                        group.LayerPositions.RemoveAt(0);
                     }
-                    group.Remove();
+
                     Model.StateMachine.Groups.Remove(group);
                     Model.LogUndoAction(new UndoRedo.AddGroupRecord(Model, group));
                 }
@@ -546,22 +563,22 @@ namespace SimpleStateMachineEditor
 
         private void DeleteLayer(ViewModel.Layer layer)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove layer"))
                 {
-                    foreach (ViewModel.State state in Model.StateMachine.States)
+                    foreach (ObjectModel.LayeredPositionableObject o in layer.Members)
                     {
-                        ObjectModel.LayerPosition layerPosition;
+                        ObjectModel.LayerPosition layerPosition = o.LayerPositions.Where(lp => lp.Layer == layer).Single();
+                        layerPosition.Remove();
+                        o.LayerPositions.Remove(layerPosition);
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition, o));
 
-                        while ((layerPosition = state.LayerPositions.Where(lp => lp.Layer == layer).FirstOrDefault()) != null)
+                        if (layer.CoNamedObject is ViewModel.Group group && o is ViewModel.State state && state.AssociatedGroup == group)
                         {
-                            layerPosition.Remove();
-                            state.LayerPositions.Remove(layerPosition);
-                            Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, state));
+                            state.AssociatedGroup = null;
                         }
                     }
-                    layer.Remove();
                     Model.StateMachine.Layers.Remove(layer);
                     Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
                 }
@@ -571,23 +588,24 @@ namespace SimpleStateMachineEditor
 
         private void DeleteState(ViewModel.State state)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove state"))
                 {
                     while (state.TransitionsFrom.Count > 0)
                     {
-                        DeleteTransition(state.TransitionsFrom.First());
+                        DeleteTransition(state.TransitionsFrom.First() as ViewModel.Transition);
                     }
                     while (state.TransitionsTo.Count > 0)
                     {
-                        DeleteTransition(state.TransitionsTo.First());
+                        DeleteTransition(state.TransitionsTo.First() as ViewModel.Transition);
                     }
-                    foreach (ObjectModel.LayerPosition layerPosition in state.LayerPositions)
+                    while (state.LayerPositions.Count > 0)
                     {
-                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition.Layer, state));
+                        ObjectModel.LayerPosition layerPosition = state.LayerPositions.First();
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition, state));
+                        state.LayerPositions.RemoveAt(0);
                     }
-                    state.Remove();
                     Model.StateMachine.States.Remove(state);
                     Model.LogUndoAction(new UndoRedo.AddStateRecord(Model, state));
                 }
@@ -597,11 +615,10 @@ namespace SimpleStateMachineEditor
 
         private void DeleteTransition(ViewModel.Transition transition)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Remove transition"))
                 {
-                    transition.Remove();
                     Model.StateMachine.Transitions.Remove(transition);
                     Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
                 }
@@ -895,19 +912,30 @@ namespace SimpleStateMachineEditor
                         IconSurface.Children.Add(groupIcon.Body);
                         LoadedIcons.Add(group, groupIcon);
 
-                        foreach (ViewModel.Transition transition in group.TransitionsFrom)
+                        foreach (ViewModel.GroupTransition transition in group.TransitionsFrom)
                         {
-                            LoadViewModelIcon(trackableObject);
+                            LoadViewModelIcon(transition);
                         }
-                        foreach (ViewModel.Transition transition in group.TransitionsTo)
+                        foreach (ViewModel.GroupTransition transition in group.TransitionsTo)
                         {
-                            LoadViewModelIcon(trackableObject);
+                            LoadViewModelIcon(transition);
                         }
                     }
                 }
+                else if (trackableObject is ViewModel.GroupTransition groupTransition)
+                {
+                    if (CurrentLayer.Members.Contains(groupTransition.SourceState) && CurrentLayer.Members.Contains(groupTransition.DestinationState))
+                    {
+                        Icons.TransitionIcon transitionIcon = new Icons.TransitionIcon(this, groupTransition, null, null);
+                        IconSurface.Children.Add(transitionIcon.Body);
+                        LoadedIcons.Add(groupTransition, transitionIcon);
+                    }
+
+                }
                 else if (trackableObject is ViewModel.State state)
                 {
-                    if (CurrentLayer.Members.Contains(state))
+                    if (CurrentLayer.Members.Contains(state) &&
+                        (state.AssociatedGroup == null || state.AssociatedGroup.CoNamedObject == CurrentLayer))
                     {
                         Icons.StateIcon stateIcon = new Icons.StateIcon(this, state, null, state.LeftTopPosition);
                         IconSurface.Children.Add(stateIcon.Body);
@@ -915,22 +943,27 @@ namespace SimpleStateMachineEditor
 
                         foreach (ViewModel.Transition transition in state.TransitionsFrom)
                         {
-                            LoadViewModelIcon(trackableObject);
+                            LoadViewModelIcon(transition);
                         }
                         foreach (ViewModel.Transition transition in state.TransitionsTo)
                         {
-                            LoadViewModelIcon(trackableObject);
+                            LoadViewModelIcon(transition);
                         }
                     }
                 }
                 else if (trackableObject is ViewModel.Transition transition)
                 {
-                    if (CurrentLayer.Members.Contains(transition.SourceState) && CurrentLayer.Members.Contains(transition.DestinationState))
+                    if (CurrentLayer.Members.Contains(transition.SourceState) && CurrentLayer.Members.Contains(transition.DestinationState) &&
+                        (!transition.IsGrouped || (transition.SourceState.AssociatedGroup?.CoNamedObject == CurrentLayer && transition.DestinationState.AssociatedGroup?.CoNamedObject == CurrentLayer)))
                     {
                         Icons.TransitionIcon transitionIcon = new Icons.TransitionIcon(this, transition, null, null);
                         IconSurface.Children.Add(transitionIcon.Body);
                         LoadedIcons.Add(transition, transitionIcon);
                     }
+                }
+                else
+                {
+                    throw new NotImplementedException();
                 }
             }
         }
@@ -974,6 +1007,11 @@ namespace SimpleStateMachineEditor
                     LoadViewModelIcon(state);
                 }
 
+                foreach (var group in Model.StateMachine.Groups)
+                {
+                    LoadViewModelIcon(group);
+                }
+
                 foreach (var transition in Model.StateMachine.Transitions)
                 {
                     LoadViewModelIcon(transition);
@@ -1014,6 +1052,7 @@ namespace SimpleStateMachineEditor
         {
             if (StateMachine != null)
             {
+                StateMachine.PropertyChanged -= StateMachineOrChildPropertyChangedHandler;
                 StateMachine.EventTypes.CollectionChanged -= StateMachineEventTypesCollectionChangedHandler;
                 StateMachine.Groups.CollectionChanged -= StateMachineGroupsCollectionChangedHandler;
                 StateMachine.States.CollectionChanged -= StateMachineStatesCollectionChangedHandler;
@@ -1022,6 +1061,7 @@ namespace SimpleStateMachineEditor
             StateMachine = Model.StateMachine;
             if (StateMachine != null && !isUnloading)
             {
+                StateMachine.PropertyChanged += StateMachineOrChildPropertyChangedHandler;
                 StateMachine.EventTypes.CollectionChanged += StateMachineEventTypesCollectionChangedHandler;
                 StateMachine.Groups.CollectionChanged += StateMachineGroupsCollectionChangedHandler;
                 StateMachine.States.CollectionChanged += StateMachineStatesCollectionChangedHandler;
@@ -1127,14 +1167,19 @@ namespace SimpleStateMachineEditor
         {
             if (layer != DefaultLayer)
             {
-                if (Model.StateMachine.IsChangeAllowed)
+                if (Model.StateMachine.IsChangeAllowed())
                 {
                     using (new UndoRedo.AtomicBlock(Model, "Remove layer member"))
                     {
-                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layer, member));
-                        layer.Members.Remove(member);
                         ObjectModel.LayerPosition layerPosition = member.LayerPositions.Where(lp => lp.Layer == layer).Single();
+                        Model.LogUndoAction(new UndoRedo.AddLayerMemberRecord(Model, layerPosition, member));
+                        layer.Members.Remove(member);
                         member.LayerPositions.Remove(layerPosition);
+
+                        if (layer.CoNamedObject is ViewModel.Group group && member is ViewModel.State state && state.AssociatedGroup == group)
+                        {
+                            state.AssociatedGroup = null;
+                        }
                     }
                     Model.StateMachine.EndChange();
                 }
@@ -1216,7 +1261,7 @@ namespace SimpleStateMachineEditor
                 {
                     if (!SelectedIcons.ContainsKey(icon.ReferencedObject))
                     {
-                        (SelectionContainer.SelectableObjects as List<ObjectModel.TrackableObject>).Add(icon.ReferencedObject);
+                        (SelectionContainer.SelectableObjects as List<ObjectModel.ITrackableObject>).Add(icon.ReferencedObject);
                         SelectedIcons.Add(icon.ReferencedObject, icon);
                         icon.IsSelectedChanged();
                     }
@@ -1233,7 +1278,7 @@ namespace SimpleStateMachineEditor
             if (SelectedObjects.Count != 1 || SelectedObjects[0] != icon.ReferencedObject)
             {
                 ClearSelectedItems();
-                (SelectionContainer.SelectableObjects as List<ObjectModel.TrackableObject>).Add(icon.ReferencedObject);
+                (SelectionContainer.SelectableObjects as List<ObjectModel.ITrackableObject>).Add(icon.ReferencedObject);
                 SelectedIcons.Add(icon.ReferencedObject, icon);
                 icon.IsSelectedChanged();
                 SelectionTracker.OnSelectChange(SelectionContainer);
@@ -1247,7 +1292,7 @@ namespace SimpleStateMachineEditor
             if (SelectedObjects.Count != 1 || SelectedObjects[0] != Model.StateMachine)
             {
                 ClearSelectedItems();
-                (SelectionContainer.SelectableObjects as List<ObjectModel.TrackableObject>).Add(Model.StateMachine);
+                (SelectionContainer.SelectableObjects as List<ObjectModel.ITrackableObject>).Add(Model.StateMachine);
                 SelectionTracker.OnSelectChange(SelectionContainer);
             }
         }
@@ -1259,7 +1304,7 @@ namespace SimpleStateMachineEditor
 
         internal void SetStartState(ViewModel.State state)
         {
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 Model.StateMachine.StartState = state;
                 Model.StateMachine.EndChange();
@@ -1271,7 +1316,7 @@ namespace SimpleStateMachineEditor
             Icons.ISelectableIcon[] selectedIcons = SelectedIcons.Values.Where(i => i.ReferencedObject is ObjectModel.NamedObject).OrderBy(i => (i.ReferencedObject as ObjectModel.NamedObject).Name).ToArray();
             Point[] iconPositions = selectedIcons.Select(i => i.CenterPosition).OrderBy(p => p.Y).ThenBy(p => p.X).ToArray();
 
-            if (Model.StateMachine.IsChangeAllowed)
+            if (Model.StateMachine.IsChangeAllowed())
             {
                 using (new UndoRedo.AtomicBlock(Model, "Sort icons"))
                 {
@@ -1314,9 +1359,12 @@ namespace SimpleStateMachineEditor
                 case NotifyCollectionChangedAction.Add:
                     foreach (ViewModel.Group newGroup in e.NewItems)
                     {
-                        LoadViewModelIcon(newGroup);
-                        ClearSelectedItems();
-                        SelectIcon(LoadedIcons[newGroup]);
+                        if (CurrentLayer.Members.Contains(newGroup))
+                        {
+                            LoadViewModelIcon(newGroup);
+                            ClearSelectedItems();
+                            SelectIcon(LoadedIcons[newGroup]);
+                        }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
@@ -1335,12 +1383,14 @@ namespace SimpleStateMachineEditor
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+#if false
                     foreach (ViewModel.Layer newLayer in e.NewItems)
                     {
                         Icons.LayerIcon layerIcon = new Icons.LayerIcon(this, newLayer, null, null);
                         ClearSelectedItems();
                         SelectIcon(layerIcon);
                     }
+#endif
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (ViewModel.Layer layer in e.OldItems)
@@ -1350,6 +1400,28 @@ namespace SimpleStateMachineEditor
                             CurrentLayer = DefaultLayer;
                         }
                         DeselectIcon(LoadedIcons[layer]);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void StateMachineOrChildPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "AssociatedGroup":
+                    if (sender is ViewModel.State state)
+                    {
+                        if (state.AssociatedGroup == null)
+                        {
+                            LoadViewModelIcon(state);
+                        }
+                        else
+                        {
+                            UnloadGroupedViewModelIcons(state);
+                        }
                     }
                     break;
                 default:
@@ -1409,6 +1481,19 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        private void UnloadGroupedViewModelIcons(ViewModel.State state)
+        {
+            UnloadViewModelIcon(state);
+            foreach (ViewModel.Transition transition in state.TransitionsFrom)
+            {
+                UnloadViewModelIcon(transition);
+            }
+            foreach (ViewModel.Transition transition in state.TransitionsTo)
+            {
+                UnloadViewModelIcon(transition);
+            }
+        }
+
         private void UnloadViewModelIcon(ObjectModel.TrackableObject trackableObject)
         {
             if (LoadedIcons.ContainsKey(trackableObject))
@@ -1444,6 +1529,10 @@ namespace SimpleStateMachineEditor
 
         private void SetCurrentLayer()
         {
+            foreach (ViewModel.Group group in Model.StateMachine.Groups)
+            {
+                group.CurrentLayer = CurrentLayer;
+            }
             foreach (ViewModel.State state in Model.StateMachine.States)
             {
                 state.CurrentLayer = CurrentLayer;

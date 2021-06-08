@@ -37,7 +37,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddGroupRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Group newGroup = new ViewModel.Group(Controller, this);
                 Controller.StateMachine.Groups.Add(newGroup);
@@ -66,7 +66,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteGroupRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Group targetGroup = Controller.StateMachine.Groups.Where(s => s.Id == Id).First();
                 Controller.StateMachine.Groups.Remove(targetGroup);

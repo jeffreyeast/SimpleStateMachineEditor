@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    internal interface ITransitionEndpoint
+    public interface ITransitionEndpoint : INamedObject
     {
-        ObservableCollection<ViewModel.Transition> TransitionsFrom { get; }
-        ObservableCollection<ViewModel.Transition> TransitionsTo { get; }
-        int GetRelativePeerPosition(ViewModel.Transition transition);
+        ViewModel.Group AssociatedGroup { get; }
+        int GetRelativePeerPosition(ObjectModel.ITransition transition);
         bool HasTransitionMatchingTrigger(ViewModel.EventType triggerEvent);
+        bool IsGrouped { get; }
+        ObservableCollection<ObjectModel.ITransition> TransitionsFrom { get; }
+        ObservableCollection<ObjectModel.ITransition> TransitionsTo { get; }
     }
 }

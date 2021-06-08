@@ -46,10 +46,12 @@ namespace SimpleStateMachineEditor.UndoRedo
 
     internal abstract class NamedObjectRecord : DocumentedObjectRecord
     {
+        internal int CoNamedObjectId;
         internal string Name;
 
         protected NamedObjectRecord(ActionTypes actionType, ViewModel.ViewModelController controller, ObjectModel.NamedObject namedObject) : base(actionType, controller, namedObject)
         {
+            CoNamedObjectId = namedObject.CoNamedObjectId;
             Name = (namedObject.Name == null ? null : string.Copy(namedObject.Name));
         }
     }

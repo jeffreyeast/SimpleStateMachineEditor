@@ -34,7 +34,7 @@ namespace SimpleStateMachineEditor.UndoRedo
         {
             DestinationStateId = transition.DestinationStateId;
             SourceStateId = transition.SourceStateId;
-            TriggerEventId = transition.TriggerEvent?.Id ?? -1;
+            TriggerEventId = transition.TriggerEvent?.Id ?? TrackableObject.NullId;
             ActionIds = transition.ActionReferences.Select(a => a.Action.Id).ToArray();
 
 #if DEBUGUNDOREDO
@@ -47,7 +47,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddTransitionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Transition newTransition = new ViewModel.Transition(Controller, this);
                 Controller.StateMachine.Transitions.Add(newTransition);
@@ -76,7 +76,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteTransitionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Transition targetTransition = Controller.StateMachine.Transitions.Where(s => s.Id == Id).First();
                 Controller.StateMachine.Transitions.Remove(targetTransition);

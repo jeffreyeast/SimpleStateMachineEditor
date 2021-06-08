@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleStateMachineEditor.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Xml.Serialization;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    public class NamedObject : DocumentedObject
+    public class NamedObject : DocumentedObject, INamedObject
     {
         const int LongNameLength = 12;
 
@@ -19,13 +20,26 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _name;
             set
             {
-                if (_name != value && IsChangeAllowed)
+                if (_name != value && IsChangeAllowed())
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
-                    _name = value;
-                    OnPropertyChanged("Name");
-                    EndChange();
-                    WrappedName = WrapName(_name);
+                    if (Controller?.UndoManager == null)
+                    {
+                        _name = value;
+                        OnPropertyChanged("Name");
+                        EndChange();
+                        WrappedName = WrapName(_name);
+                    }
+                    else
+                    {
+                        using (new UndoRedo.AtomicBlock(Controller, "Change Name property"))
+                        {
+                            Controller.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
+                            _name = value;
+                            OnPropertyChanged("Name");
+                            EndChange();
+                            WrappedName = WrapName(_name);
+                        }
+                    }
                 }
             }
         }
@@ -63,6 +77,42 @@ namespace SimpleStateMachineEditor.ObjectModel
         }
         bool _wasNameFound;
 
+        [XmlIgnore]
+        [Browsable(false)]
+        internal NamedObject CoNamedObject 
+        {
+            get => _coNamedObject;
+            set
+            {
+                if (_coNamedObject != value)
+                {
+                    if (_coNamedObject != null)
+                    {
+                        _coNamedObject.PropertyChanged -= CoNamedObjectPropertyChangedHandler;
+                        _coNamedObject.Removing -= CoNamedObjectIsBeingRemovedHandler;
+                    }
+                    OnCoNamedObjectChange(_coNamedObject, value);
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "CoNamedObject", (_coNamedObject?.Id ?? TrackableObject.NullId).ToString()));
+                    _coNamedObject = value;
+                    if (_coNamedObject != null)
+                    {
+                        _coNamedObject.PropertyChanged += CoNamedObjectPropertyChangedHandler;
+                        _coNamedObject.Removing -= CoNamedObjectIsBeingRemovedHandler;
+                    }
+                    OnPropertyChanged("CoNamedObject");
+                }
+            }
+        }
+        NamedObject _coNamedObject;
+
+        [Browsable(false)]
+        [XmlAttribute]
+        public int CoNamedObjectId
+        {
+            get => CoNamedObject?.Id ?? _coNamedObjectId;
+            set => _coNamedObjectId = value;
+        }
+        int _coNamedObjectId = TrackableObject.NullId;
 
 
         //  Constructor for use by serialization ONLY
@@ -80,11 +130,11 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         //  Constructors for use by derived classes
 
-        public NamedObject(ViewModel.ViewModelController controller) : base(controller)
+        protected NamedObject(ViewModel.ViewModelController controller) : base(controller)
         {
         }
 
-        public NamedObject(ViewModel.ViewModelController controller, IEnumerable<NamedObject> existingObjectList, string rootName) : base(controller)
+        protected NamedObject(ViewModel.ViewModelController controller, IEnumerable<NamedObject> existingObjectList, string rootName) : base(controller)
         {
             int uniquifier = 1;
             string candidateName = "";
@@ -103,7 +153,42 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
+                CoNamedObject = Find(redoRecord.CoNamedObjectId) as NamedObject;
+                if (CoNamedObject != null)
+                {
+                    CoNamedObject.CoNamedObject = this;
+                }
                 Name = redoRecord.Name;
+            }
+        }
+
+        private void CoNamedObjectIsBeingRemovedHandler(IRemovableObject item)
+        {
+            if (_coNamedObject != null)
+            {
+                CoNamedObject = null;
+            }
+        }
+
+
+        private void CoNamedObjectPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "Name":
+                    Name = CoNamedObject.Name;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        internal override void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModelController controller, StateMachine stateMachine)
+        {
+            base.DeserializeCleanup(phase, controller, stateMachine);
+            if (phase == DeserializeCleanupPhases.ObjectResolution)
+            {
+                CoNamedObject = Find(CoNamedObjectId) as NamedObject;
             }
         }
 
@@ -111,6 +196,9 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             switch (propertyName)
             {
+                case "CoNamedObject":
+                    value = (CoNamedObject?.Id ?? TrackableObject.NullId).ToString();
+                    break;
                 case "Name":
                     value = Name;
                     break;
@@ -123,6 +211,17 @@ namespace SimpleStateMachineEditor.ObjectModel
         private bool IsBreakableCharacter(char v)
         {
             return v == '_' || v == '.' || Char.IsUpper(v);
+        }
+
+        protected virtual void OnCoNamedObjectChange(NamedObject preValue, NamedObject postValue) { }
+
+        protected override void OnRemoving()
+        {
+            using (new UndoRedo.DontLogBlock(Controller))
+            {
+                CoNamedObject = null;
+            }
+            base.OnRemoving();
         }
 
         internal override void ResetSearch()
@@ -144,6 +243,9 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             switch (propertyName)
             {
+                case "CoNamedObject":
+                    CoNamedObject = Find(int.Parse(newValue)) as NamedObject;
+                    break;
                 case "Name":
                     Name = newValue;
                     break;

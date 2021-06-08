@@ -100,7 +100,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHover(sender, e);
 
-            foreach (ViewModel.Transition transition in (ReferencedObject as ObjectModel.ITransitionEndpoint).TransitionsFrom)
+            foreach (ObjectModel.ITransition transition in (ReferencedObject as ObjectModel.ITransitionEndpoint).TransitionsFrom)
             {
                 if (Designer.LoadedIcons.ContainsKey(transition))
                 {
@@ -118,7 +118,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHoverEnd();
 
-            foreach (ViewModel.Transition transition in (ReferencedObject as ObjectModel.ITransitionEndpoint).TransitionsFrom)
+            foreach (ObjectModel.ITransition transition in (ReferencedObject as ObjectModel.ITransitionEndpoint).TransitionsFrom)
             {
                 if (Designer.LoadedIcons.ContainsKey(transition))
                 {

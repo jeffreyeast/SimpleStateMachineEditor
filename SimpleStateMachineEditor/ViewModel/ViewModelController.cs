@@ -37,6 +37,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
         internal int NextId => Interlocked.Increment (ref _nextId);
         int _nextId = 0;
+        internal Dictionary<int, ObjectModel.TrackableObject> AllFindableObjects;
 
         enum States
         {
@@ -74,11 +75,8 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
-            lock (this)
-            {
-                FileName = fileName;
-                ReconcileModelFromText(textBuffer);
-            }
+            FileName = fileName;
+            ReconcileModelFromText(textBuffer);
         }
 
         internal bool CanGuiChangeBegin()
@@ -92,6 +90,7 @@ namespace SimpleStateMachineEditor.ViewModel
                     case States.ModifyingByGuiEditor:
                         State = States.ModifyingByGuiEditor;
                         GuiChangeCount++;
+                        Debug.WriteLine($@">>>CanGuiChangeBegin: GuiChangeCount: {GuiChangeCount}");
                         return true;
                     case States.ModifyingByTextEditor:
                     case States.NotParsable:
@@ -110,6 +109,7 @@ namespace SimpleStateMachineEditor.ViewModel
         public void Dispose()
         {
             StateMachine = null;
+            AllFindableObjects = null;
         }
 
         /// <summary>
@@ -155,6 +155,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 switch (State)
                 {
                     case States.ModifyingByGuiEditor:
+                        Debug.WriteLine($@">>>NoteGuiChangeEnd: GuiChangeCount: {GuiChangeCount}");
                         if (--GuiChangeCount == 0)
                         {
                             State = States.ModifiedByGuiEditor;

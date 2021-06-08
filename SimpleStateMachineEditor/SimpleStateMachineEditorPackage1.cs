@@ -66,13 +66,11 @@ namespace SimpleStateMachineEditor
         public const int DeleteCommandId = 0x010A;
         public const int DistributeHorizontallyCommandId = 0x010B;
         public const int DistributeVerticallyCommandId = 0x010C;
-        public const int GroupCommandId = 0x010D;
         public const int SelectNewDestinationCommandId = 0x010E;
         public const int SelectNewSourceCommandId = 0x010F;
         public const int SetIconDisplayColorsComboId = 0x0110;
         public const int SortCommandId = 0x0111;
         public const int StartStateCommandId = 0x0112;
-        public const int UngroupCommandId = 0x0113;
         public const int cmdidActionsToolWindowCommand = 0x0114;
     }
 }

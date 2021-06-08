@@ -15,7 +15,7 @@ namespace SimpleStateMachineEditor.ViewModel
     //  The Transition class represents a transition from one state to another, based on a triggering event. A set of
     //  actions is executed as part of the transition.
     //--
-    public class Transition : ObjectModel.DocumentedObject
+    public class Transition : ObjectModel.DocumentedObject, ObjectModel.ITransition
     {
         //  The design pattern for references to other view model objects is to use a reference to the object at runtime, but to serialize only the objects ID.
         //  This is done to enable the serializer to generate a tree, even through the actual data structure is a graph.  At deserialization
@@ -23,19 +23,19 @@ namespace SimpleStateMachineEditor.ViewModel
 
         [XmlIgnore]
         [Description("The state sourcing the event that will invoke the transition")]
-        public State SourceState 
+        public ObjectModel.ITransitionEndpoint SourceState 
         {
             get => _sourceState;
             set
             {
-                if (_sourceState != value && IsChangeAllowed)
+                if (_sourceState != value && IsChangeAllowed())
                 {
                     if (_sourceState != null)
                     {
                         _sourceState.PropertyChanged -= EndpointPropertyChangedHandler;
                         _sourceState.TransitionsFrom.Remove(this);
                     }
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "SourceState", _sourceState?.Id.ToString() ?? ((int)-1).ToString()));
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "SourceState", (_sourceState?.Id ?? ObjectModel.TrackableObject.NullId).ToString()));
                     _sourceState = value;
                     if (_sourceState != null)
                     {
@@ -48,7 +48,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 }
             }
         }
-        State _sourceState;
+        ObjectModel.ITransitionEndpoint _sourceState;
         [XmlAttribute]
         [Browsable(false)]
         public int SourceStateId
@@ -56,23 +56,23 @@ namespace SimpleStateMachineEditor.ViewModel
             get => SourceState?.Id ?? _sourceStateId;
             set => _sourceStateId = value;
         }
-        int _sourceStateId = -1;
+        int _sourceStateId = ObjectModel.TrackableObject.NullId;
 
         [XmlIgnore]
         [Description("The state which will be transitioned to")]
-        public State DestinationState 
+        public ObjectModel.ITransitionEndpoint DestinationState 
         {
             get => _destinationState;
             set
             {
-                if (_destinationState != value && IsChangeAllowed)
+                if (_destinationState != value && IsChangeAllowed())
                 {
                     if (_destinationState != null)
                     {
                         _destinationState.PropertyChanged -= EndpointPropertyChangedHandler;
                         _destinationState.TransitionsTo.Remove(this);
                     }
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "DestinationState", _destinationState?.Id.ToString() ?? ((int)-1).ToString()));
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "DestinationState", (_destinationState?.Id ?? ObjectModel.TrackableObject.NullId).ToString()));
                     _destinationState = value;
                     if (_destinationState != null)
                     {
@@ -85,7 +85,7 @@ namespace SimpleStateMachineEditor.ViewModel
                 }
             }
         }
-        State _destinationState;
+        ObjectModel.ITransitionEndpoint _destinationState;
         [Browsable(false)]
         [XmlAttribute]
         public int DestinationStateId
@@ -93,7 +93,7 @@ namespace SimpleStateMachineEditor.ViewModel
             get => DestinationState?.Id ?? _destinationStateId;
             set => _destinationStateId = value;
         }
-        int _destinationStateId = -1;
+        int _destinationStateId = ObjectModel.TrackableObject.NullId;
 
         [XmlIgnore]
         [Description("The event which will trigger the transition")]
@@ -102,9 +102,9 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _triggerEvent;
             set
             {
-                if (_triggerEvent != value && IsChangeAllowed)
+                if (_triggerEvent != value && IsChangeAllowed())
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "TriggerEvent", _triggerEvent?.Id.ToString() ?? ((int)-1).ToString()));
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "TriggerEvent", (_triggerEvent?.Id ?? ObjectModel.TrackableObject.NullId).ToString()));
                     _triggerEvent = value;
                     OnPropertyChanged("TriggerEvent");
                     EndChange();
@@ -119,7 +119,7 @@ namespace SimpleStateMachineEditor.ViewModel
             get => TriggerEvent?.Id ?? _triggerEventId;
             set => _triggerEventId = value;
         }
-        int _triggerEventId = -1;
+        int _triggerEventId = ObjectModel.TrackableObject.NullId;
 
         //  Previously, actions were simply string names of abstract methods. Now they're represented by the
         //  Action object.
@@ -198,10 +198,12 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         bool _wasTriggerFound;
 
+        public bool IsGrouped => (SourceState?.IsGrouped ?? false) || (DestinationState?.IsGrouped ?? false);
+
         //  Events posted for use by the icon
 
         internal event EventHandler EndpointChanged;
-        internal event EventHandler EndpointPositionChanged;
+        public event EventHandler EndpointPositionChanged;
 
 
 
@@ -239,15 +241,15 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                SourceState = redoRecord.SourceStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.SourceStateId) as State;
-                DestinationState = redoRecord.DestinationStateId == -1 ? null : Controller.StateMachine.Find(redoRecord.DestinationStateId) as State;
-                TriggerEvent = redoRecord.TriggerEventId == -1 ? null : Controller.StateMachine.Find(redoRecord.TriggerEventId) as EventType;
+                SourceState = redoRecord.SourceStateId == ObjectModel.TrackableObject.NullId ? null : Find(redoRecord.SourceStateId) as State;
+                DestinationState = redoRecord.DestinationStateId == ObjectModel.TrackableObject.NullId ? null : Find(redoRecord.DestinationStateId) as State;
+                TriggerEvent = redoRecord.TriggerEventId == ObjectModel.TrackableObject.NullId ? null : Find(redoRecord.TriggerEventId) as EventType;
                 OldActions = new List<string>();
                 ActionReferences = new ObservableCollection<ActionReference>();
                 ActionReferences.CollectionChanged += Actions_CollectionChanged;
                 for (int slot = redoRecord.ActionIds.GetLowerBound(0); slot <= redoRecord.ActionIds.GetUpperBound(0); slot++)
                 {
-                    ActionReference actionReference = new  ActionReference(Controller, this, Controller.StateMachine.Find(redoRecord.ActionIds[slot]) as Action);
+                    ActionReference actionReference = new  ActionReference(Controller, this, Find(redoRecord.ActionIds[slot]) as Action);
                     ActionReferences.Add(actionReference);
                 }
                 ActionIds = null;
@@ -280,7 +282,7 @@ namespace SimpleStateMachineEditor.ViewModel
             //
             //  We should have synchronized with the underlying text buffer before we made the change.
 #if false
-            if (IsChangeAllowed)
+            if (IsChangeAllowed())
             {
                 Controller?.LogUndoAction(new UndoRedo.ListValuedPropertyChangedRecord(Controller, this, "ActionReferences", OldActions));
                 EndChange();
@@ -296,37 +298,50 @@ namespace SimpleStateMachineEditor.ViewModel
             ActionReferences.Remove(actionReference as ActionReference);
         }
 
-        internal override void DeserializeCleanup(ViewModelController controller, ViewModel.StateMachine stateMachine)
+        internal override void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModelController controller, StateMachine stateMachine)
         {
-            base.DeserializeCleanup(controller, stateMachine);
+            base.DeserializeCleanup(phase, controller, stateMachine);
 
-            using (new UndoRedo.DontLogBlock(controller))
+            if (phase == DeserializeCleanupPhases.ObjectResolution)
             {
-                _destinationState = stateMachine.Find(_destinationStateId) as ViewModel.State;
-                _destinationState.PropertyChanged += EndpointPropertyChangedHandler;
-                _destinationState.TransitionsTo.Add(this);
-
-                _sourceState = stateMachine.Find(_sourceStateId) as ViewModel.State;
-                _sourceState.PropertyChanged += EndpointPropertyChangedHandler;
-                _sourceState.TransitionsFrom.Add(this);
-
-                _triggerEvent = stateMachine.Find(_triggerEventId) as ViewModel.EventType;
-
-                for (int slot = 0; slot < ActionIds.Count; slot++)
+                using (new UndoRedo.DontLogBlock(controller))
                 {
-                    ActionReference actionReference = new ActionReference(Controller, this, stateMachine.Find(ActionIds[slot]) as Action);
-                    ActionReferences.Add(actionReference);
-                }
+                    _destinationState = Find(_destinationStateId) as ViewModel.State;
+                    _destinationState.PropertyChanged += EndpointPropertyChangedHandler;
+                    _destinationState.TransitionsTo.Add(this);
 
-                LoadDeprecatedActions(controller, stateMachine);
+                    _sourceState = Find(_sourceStateId) as ViewModel.State;
+                    _sourceState.PropertyChanged += EndpointPropertyChangedHandler;
+                    _sourceState.TransitionsFrom.Add(this);
+
+                    _triggerEvent = Find(_triggerEventId) as ViewModel.EventType;
+
+                    for (int slot = 0; slot < ActionIds.Count; slot++)
+                    {
+                        ActionReference actionReference = new ActionReference(Controller, this, Find(ActionIds[slot]) as Action);
+                        ActionReferences.Add(actionReference);
+                    }
+
+                    LoadDeprecatedActions(controller, stateMachine);
+                }
             }
         }
 
         private void EndpointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "LeftTopPosition" || e.PropertyName == "Transitions")
+            switch (e.PropertyName)
             {
-                EndpointPositionChanged?.Invoke(this, new EventArgs());
+                case "LeftTopPosition":
+                case "Transitions":
+                    EndpointPositionChanged?.Invoke(this, new EventArgs());
+                    break;
+
+                case "IsGrouped":
+                    OnPropertyChanged("IsGrouped");
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -348,13 +363,13 @@ namespace SimpleStateMachineEditor.ViewModel
             switch (propertyName)
             {
                 case "DestinationState":
-                    value = DestinationState?.Id.ToString() ?? ((int)-1).ToString();
+                    value = (DestinationState?.Id ?? (int)ObjectModel.TrackableObject.NullId).ToString();
                     break;
                 case "SourceState":
-                    value = SourceState?.Id.ToString() ?? ((int)-1).ToString();
+                    value = (SourceState?.Id ?? ObjectModel.TrackableObject.NullId).ToString();
                     break;
                 case "TriggerEvent":
-                    value = TriggerEvent?.Id.ToString() ?? ((int)-1).ToString();
+                    value = (TriggerEvent?.Id ?? ObjectModel.TrackableObject.NullId).ToString();
                     break;
                 default:
                     base.GetProperty(propertyName, out value);
@@ -433,13 +448,13 @@ namespace SimpleStateMachineEditor.ViewModel
             switch (propertyName)
             {
                 case "DestinationState":
-                    DestinationState = newValue == "-1" ? null : Controller.StateMachine.Find(int.Parse(newValue)) as ViewModel.State;
+                    DestinationState = newValue == ObjectModel.TrackableObject.NullId.ToString() ? null : Find(int.Parse(newValue)) as ViewModel.State;
                     break;
                 case "SourceState":
-                    SourceState = newValue == "-1" ? null : Controller.StateMachine.Find(int.Parse(newValue)) as ViewModel.State;
+                    SourceState = newValue == ObjectModel.TrackableObject.NullId.ToString() ? null : Find(int.Parse(newValue)) as ViewModel.State;
                     break;
                 case "TriggerEvent":
-                    TriggerEvent = newValue == "-1" ? null : Controller.StateMachine.Find(int.Parse(newValue)) as ViewModel.EventType;
+                    TriggerEvent = newValue == ObjectModel.TrackableObject.NullId.ToString() ? null : Find(int.Parse(newValue)) as ViewModel.EventType;
                     break;
                 default:
                     base.SetProperty(propertyName, newValue);
@@ -447,33 +462,6 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-#if false
-        internal override void SetProperty(string propertyName, IList<string> newValue)
-        {
-            switch (propertyName)
-            {
-                case "ActionReferences":
-                    using (new UndoRedo.AtomicBlock(Controller, "Set property ActionReferences"))
-                    {
-                        while (ActionReferences.Count > 0)
-                        {
-                            //  We don't use the Clear method because it results in a Reset notification, which doesn't provide the OldItems list on the CollectionChanged event
-
-                            ActionReferences.RemoveAt(0);
-                        }
-                        for (int slot = 0; slot < newValue.Count(); slot++)
-                        {
-                            Action action = Controller.StateMachine.Find(int.Parse(newValue[slot])) as Action;
-                            ActionReferences.Add(new ActionReference(Controller, this, action));
-                        }
-                    }
-                    break;
-                default:
-                    base.SetProperty(propertyName, newValue);
-                    break;
-            }
-        }
-#endif
         public override string ToString()
         {
             return $@"{(SourceState?.Name ?? "<null>")}<({(TriggerEvent?.Name ?? "<null>")})>{(DestinationState?.Name ?? "<null>")}";

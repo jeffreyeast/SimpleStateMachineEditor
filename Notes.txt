@@ -293,7 +293,7 @@
 
 5/25/2021
 
- - The IsChangeAllowed tests are a little bogus -- when would change not be allowed (during startup and something to do with editting in the text window). But in DeleteIcon, it'll yield a notimplementedexception.
+ - The IsChangeAllowed() tests are a little bogus -- when would change not be allowed (during startup and something to do with editting in the text window). But in DeleteIcon, it'll yield a notimplementedexception.
  - Right click should not clear the selection
    FIXED -- mouse selection now matches (or is closer to) that of VS
  - Should regions be members of layers?
@@ -342,3 +342,23 @@
 6/1/2021
 
  - Consider groups of states
+
+6/3/2021
+
+ - Consolidate the colectionchanged handlers in the designer.cs file
+ - Is it time to have a dictionary make statemachine.find faster?
+
+6/5/2021
+
+ - groups are half in and very fragile. lastest is that the GroupTransition has one endpoint as a Group, not a state (possibly
+   both, if both ends are grouped)
+
+6/6/2021
+
+ - why is there a grouptransition from s1<>s2?
+  - grouptransitions are being loaded, but not displayed. Also, one endpoint should be the group, not the original endpoint.
+  - on initial load of icons, moving a state and undoing the move doesn't redraw the state at the old location. But displaying a different
+    layer and going back to the original, then it works.
+ - you have to drop on the layer, not the group. but it feels natural to drop on the group. Similar problem when you add a state to group. Switching
+   between layers should the transitions, but they don't initially show up.
+- OnHover that scans statemachine.transitions misses grouptransitions, because they're in the list

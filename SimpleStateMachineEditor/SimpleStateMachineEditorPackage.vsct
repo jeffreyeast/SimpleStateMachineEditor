@@ -272,13 +272,6 @@
         </Strings>
       </Button>
 
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupCommandId" priority="0x0100" type="Button">
-        <Strings>
-          <ButtonText>Form new group</ButtonText>
-          <ToolTipText>Form a new group and add state to it</ToolTipText>
-        </Strings>
-      </Button>
-
       <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="SelectNewDestinationCommandId" priority="0x0100" type="Button">
         <Strings>
           <ButtonText>Select new transition end state</ButtonText>
@@ -307,13 +300,6 @@
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
         <Strings>
           <ButtonText>ActionsToolWindow</ButtonText>
-        </Strings>
-      </Button>
-
-      <Button guid="guidSimpleStateMachineEditorPackageCmdSet" id="UngroupCommandId" priority="0x0100" type="Button">
-        <Strings>
-          <ButtonText>Ungroup state</ButtonText>
-          <ToolTipText>Remove state from its associated group</ToolTipText>
         </Strings>
       </Button>
 
@@ -477,14 +463,6 @@
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
 
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="GroupCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
-    </CommandPlacement>
-
-    <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="UngroupCommandId" priority="0x0001">
-      <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
-    </CommandPlacement>
-
     <CommandPlacement guid="guidSimpleStateMachineEditorPackageCmdSet" id="AlignmentSubmenutMenuId" priority="0x0001">
       <Parent guid="guidSimpleStateMachineEditorPackageCmdSet" id="StateIconContextMenuGroupId" />
     </CommandPlacement>
@@ -620,13 +598,11 @@
       <IDSymbol name="DeleteCommandId" value="0x010a" />
       <IDSymbol name="DistributeHorizontallyCommandId" value="0x010b" />
       <IDSymbol name="DistributeVerticallyCommandId" value="0x010c" />
-      <IDSymbol name="GroupCommandId" value="0x010d" />
       <IDSymbol name="SelectNewDestinationCommandId" value="0x010e" />
       <IDSymbol name="SelectNewSourceCommandId" value="0x010f" />
       <IDSymbol name="SetIconDisplayColorsComboId" value="0x110" />
       <IDSymbol name="SortCommandId" value="0x0111" />
       <IDSymbol name="StartStateCommandId" value="0x0112" />
-      <IDSymbol name="UngroupCommandId" value="0x0113" />
       <IDSymbol value="0x0114" name="cmdidActionsToolWindowCommand" />
     </GuidSymbol>
   

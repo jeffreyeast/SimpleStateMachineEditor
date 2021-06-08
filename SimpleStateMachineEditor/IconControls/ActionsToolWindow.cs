@@ -181,14 +181,14 @@ namespace SimpleStateMachineEditor.IconControls
                 switch (e.PropertyName)
                 {
                     case "Description":
-                        if (Designer.Model.StateMachine.IsChangeAllowed)
+                        if (Designer.Model.StateMachine.IsChangeAllowed())
                         {
                             icon.Action.Description = icon.Description;
                             Designer.Model.StateMachine.EndChange();
                         }
                         break;
                     case "Name":
-                        if (Designer.Model.StateMachine.IsChangeAllowed)
+                        if (Designer.Model.StateMachine.IsChangeAllowed())
                         {
                             icon.Action.Name = icon.Name;
                             Designer.Model.StateMachine.EndChange();
@@ -205,7 +205,7 @@ namespace SimpleStateMachineEditor.IconControls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (Designer.Model.StateMachine.IsChangeAllowed)
+                    if (Designer.Model.StateMachine.IsChangeAllowed())
                     {
                         using (new UndoRedo.AtomicBlock(Designer.Model, "Add action"))
                         {
@@ -220,7 +220,7 @@ namespace SimpleStateMachineEditor.IconControls
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    if (Designer.Model.StateMachine.IsChangeAllowed)
+                    if (Designer.Model.StateMachine.IsChangeAllowed())
                     {
                         using (new UndoRedo.AtomicBlock(Designer.Model, "Delete action"))
                         {

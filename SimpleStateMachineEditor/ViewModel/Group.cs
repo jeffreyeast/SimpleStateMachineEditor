@@ -15,15 +15,10 @@ namespace SimpleStateMachineEditor.ViewModel
     //++
     //      The Group class represents a group of states.
     //--
-    public class Group : ObjectModel.LayeredPositionableObject, ObjectModel.ITransitionEndpoint
+    public class Group : TransitionHost
     {
-        public ObservableCollection<Transition> TransitionsFrom { get; private set; }
-        public ObservableCollection<Transition> TransitionsTo { get; private set; }
-
-        [XmlIgnore]
-        internal ObservableCollection<State> Members { get; private set; }
-
-
+        public override Group AssociatedGroup { get => null; set => throw new NotImplementedException(); }
+        public override bool IsGrouped => false;
 
 
 
@@ -31,66 +26,47 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public Group()
         {
-            TransitionsFrom = new ObservableCollection<Transition>();
-            TransitionsTo = new ObservableCollection<Transition>();
-            Members = new ObservableCollection<State>();
-            Members.CollectionChanged += Members_CollectionChanged;
         }
 
         //  Constructor for new object creation through commands
 
-        private Group(ViewModelController controller, string rootName, ViewModel.Layer currentLayer) : base (controller, controller.StateMachine.States, rootName, currentLayer)
+        private Group(ViewModelController controller, string rootName, ViewModel.Layer currentLayer) : base (controller, controller.StateMachine.Groups, rootName, currentLayer)
         {
-            TransitionsFrom = new ObservableCollection<Transition>();
-            TransitionsTo = new ObservableCollection<Transition>();
-            Members = new ObservableCollection<State>();
-            Members.CollectionChanged += Members_CollectionChanged;
         }
 
         //  Constructor for use by Redo
 
         internal Group(ViewModel.ViewModelController controller, UndoRedo.AddGroupRecord redoRecord) : base(controller, redoRecord)
         {
-            TransitionsFrom = new ObservableCollection<Transition>();
-            TransitionsTo = new ObservableCollection<Transition>();
-            Members = new ObservableCollection<State>();
-            Members.CollectionChanged += Members_CollectionChanged;
         }
 
-        private void AddTransitionsForState(State state)
+        private void AddTransitionsForEndpoint(ObjectModel.ITransitionEndpoint endpoint)
         {
-            state.TransitionsFrom.CollectionChanged += MemberTransitionsFromCollectionChangedHandler;
-            foreach (Transition transition in state.TransitionsFrom)
+            endpoint.TransitionsFrom.CollectionChanged += MemberTransitionsFromCollectionChangedHandler;
+            foreach (ObjectModel.ITransition transition in endpoint.TransitionsFrom)
             {
-                if (!Members.Contains(transition.DestinationState))
+                if (!(CoNamedObject as Layer).Members.Contains(transition.DestinationState) &&
+                    (CoNamedObject as Layer).Members.Contains(transition.SourceState))
                 {
-                    TransitionsFrom.Add(transition);
+                    GroupTransition groupTransition = TransitionsFrom.Where(t => t.SourceState == this && t.DestinationState == transition.DestinationState && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as GroupTransition;
+                    if (groupTransition == null)
+                    {
+                        TransitionsFrom.Add(new GroupTransition(Controller, this, transition.DestinationState, transition.TriggerEvent));
+                    }
                 }
             }
-            state.TransitionsTo.CollectionChanged += MemberTransitionsToCollectionChangedHandler;
-            foreach (Transition transition in state.TransitionsTo)
+            endpoint.TransitionsTo.CollectionChanged += MemberTransitionsToCollectionChangedHandler;
+            foreach (ObjectModel.ITransition transition in endpoint.TransitionsTo)
             {
-                if (!Members.Contains(transition.SourceState))
+                if (!(CoNamedObject as Layer).Members.Contains(transition.SourceState) &&
+                    (CoNamedObject as Layer).Members.Contains(transition.DestinationState))
                 {
-                    TransitionsTo.Add(transition);
+                    GroupTransition groupTransition = TransitionsFrom.Where(t => t.SourceState == transition.SourceState && t.DestinationState == this && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as GroupTransition;
+                    if (groupTransition == null)
+                    {
+                        TransitionsTo.Add(new GroupTransition(Controller, transition.SourceState, this, transition.TriggerEvent));
+                    }
                 }
-            }
-        }
-
-        private void BuildTransitionLists()
-        {
-            while (TransitionsFrom.Count > 0)
-            {
-                TransitionsFrom.RemoveAt(0);
-            }
-            while (TransitionsTo.Count > 0)
-            {
-                TransitionsTo.RemoveAt(0);
-            }
-
-            foreach (State state in Members)
-            {
-                AddTransitionsForState(state);
             }
         }
 
@@ -102,155 +78,46 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        private void GatherPeers(List<Transition> peerTransitions, Transition transition, IEnumerable<Transition> transitionList)
-        {
-            foreach (Transition t in transitionList)
-            {
-                if ((t.SourceState == transition.SourceState && t.DestinationState == transition.DestinationState) ||
-                    (t.SourceState == transition.DestinationState && t.DestinationState == transition.SourceState))
-                {
-                    if (!peerTransitions.Contains(t))
-                    {
-                        peerTransitions.Add(t);
-                    }
-                }
-            }
-        }
-
-        internal override void GetProperty(string propertyName, out string value)
-        {
-            switch (propertyName)
-            {
-                default:
-                    base.GetProperty(propertyName, out value);
-                    break;
-            }
-        }
-
-        //  This method calculates the relative position of a transition among all the transitions that originate or
-        //  terminate at this state, which share a common opposite state.
-
-        public int GetRelativePeerPosition(Transition transition)
-        {
-            List<Transition> peerTransitions = new List<Transition>();
-            GatherPeers(peerTransitions, transition, TransitionsFrom);
-            GatherPeers(peerTransitions, transition, TransitionsTo);
-
-            int position = 0;
-            foreach (Transition t in peerTransitions)
-            {
-                if (t.Id < transition.Id)
-                {
-                    position++;
-                }
-            }
-            return position;
-        }
-
-        public bool HasTransitionMatchingTrigger(EventType triggerEvent)
-        {
-            if (triggerEvent != null)
-            {
-                foreach (Transition transition in TransitionsFrom)
-                {
-                    if (transition.TriggerEvent == triggerEvent && Members.Contains(transition.SourceState))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
         private void Members_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (State state in e.NewItems)
-                    {
-                        AddTransitionsForState(state);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (State state in e.OldItems)
-                    {
-                        RemoveTransitionsForState(state);
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            ValidateTransitions();
         }
 
         private void MemberTransitionsFromCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (Transition transition in e.NewItems)
-                    {
-                        if (!Members.Contains(transition.DestinationState))
-                        {
-                            TransitionsFrom.Add(transition);
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (Transition transition in e.OldItems)
-                    {
-                        TransitionsFrom.Remove(transition);
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            ValidateTransitions();
         }
 
         private void MemberTransitionsToCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (Transition transition in e.NewItems)
-                    {
-                        if (!Members.Contains(transition.SourceState))
-                        {
-                            TransitionsTo.Add(transition);
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (Transition transition in e.OldItems)
-                    {
-                        TransitionsTo.Remove(transition);
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            ValidateTransitions();
         }
 
-        private void RemoveTransitionsForState(State state)
+        protected override void OnCoNamedObjectChange(NamedObject preValue, NamedObject postValue)
         {
-            foreach (Transition transition in state.TransitionsFrom)
+            if (preValue != null)
             {
-                TransitionsFrom.Remove(transition);
+                (preValue as Layer).Members.CollectionChanged -= Members_CollectionChanged;
+                foreach (ViewModel.State member in (preValue as Layer).Members)
+                {
+                    member.AssociatedGroup = null;
+                }
             }
-            foreach (Transition transition in state.TransitionsTo)
+            if (postValue != null)
             {
-                TransitionsFrom.Remove(transition);
+                (postValue as Layer).Members.CollectionChanged += Members_CollectionChanged;
+                foreach (ViewModel.State member in (postValue as Layer).Members)
+                {
+                    member.AssociatedGroup = null;
+                }
             }
+            ValidateTransitions();
+            base.OnCoNamedObjectChange(preValue, postValue);
         }
 
-        internal override void SetProperty(string propertyName, string newValue)
+        private void ValidateTransitions()
         {
-            switch (propertyName)
-            {
-                default:
-                    base.SetProperty(propertyName, newValue);
-                    break;
-            }
+
         }
     }
 }

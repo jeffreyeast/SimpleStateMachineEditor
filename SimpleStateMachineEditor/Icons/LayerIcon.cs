@@ -96,7 +96,8 @@ namespace SimpleStateMachineEditor.Icons
                     switch (prgCmds[i].cmdID)
                     {
                         case PackageIds.DeleteCommandId:
-                            prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED | (layer.IsDefaultLayer ? 0 : (uint)OLECMDF.OLECMDF_ENABLED);
+                            prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED | 
+                                (layer.IsDefaultLayer || layer.CoNamedObject != null  ? 0 : (uint)OLECMDF.OLECMDF_ENABLED);
                             break;
 
                         default:

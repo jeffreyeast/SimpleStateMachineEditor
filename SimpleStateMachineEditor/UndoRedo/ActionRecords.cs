@@ -36,7 +36,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddActionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Action newAction = new ViewModel.Action(Controller, this);
                 Controller.StateMachine.Actions.Add(newAction);
@@ -72,7 +72,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddActionReferenceRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.ActionReference newActionReference = new ViewModel.ActionReference(Controller, this);
                 newActionReference.Transition.ActionReferences.Insert(Slot, newActionReference);
@@ -101,7 +101,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteActionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Action targetAction = Controller.StateMachine.Actions.Where(e => e.Id == Id).First();
                 Controller.StateMachine.Actions.Remove(targetAction);
@@ -136,7 +136,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteActionReferenceRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.Transition targetTransition = Controller.StateMachine.Find(TransitionId) as ViewModel.Transition;
                 ViewModel.ActionReference targetActionReference = targetTransition.ActionReferences[Slot];

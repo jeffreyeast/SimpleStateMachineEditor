@@ -16,7 +16,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _description;
             set
             {
-                if (_description != value && IsChangeAllowed)
+                if (_description != value && IsChangeAllowed())
                 {
                     Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
                     _description = value;

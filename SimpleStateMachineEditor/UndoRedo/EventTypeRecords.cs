@@ -36,7 +36,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddEventTypeRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.EventType newEventType = new EventType(Controller, this);
                 Controller.StateMachine.EventTypes.Add(newEventType);
@@ -65,7 +65,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteEventTypeRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed)
+            if (Controller.StateMachine.IsChangeAllowed())
             {
                 ViewModel.EventType targetEventType = Controller.StateMachine.EventTypes.Where(e => e.Id == Id).First();
                 Controller.StateMachine.EventTypes.Remove(targetEventType);

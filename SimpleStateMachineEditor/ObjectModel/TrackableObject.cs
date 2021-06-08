@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -10,9 +11,9 @@ using System.Xml.Serialization;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    public abstract class TrackableObject : INotifyPropertyChanged, IRemovableObject
+    public abstract class TrackableObject : INotifyPropertyChanged, IRemovableObject, ITrackableObject
     {
-        internal bool IsChangeAllowed => Controller?.CanGuiChangeBegin() ?? true;
+        public bool IsChangeAllowed(){ return Controller?.CanGuiChangeBegin() ?? true; }
 
         [XmlAttribute]
         [Browsable(false)]
@@ -30,8 +31,10 @@ namespace SimpleStateMachineEditor.ObjectModel
         }
         int _id;
 
+        internal const int NullId = -2;
+
         [XmlIgnore]
-        internal ViewModel.ViewModelController Controller { get; set; }
+        public ViewModel.ViewModelController Controller { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event ObjectModel.RemovingHandler Removing;
@@ -45,7 +48,7 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         public TrackableObject()
         {
-            Id = -2;
+            Id = NullId;
             GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
@@ -55,6 +58,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             Controller = controller;
             Id = Controller.NextId;
+            controller.AllFindableObjects.Add(Id, this);
             GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
@@ -64,7 +68,73 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             Controller = controller;
             Id = redoRecord.Id;
+            controller.AllFindableObjects.Add(Id, this);
             GID = System.Threading.Interlocked.Increment(ref _gid);
+        }
+
+        protected void ObservableCollectionOfRemovableObjectsChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ObjectModel.TrackableObject o in e.OldItems)
+                    {
+                        o.Remove();
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        internal enum DeserializeCleanupPhases
+        {
+            First,
+
+            MaxIdDetermination = First,
+            MissingIdAssignment,
+            IdRegistration,
+            ObjectResolution,
+
+            Last = ObjectResolution,
+        }
+
+        internal virtual void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        {
+            switch (phase)
+            {
+                case DeserializeCleanupPhases.MaxIdDetermination:
+                    Controller = controller;
+                    Controller.DeserializeCleanup(this);
+                    break;
+                case DeserializeCleanupPhases.MissingIdAssignment:
+                    //  Some objects in legacy .SFSA files may not have derived from TrackableObject, but do now.  Assign such objects unique Ids.
+
+                    if (Id == NullId)
+                    {
+                        Id = controller.NextId;
+                    }
+                    break;
+                case DeserializeCleanupPhases.IdRegistration:
+                    Controller.AllFindableObjects.Add(Id, this);
+                    break;
+                case DeserializeCleanupPhases.ObjectResolution:
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public void EndChange()
+        {
+            Controller?.NoteGuiChangeEnd();
+        }
+
+        internal ObjectModel.TrackableObject Find(int id)
+        {
+            return Controller.AllFindableObjects[id];
         }
 
         internal virtual void GetProperty(string propertyName, out string value)
@@ -77,25 +147,21 @@ namespace SimpleStateMachineEditor.ObjectModel
             throw new ArgumentException($@"Property '{propertyName}' not recognized");
         }
 
-        internal virtual void DeserializeCleanup(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        internal void OnPropertyChanged(object sender, string propertyName)
         {
-            Controller = controller;
-            Controller.DeserializeCleanup(this);
-        }
-
-        internal virtual void DeserializeCleanupPhase2(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
-        {
-            //  Some objects in legacy .SFSA files may not have derived from TrackableObject, but do now.  Assign such objects unique Ids.
-
-            if (Id == -1)
+            if (PropertyChanged != null)
             {
-                Id = controller.NextId;
+                if (ThreadHelper.CheckAccess())
+                {
+                    PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(propertyName));
+                }
+                else
+                {
+                    ThreadHelper.Generic.BeginInvoke(new Action(() => {
+                        PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(propertyName));
+                    }));
+                }
             }
-        }
-
-        internal void EndChange()
-        {
-            Controller?.NoteGuiChangeEnd();
         }
 
         protected void OnPropertyChanged(string propertyName)
@@ -118,6 +184,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         protected virtual void OnRemoving()
         {
             Removing?.Invoke(this);
+            Controller.AllFindableObjects.Remove(Id);
         }
 
         internal virtual void ResetSearch() { }

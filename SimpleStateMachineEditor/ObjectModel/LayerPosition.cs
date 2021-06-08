@@ -23,14 +23,14 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => Layer?.Id ?? _layerId;
             set => _layerId = value;
         }
-        int _layerId = -1;
+        int _layerId = TrackableObject.NullId;
 
         public Point LeftTopPosition 
         {
             get => _leftTopPosition;
             set
             {
-                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed)
+                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed())
                 {
                     Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", LeftTopPosition.ToString()));
                     _leftTopPosition = value;
@@ -66,22 +66,31 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         //  Constructor for use by Redo
 
-        internal static LayerPosition Create(ViewModel.ViewModelController controller, ViewModel.Layer layer)
+        internal LayerPosition(ViewModel.ViewModelController controller, UndoRedo.AddLayerMemberRecord redoRecord) : base(controller, redoRecord)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                return new LayerPosition(controller, layer);
+                Layer = Find(redoRecord.LayerId) as ViewModel.Layer;
+                LeftTopPosition = redoRecord.LeftTopPosition;
             }
         }
 
-        internal override void DeserializeCleanup(ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        internal static LayerPosition Create(ViewModel.ViewModelController controller, ViewModel.Layer layer)
         {
-            base.DeserializeCleanup(controller, stateMachine);
+            return new LayerPosition(controller, layer);
+        }
 
-            Layer = stateMachine.Find(_layerId) as ViewModel.Layer;
-            if (Layer == null)
+        internal override void DeserializeCleanup(TrackableObject.DeserializeCleanupPhases phase, ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
+        {
+            base.DeserializeCleanup(phase, controller, stateMachine);
+
+            if (phase == DeserializeCleanupPhases.ObjectResolution)
             {
-                throw new ArgumentOutOfRangeException("ObjectModel.LayeredPositionalObject.LayerId", _layerId, "Unable to locate layer");
+                Layer = Find(_layerId) as ViewModel.Layer;
+                if (Layer == null)
+                {
+                    throw new ArgumentOutOfRangeException("ObjectModel.LayeredPositionalObject.LayerId", _layerId, "Unable to locate layer");
+                }
             }
         }
 

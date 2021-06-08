@@ -55,6 +55,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         public LayeredPositionableObject()
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
+            LayerPositions.CollectionChanged += ObservableCollectionOfRemovableObjectsChangedHandler;
         }
 
 
@@ -63,12 +64,14 @@ namespace SimpleStateMachineEditor.ObjectModel
         internal LayeredPositionableObject(ViewModel.ViewModelController controller, ViewModel.Layer currentLayer) : base(controller)
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
+            LayerPositions.CollectionChanged += ObservableCollectionOfRemovableObjectsChangedHandler;
             CurrentLayer = currentLayer;
         }
 
         internal LayeredPositionableObject(ViewModel.ViewModelController controller, IEnumerable<NamedObject> existingObjectList, string rootName, ViewModel.Layer currentLayer) : base(controller, existingObjectList, rootName)
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
+            LayerPositions.CollectionChanged += ObservableCollectionOfRemovableObjectsChangedHandler;
             CurrentLayer = currentLayer;
         }
 
@@ -77,18 +80,19 @@ namespace SimpleStateMachineEditor.ObjectModel
         internal LayeredPositionableObject(ViewModel.ViewModelController controller, UndoRedo.LayeredPositionableObjectRecord redoRecord) : base(controller, redoRecord)
         {
             LayerPositions = new ObservableCollection<LayerPosition>();
+            LayerPositions.CollectionChanged += ObservableCollectionOfRemovableObjectsChangedHandler;
             using (new UndoRedo.DontLogBlock(controller))
             {
-                CurrentLayer = controller.StateMachine.Find(redoRecord.CurrentLayerId) as ViewModel.Layer;
+                CurrentLayer = Find(redoRecord.CurrentLayerId) as ViewModel.Layer;
             }
         }
 
-        internal override void DeserializeCleanup(ViewModelController controller, StateMachine stateMachine)
+        internal override void DeserializeCleanup(TrackableObject.DeserializeCleanupPhases phase, ViewModelController controller, StateMachine stateMachine)
         {
-            base.DeserializeCleanup(controller, stateMachine);
+            base.DeserializeCleanup(phase, controller, stateMachine);
             foreach (LayerPosition layerPosition in LayerPositions)
             {
-                layerPosition.DeserializeCleanup(controller, stateMachine);
+                layerPosition.DeserializeCleanup(phase, controller, stateMachine);
             }
         }
 
@@ -113,7 +117,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             switch (propertyName)
             {
                 case "CurrentLayer":
-                    CurrentLayer = Controller.StateMachine.Find(int.Parse(newValue)) as ViewModel.Layer;
+                    CurrentLayer = Find(int.Parse(newValue)) as ViewModel.Layer;
                     break;
                 case "LeftTopPosition":
                     LeftTopPosition = System.Windows.Point.Parse(newValue);

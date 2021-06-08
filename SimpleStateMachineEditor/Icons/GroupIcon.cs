@@ -40,7 +40,7 @@ namespace SimpleStateMachineEditor.Icons
             return new IconControls.GroupIconControl()
             {
                 DataContext = this,
-                Style = Designer.Resources["StateIconStyle"] as Style,
+                Style = Designer.Resources["GroupIconStyle"] as Style,
             };
         }
 
@@ -63,7 +63,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHover(sender, e);
 
-            foreach (ViewModel.Transition transition in (ReferencedObject as ViewModel.State).TransitionsFrom)
+            foreach (ObjectModel.ITransition transition in (ReferencedObject as ViewModel.Group).TransitionsFrom)
             {
                 if (Designer.LoadedIcons.ContainsKey(transition))
                 {
@@ -73,7 +73,7 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (ViewModel.EventType eventType in Designer.Model.StateMachine.EventTypes)
             {
-                (Designer.LoadedIcons[eventType] as EventTypeIcon).TriggerUsageState = ((ReferencedObject as ViewModel.State).HasTransitionMatchingTrigger(eventType) ? EventTypeIcon.DropStates.NotAllowed : EventTypeIcon.DropStates.Allowed);
+                (Designer.LoadedIcons[eventType] as EventTypeIcon).TriggerUsageState = ((ReferencedObject as ViewModel.Group).HasTransitionMatchingTrigger(eventType) ? EventTypeIcon.DropStates.NotAllowed : EventTypeIcon.DropStates.Allowed);
             }
         }
 
@@ -81,7 +81,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.OnHoverEnd();
 
-            foreach (ViewModel.Transition transition in (ReferencedObject as ViewModel.State).TransitionsFrom)
+            foreach (ObjectModel.ITransition transition in (ReferencedObject as ViewModel.Group).TransitionsFrom)
             {
                 if (Designer.LoadedIcons.ContainsKey(transition))
                 {
