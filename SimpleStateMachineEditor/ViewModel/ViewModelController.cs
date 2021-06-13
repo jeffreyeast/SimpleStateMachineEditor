@@ -40,6 +40,31 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        /// <summary>
+        /// Encapsulates a set of actions that change the view model and should all be redone atomically 
+        /// </summary>
+        private class AtomicGuiChangeBlock : IDisposable
+        {
+            ViewModel.ViewModelController Controller;
+            IOleParentUndoUnit UndoUnit;
+
+
+            internal AtomicGuiChangeBlock(ViewModel.ViewModelController controller, string description)
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                Controller = controller;
+                Controller.BeginGuiChange();
+                UndoUnit = new UndoRedo.ParentRecord(controller, description);
+                controller.UndoManager.Open(UndoUnit);
+            }
+
+            public void Dispose()
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                Controller.UndoManager.Close(UndoUnit, 1);
+                Controller.EndGuiChange();
+            }
+        }
 
 
 
@@ -151,6 +176,11 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        internal IDisposable CreateAtomicGuiChangeBlock(string description)
+        {
+            return new AtomicGuiChangeBlock(this, description);
+        }
+
         internal void DeserializeCleanup(ObjectModel.TrackableObject o)
         {
             _nextId = Math.Max(_nextId, o.Id);
@@ -207,7 +237,15 @@ namespace SimpleStateMachineEditor.ViewModel
                     case States.ModifiedByGuiEditor:
                     case States.NotParsable:
                     case States.ParsedAndNotModified:
-                        throw new InvalidOperationException("SimpleStateMachineEditor.ViewModelController: Invalid buffer change");
+                        if (--GuiChangeCount == 0)
+                        {
+                            State = States.ModifiedByGuiEditor;
+                        }
+                        else
+                        {
+                            State = States.ModifyingByGuiEditor;
+                        }
+                        return;
                     case States.Reconciling:
                         --GuiChangeCount;
                         return;

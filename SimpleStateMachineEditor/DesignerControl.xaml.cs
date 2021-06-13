@@ -109,48 +109,42 @@ namespace SimpleStateMachineEditor
 
         internal void AddEventType(Point? center = null)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock(AddEventTypeDescription))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddEventTypeDescription))
+                ViewModel.EventType newEventType = ViewModel.EventType.Create(Model, OptionsPage);
+                Model.LogUndoAction(new UndoRedo.DeleteEventTypeRecord(Model, newEventType));
+                if (!center.HasValue)
                 {
-                    ViewModel.EventType newEventType = ViewModel.EventType.Create(Model, OptionsPage);
-                    Model.LogUndoAction(new UndoRedo.DeleteEventTypeRecord(Model, newEventType));
-                    if (!center.HasValue)
-                    {
-                        center = FindEmptySpace(Icons.StateIcon.IconSize);
-                    }
-                    newEventType.LeftTopPosition = new Point(center.Value.X - Icons.EventTypeIcon.IconSize.Width / 2, center.Value.Y - Icons.EventTypeIcon.IconSize.Height / 2);
-                    Model.StateMachine.EventTypes.Add(newEventType);
+                    center = FindEmptySpace(Icons.StateIcon.IconSize);
                 }
+                newEventType.LeftTopPosition = new Point(center.Value.X - Icons.EventTypeIcon.IconSize.Width / 2, center.Value.Y - Icons.EventTypeIcon.IconSize.Height / 2);
+                Model.StateMachine.EventTypes.Add(newEventType);
             }
         }
 
         internal void AddGroup(Point? center = null)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock(AddGroupDescription))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddGroupDescription))
+                ViewModel.Group newGroup = ViewModel.Group.Create(Model, OptionsPage, CurrentLayer);
+                Model.LogUndoAction(new UndoRedo.DeleteGroupRecord(Model, newGroup));
+                ViewModel.Layer newLayer = ViewModel.Layer.Create(Model, LayerPosition.GroupStatuses.Explicit);
+                Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
+                newLayer.Name = newGroup.Name;
+                newGroup.CoNamedObject = newLayer;
+                if (!center.HasValue)
                 {
-                    ViewModel.Group newGroup = ViewModel.Group.Create(Model, OptionsPage, CurrentLayer);
-                    Model.LogUndoAction(new UndoRedo.DeleteGroupRecord(Model, newGroup));
-                    ViewModel.Layer newLayer = ViewModel.Layer.Create(Model);
-                    Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
-                    newLayer.Name = newGroup.Name;
-                    newGroup.CoNamedObject = newLayer;
-                    if (!center.HasValue)
-                    {
-                        center = FindEmptySpace(Icons.GroupIcon.IconSize);
-                    }
-                    Point position = new Point(center.Value.X - Icons.GroupIcon.IconSize.Width / 2, center.Value.Y - Icons.GroupIcon.IconSize.Height / 2);
-                    Model.StateMachine.Layers.Add(newLayer);
-                    AddLayerMember(DefaultLayer, newGroup, position);
-                    if (CurrentLayer != DefaultLayer)
-                    {
-                        AddLayerMember(CurrentLayer, newGroup, position);
-                    }
-
-                    Model.StateMachine.Groups.Add(newGroup);
+                    center = FindEmptySpace(Icons.GroupIcon.IconSize);
                 }
+                Point position = new Point(center.Value.X - Icons.GroupIcon.IconSize.Width / 2, center.Value.Y - Icons.GroupIcon.IconSize.Height / 2);
+                Model.StateMachine.Layers.Add(newLayer);
+                AddLayerMember(DefaultLayer, newGroup, LayerPosition.GroupStatuses.NotGrouped, position);
+                if (CurrentLayer != DefaultLayer)
+                {
+                    AddLayerMember(CurrentLayer, newGroup, LayerPosition.GroupStatuses.NotGrouped, position);
+                }
+
+                Model.StateMachine.Groups.Add(newGroup);
             }
         }
 
@@ -158,22 +152,22 @@ namespace SimpleStateMachineEditor
         {
             if (!state.LayerPositions.Any(lp => lp.GroupStatus == LayerPosition.GroupStatuses.Explicit))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddGroupMemberDescription))
+                using (Model.CreateAtomicGuiChangeBlock(AddGroupMemberDescription))
                 {
-                    AddLayerMemberInternal(group.Layer, state, null, LayerPosition.GroupStatuses.Explicit);
+                    AddLayerMemberInternal(group.Layer, state, LayerPosition.GroupStatuses.Explicit, state.LeftTopPosition);
 
                     foreach (ObjectModel.ITransition transition in state.TransitionsFrom)
                     {
                         if (!(transition.DestinationState is ViewModel.Group) && !group.Members.Contains(transition.DestinationState))
                         {
-                            AddLayerMemberInternal(group.Layer, transition.DestinationState, null, LayerPosition.GroupStatuses.Implicit);
+                            AddLayerMemberInternal(group.Layer, transition.DestinationState, LayerPosition.GroupStatuses.Implicit, transition.DestinationState.LeftTopPosition);
                         }
                     }
                     foreach (ObjectModel.ITransition transition in state.TransitionsTo)
                     {
                         if (!(transition.SourceState is ViewModel.Group) && !group.Members.Contains(transition.SourceState))
                         {
-                            AddLayerMemberInternal(group.Layer, transition.SourceState, null, LayerPosition.GroupStatuses.Implicit);
+                            AddLayerMemberInternal(group.Layer, transition.SourceState, LayerPosition.GroupStatuses.Implicit, transition.SourceState.LeftTopPosition);
                         }
                     }
                 }
@@ -182,83 +176,68 @@ namespace SimpleStateMachineEditor
 
         private void AddLayer(object sender, RoutedEventArgs e)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock(AddLayerDescription))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddLayerDescription))
-                {
-                    ViewModel.Layer newLayer = ViewModel.Layer.Create(Model, OptionsPage, false);
-                    Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
-                    Model.StateMachine.Layers.Add(newLayer);
-                }
+                ViewModel.Layer newLayer = ViewModel.Layer.Create(Model, OptionsPage, false, LayerPosition.GroupStatuses.NotGrouped);
+                Model.LogUndoAction(new UndoRedo.DeleteLayerRecord(Model, newLayer));
+                Model.StateMachine.Layers.Add(newLayer);
             }
         }
 
         /// <summary>
         /// Method for use by *commands* to add an object to a layer
         /// </summary>
-        internal void AddLayerMember(ViewModel.Layer layer, ObjectModel.ITransitionEndpoint newMember, Point? position = null, LayerPosition.GroupStatuses groupStatus = LayerPosition.GroupStatuses.NotGrouped)
+        internal void AddLayerMember(ViewModel.Layer layer, ObjectModel.ITransitionEndpoint newMember, LayerPosition.GroupStatuses groupStatus, Point position)
         {
             if ((newMember is ViewModel.Group && layer.CoNamedObject == null) || 
                 (newMember is ViewModel.State state && 
                  ((layer.CoNamedObject == null && !newMember.LayerPositions.Any(lp => lp.GroupStatus == LayerPosition.GroupStatuses.Explicit)) || 
                   (layer.CoNamedObject != null && groupStatus != LayerPosition.GroupStatuses.NotGrouped))))
             {
-                AddLayerMemberInternal(layer, newMember, position, groupStatus);
+                AddLayerMemberInternal(layer, newMember, groupStatus, position);
             }
         }
 
-        private void AddLayerMemberInternal(ViewModel.Layer layer, ObjectModel.ITransitionEndpoint newMember, Point? position, LayerPosition.GroupStatuses groupStatus)
+        private void AddLayerMemberInternal(ViewModel.Layer layer, ObjectModel.ITransitionEndpoint newMember, LayerPosition.GroupStatuses groupStatus, Point position)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock(AddLayerMemberDescription))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddLayerMemberDescription))
+                ObjectModel.LayerPosition layerPosition = newMember.LayerPositions.Where(lp => lp.Layer == layer).FirstOrDefault();
+                if (layerPosition == null)
                 {
-                    ObjectModel.LayerPosition layerPosition = newMember.LayerPositions.Where(lp => lp.Layer == layer).FirstOrDefault();
-                    if (!position.HasValue)
-                    {
-                        position = newMember.LeftTopPosition;
-                    }
-                    if (layerPosition == null)
-                    {
-                        layerPosition = ObjectModel.LayerPosition.Create(Model, layer, groupStatus);
-                        Model.LogUndoAction(new UndoRedo.DeleteLayerMemberRecord(Model, layerPosition, newMember));
-                        layerPosition.LeftTopPosition = position.Value;
-                        newMember.LayerPositions.Add(layerPosition);
-                        layer.Members.Add(newMember);
-                    }
-                    else
-                    {
-                        layerPosition.GroupStatus = (LayerPosition.GroupStatuses)Math.Max((int)layerPosition.GroupStatus, (int)groupStatus);
-                        layerPosition.LeftTopPosition = position.Value;
-                    }
+                    layerPosition = ObjectModel.LayerPosition.Create(Model, layer, groupStatus);
+                    Model.LogUndoAction(new UndoRedo.DeleteLayerMemberRecord(Model, layerPosition, newMember));
+                    layerPosition.LeftTopPosition = position;
+                    newMember.LayerPositions.Add(layerPosition);
+                    layer.Members.Add(newMember);
+                }
+                else
+                {
+                    layerPosition.GroupStatus = (LayerPosition.GroupStatuses)Math.Max((int)layerPosition.GroupStatus, (int)groupStatus);
+                    layerPosition.LeftTopPosition = position;
                 }
             }
         }
 
         internal void AddState(Point? center = null)
         {
-            Debug.WriteLine(">>>AddState start");
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock(AddStateDescription))
             {
-                using (new UndoRedo.AtomicBlock(Model, AddStateDescription))
+                ViewModel.State newState = ViewModel.State.Create(Model, OptionsPage, CurrentLayer);
+                Model.LogUndoAction(new UndoRedo.DeleteStateRecord(Model, newState));
+                if (!center.HasValue)
                 {
-                    ViewModel.State newState = ViewModel.State.Create(Model, OptionsPage, CurrentLayer);
-                    Model.LogUndoAction(new UndoRedo.DeleteStateRecord(Model, newState));
-                    if (!center.HasValue)
-                    {
-                        center = FindEmptySpace(Icons.StateIcon.IconSize);
-                    }
-                    Point position = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
-                    AddLayerMember(DefaultLayer, newState, position);
-                    if (CurrentLayer != DefaultLayer)
-                    {
-                        AddLayerMember(CurrentLayer, newState, position);
-                    }
-
-                    Model.StateMachine.States.Add(newState);
+                    center = FindEmptySpace(Icons.StateIcon.IconSize);
                 }
+                Point position = new Point(center.Value.X - Icons.StateIcon.IconSize.Width / 2, center.Value.Y - Icons.StateIcon.IconSize.Height / 2);
+                AddLayerMember(DefaultLayer, newState, LayerPosition.GroupStatuses.NotGrouped, position);
+                if (CurrentLayer != DefaultLayer)
+                {
+                    AddLayerMember(CurrentLayer, newState, CurrentLayer.DefaultGroupStatus, position);
+                }
+
+                Model.StateMachine.States.Add(newState);
             }
-            Debug.WriteLine(">>>AddState end");
         }
 
         internal void AddTransition(ViewModel.State sourceState = null)
@@ -305,7 +284,7 @@ namespace SimpleStateMachineEditor
             {
                 using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
                 {
-                    DefaultLayer = ViewModel.Layer.Create(Model, OptionsPage, true);
+                    DefaultLayer = ViewModel.Layer.Create(Model, OptionsPage, true, LayerPosition.GroupStatuses.NotGrouped);
                     Model.StateMachine.Layers.Add(DefaultLayer);
 
                     foreach (ViewModel.State state in Model.StateMachine.States)
@@ -502,59 +481,49 @@ namespace SimpleStateMachineEditor
 
         private void DeleteActionReference(ViewModel.Transition transition, ViewModel.ActionReference actionReference, int slot)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Remove action"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove action"))
-                {
-                    transition.ActionReferences.RemoveAt(slot);
-                    Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Model, actionReference, slot));
-                }
+                transition.ActionReferences.RemoveAt(slot);
+                Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Model, actionReference, slot));
             }
         }
 
         private void  DeleteEventType(ViewModel.EventType eventType)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Remove event type"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove event type"))
+                foreach (ViewModel.Transition t in Model.StateMachine.Transitions)
                 {
-                    foreach (ViewModel.Transition t in Model.StateMachine.Transitions)
+                    if (t.TriggerEvent == eventType)
                     {
-                        if (t.TriggerEvent == eventType)
-                        {
-                            t.TriggerEvent = null;
-                        }
+                        t.TriggerEvent = null;
                     }
-                    Model.StateMachine.EventTypes.Remove(eventType);
-                    Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
                 }
+                Model.StateMachine.EventTypes.Remove(eventType);
+                Model.LogUndoAction(new UndoRedo.AddEventTypeRecord(Model, eventType));
             }
         }
 
         private void DeleteGroup(ViewModel.Group group)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Remove group"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove group"))
-                {
-                    while (group.Layer.Members.Count > 0)
-                    {
-                        ObjectModel.ITransitionEndpoint member = group.Members.First();
-                        RemoveLayerMember(group.Layer, member);
-                        LoadViewModelIcon(member);
-                    }
-
-                    group.Remove();
-                    Model.StateMachine.Groups.Remove(group);
-                    DeleteLayer(group.Layer);
-
-                    while (group.LayerPositions.Count > 0)
-                    {
-                        ObjectModel.LayerPosition layerPosition = group.LayerPositions.First();
-                        RemoveLayerPosition(group, layerPosition);
-                    }
-                    Model.LogUndoAction(new UndoRedo.AddGroupRecord(Model, group));
+                ViewModel.Layer layer = group.Layer;
+                ObjectModel.ITransitionEndpoint[] explicitMembers = group.Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == group.Layer && lp.GroupStatus == LayerPosition.GroupStatuses.Explicit)).ToArray();
+                foreach (ObjectModel.ITransitionEndpoint member in explicitMembers)
+                { 
+                    RemoveLayerMember(layer, member);
                 }
+
+                group.Remove();
+                Model.StateMachine.Groups.Remove(group);
+                DeleteLayer(layer);
+
+                while (group.LayerPositions.Count > 0)
+                {
+                    RemoveLayerMember(group.LayerPositions.First().Layer, group);
+                }
+                Model.LogUndoAction(new UndoRedo.AddGroupRecord(Model, group));
             }
         }
 
@@ -595,55 +564,50 @@ namespace SimpleStateMachineEditor
 
         private void DeleteLayer(ViewModel.Layer layer)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            if (CurrentLayer == layer)
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove layer"))
+                CurrentLayer = DefaultLayer;
+            }
+
+            using (Model.CreateAtomicGuiChangeBlock("Remove layer"))
+            {
+                ObjectModel.ITransitionEndpoint[] members = layer.Members.ToArray();
+                foreach (ObjectModel.ITransitionEndpoint o in members)
                 {
-                    foreach (ObjectModel.ITransitionEndpoint o in layer.Members)
-                    {
-                        ObjectModel.LayerPosition layerPosition = o.LayerPositions.Where(lp => lp.Layer == layer).Single();
-                        RemoveLayerPosition(o, layerPosition);
-                    }
-                    Model.StateMachine.Layers.Remove(layer);
-                    Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
+                    RemoveLayerPosition(o, o.LayerPositions.Where(lp => lp.Layer == layer).Single());
                 }
+                Model.StateMachine.Layers.Remove(layer);
+                Model.LogUndoAction(new UndoRedo.AddLayerRecord(Model, layer));
             }
         }
 
         private void DeleteState(ViewModel.State state)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Remove state"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove state"))
+                while (state.TransitionsFrom.Count > 0)
                 {
-                    while (state.TransitionsFrom.Count > 0)
-                    {
-                        DeleteTransition(state.TransitionsFrom.First() as ViewModel.Transition);
-                    }
-                    while (state.TransitionsTo.Count > 0)
-                    {
-                        DeleteTransition(state.TransitionsTo.First() as ViewModel.Transition);
-                    }
-                    while (state.LayerPositions.Count > 0)
-                    {
-                        ObjectModel.LayerPosition layerPosition = state.LayerPositions.First();
-                        RemoveLayerPosition(state, layerPosition);
-                    }
-                    Model.StateMachine.States.Remove(state);
-                    Model.LogUndoAction(new UndoRedo.AddStateRecord(Model, state));
+                    DeleteTransition(state.TransitionsFrom.First() as ViewModel.Transition);
                 }
+                while (state.TransitionsTo.Count > 0)
+                {
+                    DeleteTransition(state.TransitionsTo.First() as ViewModel.Transition);
+                }
+                while (state.LayerPositions.Count > 0)
+                {
+                    RemoveLayerMember(state.LayerPositions.First().Layer, state);
+                }
+                Model.StateMachine.States.Remove(state);
+                Model.LogUndoAction(new UndoRedo.AddStateRecord(Model, state));
             }
         }
 
         private void DeleteTransition(ViewModel.Transition transition)
         {
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Remove transition"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Remove transition"))
-                {
-                    Model.StateMachine.Transitions.Remove(transition);
-                    Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
-                }
+                Model.StateMachine.Transitions.Remove(transition);
+                Model.LogUndoAction(new UndoRedo.AddTransitionRecord(Model, transition));
             }
         }
 
@@ -651,7 +615,7 @@ namespace SimpleStateMachineEditor
         {
             Icons.ISelectableIcon[] pendingDeletes = SelectedIcons.Values.ToArray();
 
-            using (new UndoRedo.AtomicBlock(Model, "Delete"))
+            using (Model.CreateAtomicGuiChangeBlock("Delete"))
             {
                 foreach (var icon in pendingDeletes)
                 {
@@ -1264,48 +1228,41 @@ namespace SimpleStateMachineEditor
 
         internal void RemoveLayerMember(ViewModel.Layer layer, ObjectModel.ITransitionEndpoint member)
         {
-            if (layer != DefaultLayer)
+            using (Model.CreateAtomicGuiChangeBlock("Remove layer member"))
             {
-                using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+                ObjectModel.LayerPosition layerPosition = member.LayerPositions.Where(lp => lp.Layer == layer).Single();
+                switch (layerPosition.GroupStatus)
                 {
-                    using (new UndoRedo.AtomicBlock(Model, "Remove layer member"))
-                    {
-                        ObjectModel.LayerPosition layerPosition = member.LayerPositions.Where(lp => lp.Layer == layer).Single();
-                        switch (layerPosition.GroupStatus)
+                    case LayerPosition.GroupStatuses.Explicit:
+                        layerPosition.GroupStatus = LayerPosition.GroupStatuses.Implicit;
+                        ObjectModel.ITransitionEndpoint[] implicitEndpoints = layer.Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == layer && lp.GroupStatus == LayerPosition.GroupStatuses.Implicit)).ToArray();
+                        foreach (ObjectModel.ITransitionEndpoint endpoint in implicitEndpoints)
                         {
-                            case LayerPosition.GroupStatuses.Explicit:
-                                layerPosition.GroupStatus = LayerPosition.GroupStatuses.Implicit;
-                                ObjectModel.ITransitionEndpoint[] implicitEndpoints = layer.Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == layer && lp.GroupStatus == LayerPosition.GroupStatuses.Implicit)).ToArray();
-                                foreach (ObjectModel.ITransitionEndpoint endpoint in implicitEndpoints)
-                                {
-                                    endpoint.IsValid = false;
-                                }
-                                foreach (ObjectModel.ITransitionEndpoint endpoint in layer.Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == layer && lp.GroupStatus == LayerPosition.GroupStatuses.Explicit)))
-                                {
-                                    foreach (ObjectModel.ITransition transition in endpoint.TransitionsFrom)
-                                    {
-                                        transition.DestinationState.IsValid = true;
-                                    }
-                                    foreach (ObjectModel.ITransition transition in endpoint.TransitionsTo)
-                                    {
-                                        transition.SourceState.IsValid = true;
-                                    }
-                                }
-                                foreach (ObjectModel.ITransitionEndpoint endpoint in implicitEndpoints.Where(m => !m.IsValid))
-                                {
-                                    layerPosition = endpoint.LayerPositions.Where(lp => lp.Layer == layer).Single();
-                                    RemoveLayerPosition(endpoint, layerPosition);
-                                }
-                                break;
-                            case LayerPosition.GroupStatuses.Implicit:
-                                break;
-                            case LayerPosition.GroupStatuses.NotGrouped:
-                                RemoveLayerPosition(member, layerPosition);
-                                break;
-                            default:
-                                throw new NotImplementedException();
+                            endpoint.IsValid = false;
                         }
-                    }
+                        foreach (ObjectModel.ITransitionEndpoint endpoint in layer.Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == layer && lp.GroupStatus == LayerPosition.GroupStatuses.Explicit)))
+                        {
+                            foreach (ObjectModel.ITransition transition in endpoint.TransitionsFrom)
+                            {
+                                transition.DestinationState.IsValid = true;
+                            }
+                            foreach (ObjectModel.ITransition transition in endpoint.TransitionsTo)
+                            {
+                                transition.SourceState.IsValid = true;
+                            }
+                        }
+                        foreach (ObjectModel.ITransitionEndpoint endpoint in implicitEndpoints.Where(m => !m.IsValid))
+                        {
+                            RemoveLayerPosition(endpoint, endpoint.LayerPositions.Where(lp => lp.Layer == layer).Single());
+                        }
+                        break;
+                    case LayerPosition.GroupStatuses.Implicit:
+                        break;
+                    case LayerPosition.GroupStatuses.NotGrouped:
+                        RemoveLayerPosition(member, layerPosition);
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }
@@ -1463,14 +1420,11 @@ namespace SimpleStateMachineEditor
             Icons.ISelectableIcon[] selectedIcons = SelectedIcons.Values.Where(i => i.ReferencedObject is ObjectModel.NamedObject).OrderBy(i => (i.ReferencedObject as ObjectModel.NamedObject).Name).ToArray();
             Point[] iconPositions = selectedIcons.Select(i => i.CenterPosition).OrderBy(p => p.Y).ThenBy(p => p.X).ToArray();
 
-            using (new ViewModel.ViewModelController.GuiChangeBlock(Model))
+            using (Model.CreateAtomicGuiChangeBlock("Sort icons"))
             {
-                using (new UndoRedo.AtomicBlock(Model, "Sort icons"))
+                for (int i = selectedIcons.GetLowerBound(0); i <= selectedIcons.GetUpperBound(0); i++)
                 {
-                    for (int i = selectedIcons.GetLowerBound(0); i <= selectedIcons.GetUpperBound(0); i++)
-                    {
-                        selectedIcons[i].CenterPosition = iconPositions[i];
-                    }
+                    selectedIcons[i].CenterPosition = iconPositions[i];
                 }
             }
         }

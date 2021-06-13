@@ -16,8 +16,13 @@ namespace SimpleStateMachineEditor.ViewModel
     //--
     public class Layer : ObjectModel.NamedObject
     {
+        [XmlAttribute]
         [ReadOnly(true)]
         public bool IsDefaultLayer { get; set; }
+
+        [Browsable(false)]
+        [XmlElement(elementName:"IsDefaultLayer")]
+        public bool? DeprecatedIsDefaultLayer { get; set; }
 
         [Browsable(false)]
         [XmlIgnore]
@@ -57,6 +62,9 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         List<int> _memberIds;
 
+        [XmlAttribute]
+        [Browsable(false)]
+        public LayerPosition.GroupStatuses DefaultGroupStatus { get; set; }
 
 
 
@@ -67,24 +75,27 @@ namespace SimpleStateMachineEditor.ViewModel
             Members = new ObservableCollection<ITransitionEndpoint>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = new List<int>();
+            DefaultGroupStatus = LayerPosition.GroupStatuses.NotGrouped;
         }
 
         //  Constructor for new object creation through commands
 
-        private Layer(ViewModelController controller, string rootName, bool isDefaultLayer) : base(controller, controller.StateMachine.Layers, rootName)
+        private Layer(ViewModelController controller, string rootName, bool isDefaultLayer, LayerPosition.GroupStatuses defaultGroupStatus) : base(controller, controller.StateMachine.Layers, rootName)
         {
             IsDefaultLayer = isDefaultLayer;
             Members = new ObservableCollection<ITransitionEndpoint>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
+            DefaultGroupStatus = defaultGroupStatus;
         }
 
-        private Layer(ViewModelController controller) : base(controller)
+        private Layer(ViewModelController controller, LayerPosition.GroupStatuses defaultGroupStatus) : base(controller)
         {
             IsDefaultLayer = false;
             Members = new ObservableCollection<ITransitionEndpoint>();
             Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
+            DefaultGroupStatus = defaultGroupStatus;
         }
 
         //  Constructor for use by Redo
@@ -93,25 +104,26 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
+                DefaultGroupStatus = redoRecord.DefaultGroupStatus;
                 Members = new ObservableCollection<ITransitionEndpoint>();
                 Members.CollectionChanged += Members_CollectionChanged;
                 LoadMembersFromIds(controller, controller.StateMachine, redoRecord.MemberIds);
             }
         }
 
-        internal static Layer Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, bool isDefaultLayer)
+        internal static Layer Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, bool isDefaultLayer, LayerPosition.GroupStatuses defaultGroupStatus)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                return new Layer(controller, optionsPage.LayerRootName, isDefaultLayer);
+                return new Layer(controller, optionsPage.LayerRootName, isDefaultLayer, defaultGroupStatus);
             }
         }
 
-        internal static Layer Create(ViewModelController controller)
+        internal static Layer Create(ViewModelController controller, LayerPosition.GroupStatuses defaultGroupStatus)
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                return new Layer(controller);
+                return new Layer(controller, defaultGroupStatus);
             }
         }
 
@@ -120,6 +132,10 @@ namespace SimpleStateMachineEditor.ViewModel
             base.DeserializeCleanup(phase, controller, stateMachine);
             if (phase == DeserializeCleanupPhases.ObjectResolution)
             {
+                if (DeprecatedIsDefaultLayer.HasValue)
+                {
+                    IsDefaultLayer = DeprecatedIsDefaultLayer.Value;
+                }
                 LoadMembersFromIds(controller, stateMachine, MemberIds);
             }
         }

@@ -1,52 +1,51 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
-<StateMachine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="-1" StartStateId="2">
+<StateMachine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="-1" CoNamedObjectId="-2" StartStateId="2">
   <Description>Sample state machine</Description>
-  <Actions>
-    <Action Id="6" Name="DoSayHello" />
-  </Actions>
-  <EventTypes>
-    <EventType Id="3" Name="SayHelloWorld">
-      <LeftTopPosition>
-        <X>119.5</X>
-        <Y>292.5</Y>
-      </LeftTopPosition>
-    </EventType>
-  </EventTypes>
   <Layers>
-    <Layer Id="7" Name="Layer1">
-      <IsDefaultLayer>true</IsDefaultLayer>
+    <Layer Id="7" Name="Layer1" CoNamedObjectId="-2" IsDefaultLayer="true" DefaultGroupStatus="NotGrouped">
       <MemberIds>
         <int>2</int>
         <int>4</int>
       </MemberIds>
     </Layer>
   </Layers>
+  <Actions>
+    <Action Id="6" Name="DoSayHello" CoNamedObjectId="-2" />
+  </Actions>
+  <EventTypes>
+    <EventType Id="3" Name="SayHelloWorld" CoNamedObjectId="-2">
+      <LeftTopPosition>
+        <X>119.5</X>
+        <Y>292.5</Y>
+      </LeftTopPosition>
+    </EventType>
+  </EventTypes>
+  <Groups />
   <States>
-    <State Id="2" Name="Start">
+    <State Id="2" Name="Start" CoNamedObjectId="-2" StateType="Normal">
       <LayerPositions>
-        <LayerPosition Id="8" LayerId="7">
+        <LayerPosition Id="8" GroupStatus="NotGrouped" LayerId="7">
           <LeftTopPosition>
             <X>124.5</X>
             <Y>114.5</Y>
           </LeftTopPosition>
         </LayerPosition>
       </LayerPositions>
-      <StateType>Normal</StateType>
     </State>
-    <State Id="4" Name="Done">
+    <State Id="4" Name="Done" CoNamedObjectId="-2" StateType="Normal">
       <LayerPositions>
-        <LayerPosition Id="9" LayerId="7">
+        <LayerPosition Id="9" GroupStatus="NotGrouped" LayerId="7">
           <LeftTopPosition>
             <X>404.5</X>
             <Y>114.5</Y>
           </LeftTopPosition>
         </LayerPosition>
       </LayerPositions>
-      <StateType>Finish</StateType>
     </State>
   </States>
   <Transitions>
     <Transition Id="5" SourceStateId="2" DestinationStateId="4" TriggerEventId="3">
+      <TransitionType>Normal</TransitionType>
       <Actions />
       <ActionIds>
         <int>6</int>

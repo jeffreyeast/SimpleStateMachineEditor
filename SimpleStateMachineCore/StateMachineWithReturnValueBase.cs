@@ -23,7 +23,6 @@ namespace SimpleStateMachine
         /// </summary>
         protected abstract Transition<Action>[,] Transitions { get; }
         int? CurrentEvent;
-        bool Executing;
 
 
         protected StateMachineWithReturnValueBase(StateTypes[] stateTypes, string[] eventNames, string[] stateNames) : base(eventNames, stateNames)
@@ -57,7 +56,7 @@ namespace SimpleStateMachine
                 PostNormalPriorityEvent(e.Value);
             }
 
-            R returnValue = default(R);
+            R returnValue = default;
 
             switch (ExecutionState)
             {

@@ -153,6 +153,7 @@ namespace SimpleStateMachineEditor.ViewModel
             Group,
         }
 
+        [XmlAttribute]
         [Browsable(false)]
         public TransitionTypes TransitionType { get;  set; }
 
@@ -170,18 +171,8 @@ namespace SimpleStateMachineEditor.ViewModel
         [Browsable(false)]
         public List<int> ActionIds
         {
-            get
-            {
-                if (_actionIds == null && ActionReferences != null)
-                {
-                    _actionIds = ActionReferences.Select(m => m.Action.Id).ToList();
-                }
-                return _actionIds;
-            }
-            private set
-            {
-                _actionIds = value;
-            }
+            get => ActionReferences?.Select(m => m.Action.Id).ToList() ?? _actionIds;
+            private set => _actionIds = value;
         }
         List<int> _actionIds;
 
@@ -249,8 +240,6 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             DeprecatedActions = new ObservableCollection<string>();
             OldActions = new List<string>();
-            ActionReferences = new ObservableCollection<ActionReference>();
-            ActionReferences.CollectionChanged += Actions_CollectionChanged;
             ActionIds = new List<int>();
             TransitionType = TransitionTypes.Normal;
         }
@@ -337,8 +326,6 @@ namespace SimpleStateMachineEditor.ViewModel
 
         private void Actions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            ActionIds = null;
-
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
@@ -395,9 +382,11 @@ namespace SimpleStateMachineEditor.ViewModel
 
                     _triggerEvent = Find(_triggerEventId) as ViewModel.EventType;
 
-                    for (int slot = 0; slot < ActionIds.Count; slot++)
+                    ActionReferences = new ObservableCollection<ActionReference>();
+                    ActionReferences.CollectionChanged += Actions_CollectionChanged;
+                    for (int slot = 0; slot < _actionIds.Count; slot++)
                     {
-                        ActionReference actionReference = new ActionReference(Controller, this, Find(ActionIds[slot]) as Action);
+                        ActionReference actionReference = new ActionReference(Controller, this, Find(_actionIds[slot]) as Action);
                         ActionReferences.Add(actionReference);
                     }
 

@@ -61,6 +61,7 @@
     <Compile Include="EditorPane.cs" />
     <Compile Include="Commands\AddEventTypeCommand.cs" />
     <Compile Include="Generators\SfsaGenerator.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IconControls\ActionReferenceIconControl.xaml.cs">
       <DependentUpon>ActionReferenceIconControl.xaml</DependentUpon>
     </Compile>
@@ -165,7 +166,6 @@
     <Compile Include="ViewModelCoordinator.cs" />
     <Compile Include="ViewModel\Action.cs" />
     <Compile Include="ViewModel\ActionReference.cs" />
-    <Compile Include="ViewModel\GuiChangeBlock.cs" />
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
     <Compile Include="ViewModel\Layer.cs" />

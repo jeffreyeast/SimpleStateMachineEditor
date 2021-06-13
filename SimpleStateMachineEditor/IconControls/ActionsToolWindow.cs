@@ -203,30 +203,24 @@ namespace SimpleStateMachineEditor.IconControls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
+                    using (Designer.Model.CreateAtomicGuiChangeBlock("Add action"))
                     {
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Add action"))
+                        foreach (Icons.ToolWindowActionIcon icon in e.NewItems)
                         {
-                            foreach (Icons.ToolWindowActionIcon icon in e.NewItems)
-                            {
-                                Designer.Model.LogUndoAction(new UndoRedo.DeleteActionRecord(Designer.Model, icon.Action));
-                                icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
-                                Designer.Model.StateMachine.Actions.Add(icon.Action);
-                            }
+                            Designer.Model.LogUndoAction(new UndoRedo.DeleteActionRecord(Designer.Model, icon.Action));
+                            icon.PropertyChanged += ToolWindowActionIconPropertyChangedHandler;
+                            Designer.Model.StateMachine.Actions.Add(icon.Action);
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
+                    using (Designer.Model.CreateAtomicGuiChangeBlock("Delete action"))
                     {
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Delete action"))
+                        foreach (Icons.ToolWindowActionIcon icon in e.OldItems)
                         {
-                            foreach (Icons.ToolWindowActionIcon icon in e.OldItems)
-                            {
-                                icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
-                                Designer.Model.StateMachine.Actions.Remove(icon.Action);
-                                Designer.Model.LogUndoAction(new UndoRedo.AddActionRecord(Designer.Model, icon.Action));
-                            }
+                            icon.PropertyChanged -= ToolWindowActionIconPropertyChangedHandler;
+                            Designer.Model.StateMachine.Actions.Remove(icon.Action);
+                            Designer.Model.LogUndoAction(new UndoRedo.AddActionRecord(Designer.Model, icon.Action));
                         }
                     }
                     break;

@@ -33,7 +33,7 @@ namespace HelloWorld
 
         static readonly StateTypes[] StateClassifications = new StateTypes[]
         {
-            StateTypes.Finish,
+            StateTypes.Normal,
             StateTypes.Normal,
         };
 

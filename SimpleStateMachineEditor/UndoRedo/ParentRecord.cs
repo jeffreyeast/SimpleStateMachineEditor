@@ -48,7 +48,7 @@ namespace SimpleStateMachineEditor.UndoRedo
             Debug.WriteLine($@">>> ParentRecord.Do({Sequence}/{_unitDescription}): begin");
 #endif
 
-            using (new UndoRedo.AtomicBlock(Controller, _unitDescription))
+            using (Controller.CreateAtomicGuiChangeBlock(_unitDescription))
             {
                 while (Children.Count > 0)
                 {

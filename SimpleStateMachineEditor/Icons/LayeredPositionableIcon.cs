@@ -39,11 +39,14 @@ namespace SimpleStateMachineEditor.Icons
 
                 if (layer.Members.Contains(ReferencedObject))
                 {
-                    Designer.RemoveLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint);
+                    if (layer != Designer.DefaultLayer)
+                    {
+                        Designer.RemoveLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint);
+                    }
                 }
                 else
                 {
-                    Designer.AddLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint);
+                    Designer.AddLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint, layer.DefaultGroupStatus, (ReferencedObject as ObjectModel.ITransitionEndpoint).LeftTopPosition);
                 }
             }
             else

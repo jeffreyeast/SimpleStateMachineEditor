@@ -22,23 +22,20 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 if (_name != value)
                 {
-                    using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
+                    if (Controller?.UndoManager == null)
                     {
-                        if (Controller?.UndoManager == null)
+                        _name = value;
+                        OnPropertyChanged("Name");
+                        WrappedName = WrapName(_name);
+                    }
+                    else
+                    {
+                        using (Controller.CreateAtomicGuiChangeBlock("Change Name property"))
                         {
+                            Controller.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
                             _name = value;
                             OnPropertyChanged("Name");
                             WrappedName = WrapName(_name);
-                        }
-                        else
-                        {
-                            using (new UndoRedo.AtomicBlock(Controller, "Change Name property"))
-                            {
-                                Controller.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
-                                _name = value;
-                                OnPropertyChanged("Name");
-                                WrappedName = WrapName(_name);
-                            }
                         }
                     }
                 }

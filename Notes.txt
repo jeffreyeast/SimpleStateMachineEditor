@@ -370,6 +370,7 @@
  - Should we show the layer icon for a group?  
    YES
  - BUG: RemoveGroup doesn't work when group is populated
+   FIXED
 
 6/9/2021
 
@@ -389,10 +390,12 @@
  - Review reconsiliation logic to make sure we're not serializing too often
  - Merge ILayeredPositionableObject and ITransitionEndpoint
  - Try to get X,Y of LeftTopPosition to be attributes, rather than elements
+   IMPRACTICAL
 
 6/12/2021
 
  - Deletion of a state from a group window doesn't work
+   FIXED
  - You must not be able to remove an implicit member from a layer
    FIXED
  - The tracking beween groups, layers, states, layerpositions and the designer is convoluted and error-prone. It needs to be simplified.
@@ -403,4 +406,9 @@
  - BUG: Removing an explicit state from a group MAY require keeping that state as implicit
    FIXED
  - When an ineligble object is attempted to drop on a layer (e.g., an event), it'd be nice if the layer showed red (forbidden)
-
+ - If the current layer is a group and you create a state, ensure the state is an explicit member of the group.
+   FIXED
+ - Can you add transitions to implicit members of a group?
+   FIXED
+ - The "business logic" for maintaining the integrity of the view model is spread between the model and the designer (e.g., group membership
+   management). It ought to be in the view model.

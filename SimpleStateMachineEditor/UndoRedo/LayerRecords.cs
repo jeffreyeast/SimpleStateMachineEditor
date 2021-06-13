@@ -64,11 +64,13 @@ namespace SimpleStateMachineEditor.UndoRedo
         protected override string UnitDescription => "Add layer";
         protected override int UnitType => (int)ActionTypes.AddLayer;
 
-        public int[] MemberIds;
+        internal ObjectModel.LayerPosition.GroupStatuses DefaultGroupStatus; 
+        internal int[] MemberIds;
 
 
         internal AddLayerRecord(ViewModel.ViewModelController controller, ViewModel.Layer layer) : base(ActionTypes.AddLayer, controller, layer)
         {
+            DefaultGroupStatus = layer.DefaultGroupStatus;
             MemberIds = layer.Members.Select(m => m.Id).ToArray();
 
 #if DEBUGUNDOREDO

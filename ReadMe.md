@@ -151,6 +151,33 @@ The layer icons are shown at the bottom right corner of the designer window.  Th
 
 Event types are not layered -- every event type shows in every layer. This allows you to reference any event type in any layer view.
 
+### Groups
+Another tool at your disposal for simplifying state machine diagrams is the *group*. A *group* is a collection of inter-related states which are displayed together as a group icon, rather than individual state
+icons. Each group has a layer associated with it. Opening the group's layer displays its constituent state icons, together with their transitions. 
+So in the default layer, you see the group icon, but in the group's layer, you see the states within the group.
+The idea is that the transitions between the members of the group can be ignored when viewing the big picture of the overall state machine. You manipulate the members of the group from within it's associated layer.
+
+| To... | Do this... |
+| ----- | ---------- |
+| Create a group | Right click from within the designer window and choose *Add new group* |
+| View the states within a group | Click on the icon for the layer associated with the group. |
+| Go back to the default layer | Click on the default layer's icon |
+| Remove a group | From the default layer, right click on the group's icon and choose *Remove* |
+| Add a state to a group from the default layer | Drag the state onto the group icon or the icon for it's associated layer |
+| Add a state to a group from within the group's associated layer | Right click from within the designer window and choose *Add new state* |
+| Remove a state from a group | From within the window for the group's associated layer, drag the state's icon onto the layer icon |
+
+When you open a group's layer, you will see the states within the group as well as their transitions.
+You will also see all the event types associated with the state machine -- event types are not members of a group, they are common
+across the entire state machine. This lets you create transitions within the group for any event type. 
+
+Opening a group, you will see the states you have added to the group, and you will also see states which share transitions between those states. This allows you to view the transitions affecting the states in the 
+group. Explicitly added states have solid backgrounds, implicit members are cross-hatched. You can fully manipulate the explicitly added states (move them, rename them, add transitions, even remove them from the 
+group or delete them). Actions are limited for implicit members: you can move and rename them, add and remove transitions. But you cannot remove them -- their presence is automatically maintained by the designer,
+and is based solely on transitions they share with explicit group members.
+
+Note that a state can only belong to one group.
+
 ### Hovering
 The designer makes extensive use of the mouse cursor "hovering" over an icon. It highlights related objects while the mouse is hovering over an icon. For example, hovering over an event type icon will highlight the transitions whose trigger is that event type.
 
@@ -161,6 +188,7 @@ The designer makes extensive use of the mouse cursor "hovering" over an icon. It
 | Transition | The transition and its starting and ending states |
 | Method name in the Actions Tool Window | All transiton actions where the action is used |
 | Layer | All members of the layer |
+| Group | Members of the group visible from the current layer |
 
 ### Search
 The designer window includes a standard Visual Studio search box at the top of the window. You use this to search state and event type names. Matching names are highlighted in the designer.

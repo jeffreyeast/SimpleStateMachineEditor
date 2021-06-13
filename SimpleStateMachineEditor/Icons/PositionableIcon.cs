@@ -265,49 +265,49 @@ namespace SimpleStateMachineEditor.Icons
                 switch (nCmdID)
                 {
                     case PackageIds.AlignBottomCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align bottom"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align bottom"))
                         {
                             AlignBottom();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.AlignHorizontalCenterCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align center"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align center"))
                         {
                             AlignHorizontalCenter();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.AlignLeftCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align left"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align left"))
                         {
                             AlignLeft();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.AlignRightCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align right"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align right"))
                         {
                             AlignRight();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.AlignTopCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align top"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align top"))
                         {
                             AlignTop();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.AlignVerticalCenterCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Align center"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Align center"))
                         {
                             AlignVerticalCenter();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.DistributeHorizontallyCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Distribute horizontally"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Distribute horizontally"))
                         {
                             DistributeHorizontally();
                         }
                         return VSConstants.S_OK;
                     case PackageIds.DistributeVerticallyCommandId:
-                        using (new UndoRedo.AtomicBlock(Designer.Model, "Distribute vertically"))
+                        using (Designer.Model.CreateAtomicGuiChangeBlock("Distribute vertically"))
                         {
                             DistributeVertically();
                         }

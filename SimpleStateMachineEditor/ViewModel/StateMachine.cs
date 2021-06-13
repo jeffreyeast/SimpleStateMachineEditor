@@ -294,10 +294,13 @@ namespace SimpleStateMachineEditor.ViewModel
             attributes.XmlElements.Add(legacyLeftTopPosition);
             XmlElementAttribute legacyPosition = new XmlElementAttribute("LegacyPosition", typeof(System.Windows.Point));
             attributes.XmlElements.Add(legacyPosition);
+            XmlElementAttribute deprecatedIsDefaultLayer = new XmlElementAttribute("DeprecatedIsDefaultLayer", typeof(System.Windows.Point));
+            attributes.XmlElements.Add(deprecatedIsDefaultLayer);
 
             XmlAttributeOverrides overrides = new XmlAttributeOverrides();
             overrides.Add(typeof(ObjectModel.LayeredPositionableObject), "LegacyLeftTopPosition", attributes);
             overrides.Add(typeof(ObjectModel.LayerPosition), "LegacyPosition", attributes);
+            overrides.Add(typeof(ViewModel.Layer), "DeprecatedIsDefaultLayer", attributes);
 
             XmlSerializer serializer = new XmlSerializer(GetType(), overrides);
             serializer.Serialize(xmlStream, this);

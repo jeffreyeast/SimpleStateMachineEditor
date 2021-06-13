@@ -139,7 +139,7 @@ namespace SimpleStateMachine
 
         /// <summary>
         /// Invoked by any code to post an external (lower-priority) event.
-        /// <param name=eventType>Identifies the event to be posted</param>
+        /// <param name="eventType">Identifies the event to be posted</param>
         /// <exception cref="ArgumentOutOfRangeException">If the eventType is not valid</exception>
         /// </summary>
         protected void PostNormalPriorityEvent(int eventType)

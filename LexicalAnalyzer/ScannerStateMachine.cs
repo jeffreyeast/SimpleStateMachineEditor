@@ -80,7 +80,6 @@ namespace LexicalAnalyzer
 
         static readonly StateTypes[] StateClassifications = new StateTypes[]
         {
-            StateTypes.Error,
             StateTypes.Normal,
             StateTypes.Normal,
             StateTypes.Normal,
@@ -101,7 +100,8 @@ namespace LexicalAnalyzer
             StateTypes.Normal,
             StateTypes.Normal,
             StateTypes.Normal,
-            StateTypes.Error,
+            StateTypes.Normal,
+            StateTypes.Normal,
         };
 
         /// <summary>
