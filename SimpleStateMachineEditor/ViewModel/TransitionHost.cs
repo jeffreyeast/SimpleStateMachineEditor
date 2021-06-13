@@ -12,8 +12,6 @@ namespace SimpleStateMachineEditor.ViewModel
 {
     public abstract class TransitionHost : ObjectModel.LayeredPositionableObject, ObjectModel.ITransitionEndpoint
     {
-        public abstract Group AssociatedGroup { get; set;  }
-        public abstract bool IsGrouped { get; }
 
         [XmlIgnore]
         [Browsable(false)]
@@ -50,8 +48,11 @@ namespace SimpleStateMachineEditor.ViewModel
 
         internal TransitionHost(ViewModel.ViewModelController controller, UndoRedo.LayeredPositionableObjectRecord redoRecord) : base(controller, redoRecord)
         {
-            TransitionsFrom = new ObservableCollection<ObjectModel.ITransition>();
-            TransitionsTo = new ObservableCollection<ObjectModel.ITransition>();
+            using (new UndoRedo.DontLogBlock(Controller))
+            {
+                TransitionsFrom = new ObservableCollection<ObjectModel.ITransition>();
+                TransitionsTo = new ObservableCollection<ObjectModel.ITransition>();
+            }
         }
 
         private void GatherPeers(List<ObjectModel.ITransition> peerTransitions, ObjectModel.ITransition transition, IEnumerable<ObjectModel.ITransition> transitionList)
@@ -104,5 +105,18 @@ namespace SimpleStateMachineEditor.ViewModel
             return false;
         }
 
+        protected override void OnRemoving()
+        {
+            while (TransitionsFrom.Count > 0)
+            {
+                TransitionsFrom.First().Remove();
+            }
+            while (TransitionsTo.Count > 0)
+            {
+                TransitionsTo.First().Remove();
+            }
+
+            base.OnRemoving();
+        }
     }
 }

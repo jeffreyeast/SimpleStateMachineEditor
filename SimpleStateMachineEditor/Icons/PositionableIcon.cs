@@ -22,7 +22,7 @@ namespace SimpleStateMachineEditor.Icons
 
         private void AlignBottom()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the lowest bottom
 
@@ -45,14 +45,12 @@ namespace SimpleStateMachineEditor.Icons
                         positionableObject.LeftTopPosition = new Point(positionableObject.LeftTopPosition.X, lowestBottom - icon.Size.Height);
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void AlignHorizontalCenter()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Use the icon whose context menu fired the command as the reference point
 
@@ -70,14 +68,12 @@ namespace SimpleStateMachineEditor.Icons
                         }
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void AlignLeft()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the furthest left
 
@@ -100,14 +96,12 @@ namespace SimpleStateMachineEditor.Icons
                         positionableObject.LeftTopPosition = new Point(furthestLeft, positionableObject.LeftTopPosition.Y);
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void AlignRight()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the furthest right
 
@@ -130,14 +124,12 @@ namespace SimpleStateMachineEditor.Icons
                         positionableObject.LeftTopPosition = new Point(furthestRight - icon.Size.Width, positionableObject.LeftTopPosition.Y);
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void AlignTop()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the highest top
 
@@ -160,14 +152,12 @@ namespace SimpleStateMachineEditor.Icons
                         positionableObject.LeftTopPosition = new Point(positionableObject.LeftTopPosition.X, highestTop);
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void AlignVerticalCenter()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Use the icon whose context menu fired the command as the reference point
 
@@ -185,14 +175,12 @@ namespace SimpleStateMachineEditor.Icons
                         }
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void DistributeHorizontally()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the bounds
 
@@ -226,14 +214,12 @@ namespace SimpleStateMachineEditor.Icons
                         }
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 
         private void DistributeVertically()
         {
-            if (ReferencedObject.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
             {
                 //  Find the bounds
 
@@ -267,8 +253,6 @@ namespace SimpleStateMachineEditor.Icons
                         }
                     }
                 }
-
-                ReferencedObject.EndChange();
             }
         }
 

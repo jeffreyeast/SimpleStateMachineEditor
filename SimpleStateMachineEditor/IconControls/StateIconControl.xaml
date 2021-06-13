@@ -10,20 +10,33 @@
     <UserControl.Resources>
 
         <Style x:Key="StateIconEllipseVisibilityStyle" TargetType="Ellipse">
+            <Setter Property="Visibility" Value="Hidden"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Normal">
                     <Setter Property="Visibility" Value="Visible"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Error">
-                    <Setter Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="StateIconEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StateIconEllipseVisibilityStyle}">
+        <Style x:Key="StateIconEllipseBackgroundStyle" TargetType="Ellipse" BasedOn="{StaticResource StateIconEllipseVisibilityStyle}">
+            <Setter Property="Fill" Value="Pink"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.CurrentLayerPosition.GroupStatus}" Value="Implicit">
+                    <Setter Property="Fill">
+                        <Setter.Value>
+                            <LinearGradientBrush MappingMode="Absolute"  StartPoint="0,0" EndPoint="8,8" SpreadMethod="Repeat">
+                                <GradientStop Offset="0" Color="Pink"/>
+                                <GradientStop Offset="0.5" Color="Pink"/>
+                                <GradientStop Offset="0.5" Color="HotPink"/>
+                                <GradientStop Offset="1" Color="HotPink"/>
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StateIconEllipseStrokeStyle" TargetType="Ellipse" BasedOn="{StaticResource StateIconEllipseVisibilityStyle}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.IsStartState}" Value="True">
                     <Setter Property="StrokeThickness" Value="3"/>
@@ -33,7 +46,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-
+               
         <Style x:Key="StateIconPathStyle" TargetType="Path">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish">
@@ -50,12 +63,52 @@
 
         <Style x:Key="StateIconPathColorStyle" TargetType="Path" BasedOn="{StaticResource StateIconPathStyle}">
             <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.IsStartState}" Value="True">
+                    <Setter Property="StrokeThickness" Value="3"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=ReferencedObject.IsStartState}" Value="False">
+                    <Setter Property="StrokeThickness" Value="0"/>
+                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish">
                     <Setter Property="Fill" Value="LightGreen"/>
+                    <Setter Property="Stroke" Value="DarkGreen"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.StateType}" Value="Error">
                     <Setter Property="Fill" Value="Red"/>
+                    <Setter Property="Stroke" Value="DarkRed"/>
                 </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=ReferencedObject.StateType}" Value="Finish"/>
+                        <Condition Binding="{Binding Path=ReferencedObject.CurrentLayerPosition.GroupStatus}" Value="Implicit"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Fill">
+                        <Setter.Value>
+                            <LinearGradientBrush MappingMode="Absolute"  StartPoint="0,0" EndPoint="8,8" SpreadMethod="Repeat">
+                                <GradientStop Offset="0" Color="LightGreen"/>
+                                <GradientStop Offset="0.5" Color="LightGreen"/>
+                                <GradientStop Offset="0.5" Color="DarkGreen"/>
+                                <GradientStop Offset="1" Color="DarkGreen"/>
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=ReferencedObject.StateType}" Value="Error"/>
+                        <Condition Binding="{Binding Path=ReferencedObject.CurrentLayerPosition.GroupStatus}" Value="Implicit"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Fill">
+                        <Setter.Value>
+                            <LinearGradientBrush MappingMode="Absolute"  StartPoint="0,0" EndPoint="8,8" SpreadMethod="Repeat">
+                                <GradientStop Offset="0" Color="Red"/>
+                                <GradientStop Offset="0.5" Color="Red"/>
+                                <GradientStop Offset="0.5" Color="DarkRed"/>
+                                <GradientStop Offset="1" Color="DarkRed"/>
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                </MultiDataTrigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -69,18 +122,20 @@
 
             <Border BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
                 <Grid>
-                    <Ellipse Width="60" Height="60" Fill="Pink" Style="{StaticResource StateIconEllipseVisibilityStyle}"/>
-                    <Ellipse Width="60" Height="60" Stroke="DarkRed" Style="{StaticResource StateIconEllipseStyle}">
+                    <Ellipse Width="60" Height="60" Style="{StaticResource StateIconEllipseBackgroundStyle}"/>
+                    <Ellipse Width="60" Height="60" Style="{StaticResource StateIconEllipseVisibilityStyle}">
                         <Ellipse.Fill>
                             <VisualBrush>
                                 <VisualBrush.Visual>
                                     <StackPanel>
-                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Style="{DynamicResource NameStyle}"/>
+                                        <Label Content="{Binding Path=ReferencedObject.WrappedName}" Foreground="Black" Background="Transparent" Style="{DynamicResource NameStyle}"/>
                                     </StackPanel>
                                 </VisualBrush.Visual>
                             </VisualBrush>
                         </Ellipse.Fill>
                     </Ellipse>
+                    <Ellipse Width="60" Height="60" Stroke="DarkRed" Fill="Transparent" Style="{StaticResource StateIconEllipseStrokeStyle}"/>
+
                     <Path Data="M 17,0 L 43,0 60,17 60,43 43,60, 17,60, 0,43, 0,17 17,0"
                             Style="{StaticResource StateIconPathColorStyle}"/>
 

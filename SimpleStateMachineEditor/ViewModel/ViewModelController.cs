@@ -18,7 +18,34 @@ namespace SimpleStateMachineEditor.ViewModel
     // The ViewModelController is responsible for coordinating the views of the underlying model.
     public class ViewModelController : IDisposable, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Encapsulates a set of actions that will change the view model. Intended for use with the using statement.
+        /// </summary>
+        internal class GuiChangeBlock : IDisposable
+        {
+            ViewModel.ViewModelController Controller;
+
+
+            internal GuiChangeBlock(ViewModel.ViewModelController controller)
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                Controller = controller;
+                controller?.BeginGuiChange();
+            }
+
+            public void Dispose()
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                Controller?.EndGuiChange();
+            }
+        }
+
+
+
+
+
         internal string FileName { get; set; }
+        IVsTextLines TextBuffer { get; set; }
         internal int ReferenceCount { get; set; }
         public StateMachine StateMachine 
         {
@@ -43,9 +70,10 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             NotParsable,
             ParsedAndNotModified,
-            ModifyingByTextEditor,
+            ModifyiedByTextEditor,
             ModifyingByGuiEditor,
             ModifiedByGuiEditor,
+            Reconciling,
         }
 
 
@@ -76,27 +104,49 @@ namespace SimpleStateMachineEditor.ViewModel
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
             FileName = fileName;
-            ReconcileModelFromText(textBuffer);
+            TextBuffer = textBuffer;
+            ReconcileModelFromText();
         }
 
-        internal bool CanGuiChangeBegin()
+        internal void BeginGuiChange()
         {
             lock (this)
             {
-                switch (State)
+                while (true)
                 {
-                    case States.ModifiedByGuiEditor:
-                    case States.ParsedAndNotModified:
-                    case States.ModifyingByGuiEditor:
-                        State = States.ModifyingByGuiEditor;
-                        GuiChangeCount++;
-                        Debug.WriteLine($@">>>CanGuiChangeBegin: GuiChangeCount: {GuiChangeCount}");
-                        return true;
-                    case States.ModifyingByTextEditor:
-                    case States.NotParsable:
-                        return false;
-                    default:
-                        throw new NotImplementedException();
+                    switch (State)
+                    {
+                        //  The Reconciling case is a little bit subtle -- because of the lock(this) statement above,
+                        //  the only way to get here is through recursion on this thread, which means we're doing something
+                        //  related to preparing the buffer for usage.
+
+                        case States.Reconciling:
+                            GuiChangeCount++;
+                            return;
+
+                        //  The remaining cases are straight-forward
+
+                        case States.ModifiedByGuiEditor:
+                        case States.ParsedAndNotModified:
+                        case States.ModifyingByGuiEditor:
+                            State = States.ModifyingByGuiEditor;
+                            GuiChangeCount++;
+                            return;
+
+                        //  Try to incorporate the text editor changes 
+
+                        case States.ModifyiedByTextEditor:
+                            ReconcileModelFromText();
+                            break;
+
+                        //  Whatever is in the text buffer isn't currently usable
+
+                        case States.NotParsable:
+                            return;
+
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
         }
@@ -117,23 +167,50 @@ namespace SimpleStateMachineEditor.ViewModel
         /// </summary>
         /// <param name="textBuffer"></param>
         /// <returns>True if the buffer has been reconciled, False if the buffer has not been reconciled</returns>
-        internal bool DoIdle(IVsTextLines textBuffer)
+        internal bool DoIdle()
         {
             lock(this)
             {
                 switch (State)
                 {
                     case States.ModifiedByGuiEditor:
-                        ReconcileModelFromGui(textBuffer);
+                        ReconcileModelFromGui();
                         return State == States.ParsedAndNotModified;
                     case States.ModifyingByGuiEditor:
                         return false;
-                    case States.ModifyingByTextEditor:
-                        ReconcileModelFromText(textBuffer);
+                    case States.ModifyiedByTextEditor:
+                        ReconcileModelFromText();
                         return State == States.ParsedAndNotModified;
+                    case States.ParsedAndNotModified:
+                    case States.NotParsable:
+                    case States.Reconciling:
+                        return false;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
+        void EndGuiChange()
+        {
+            lock (this)
+            {
+                switch (State)
+                {
+                    case States.ModifyingByGuiEditor:
+                        if (--GuiChangeCount == 0)
+                        {
+                            State = States.ModifiedByGuiEditor;
+                        }
+                        return;
+                    case States.ModifyiedByTextEditor:
+                    case States.ModifiedByGuiEditor:
                     case States.NotParsable:
                     case States.ParsedAndNotModified:
-                        return false;
+                        throw new InvalidOperationException("SimpleStateMachineEditor.ViewModelController: Invalid buffer change");
+                    case States.Reconciling:
+                        --GuiChangeCount;
+                        return;
                     default:
                         throw new NotImplementedException();
                 }
@@ -148,30 +225,6 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        internal void NoteGuiChangeEnd()
-        {
-            lock (this)
-            {
-                switch (State)
-                {
-                    case States.ModifyingByGuiEditor:
-                        Debug.WriteLine($@">>>NoteGuiChangeEnd: GuiChangeCount: {GuiChangeCount}");
-                        if (--GuiChangeCount == 0)
-                        {
-                            State = States.ModifiedByGuiEditor;
-                        }
-                        return;
-                    case States.ModifyingByTextEditor:
-                    case States.ModifiedByGuiEditor:
-                    case States.NotParsable:
-                    case States.ParsedAndNotModified:
-                        throw new InvalidOperationException("SimpleStateMachineEditor.ViewModelController: Invalid buffer change");
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
-        }
-
         internal void NoteTextViewChange()
         {
             if (Interlocked.CompareExchange(ref IgnoreTextBufferChanges, 0, 0) == 0)
@@ -182,11 +235,13 @@ namespace SimpleStateMachineEditor.ViewModel
                     {
                         case States.ModifiedByGuiEditor:
                         case States.ModifyingByGuiEditor:
-                        case States.ModifyingByTextEditor:
+                        case States.ModifyiedByTextEditor:
                             break;
                         case States.NotParsable:
                         case States.ParsedAndNotModified:
-                            State = States.ModifyingByTextEditor;
+                            State = States.ModifyiedByTextEditor;
+                            break;
+                        case States.Reconciling:
                             break;
                         default:
                             throw new NotImplementedException();
@@ -200,10 +255,12 @@ namespace SimpleStateMachineEditor.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        void ReconcileModelFromGui(IVsTextLines textBuffer)
+        void ReconcileModelFromGui()
         {
             try
             {
+                State = States.Reconciling;
+
                 using (StringWriter writer = new StringWriter())
                 {
                     int hr;
@@ -213,11 +270,11 @@ namespace SimpleStateMachineEditor.ViewModel
 
                     try
                     {
-                        if (textBuffer.GetLineCount(out int lineCount) != VSConstants.S_OK)
+                        if (TextBuffer.GetLineCount(out int lineCount) != VSConstants.S_OK)
                         {
                             throw new InvalidOperationException("SimpleStateMachneEditor.ViewModelController: Unable to load serialized state machine into buffer (1)");
                         }
-                        if (textBuffer.GetLengthOfLine(lineCount - 1, out int lastLineLength) != VSConstants.S_OK)
+                        if (TextBuffer.GetLengthOfLine(lineCount - 1, out int lastLineLength) != VSConstants.S_OK)
                         {
                             throw new InvalidOperationException("SimpleStateMachneEditor.ViewModelController: Unable to load serialized state machine into buffer (2)");
                         }
@@ -225,7 +282,7 @@ namespace SimpleStateMachineEditor.ViewModel
                         Interlocked.Exchange(ref IgnoreTextBufferChanges, 1);
                         try
                         {
-                            if ((hr = textBuffer.ReplaceLines(0, 0, lineCount - 1, lastLineLength, pNewText, writer.ToString().Length, new TextSpan[1])) != VSConstants.S_OK)
+                            if ((hr = TextBuffer.ReplaceLines(0, 0, lineCount - 1, lastLineLength, pNewText, writer.ToString().Length, new TextSpan[1])) != VSConstants.S_OK)
                             {
                                 throw new InvalidOperationException("SimpleStateMachneEditor.ViewModelController: Unable to load serialized state machine into buffer, hr = " + hr.ToString());
                             }
@@ -249,11 +306,13 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        void ReconcileModelFromText(IVsTextLines textBuffer)
+        void ReconcileModelFromText()
         {
             try
             {
-                using (Utility.IVsTextLinesReader reader = new Utility.IVsTextLinesReader(textBuffer))
+                State = States.Reconciling;
+
+                using (Utility.IVsTextLinesReader reader = new Utility.IVsTextLinesReader(TextBuffer))
                 {
                     _nextId = 0;
                     StateMachine.Deserialize(this, reader);

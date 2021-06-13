@@ -25,6 +25,7 @@ namespace SimpleStateMachineEditor.Icons
             None,
             Add,
             Remove,
+            Forbidden,
         }
         public MembershipActions MembershipAction
         {

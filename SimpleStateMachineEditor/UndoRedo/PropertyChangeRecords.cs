@@ -43,12 +43,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine($@">>> PropertyChangedRecord.Do (Property {PropertyName}, Value: {Value})");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ObjectModel.TrackableObject trackableObject = Controller.StateMachine.Find(Id);
                 trackableObject?.SetProperty(PropertyName, Value);
-
-                Controller.StateMachine.EndChange();
             }
         }
     }
@@ -81,12 +79,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine($@">>> ListValuedPropertyChangedRecord.Do (Property {PropertyName}, Value: {ArrayToString(Value)})");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ObjectModel.TrackableObject trackableObject = Controller.StateMachine.Find(Id);
                 trackableObject?.SetProperty(PropertyName, Value);
-
-                Controller.StateMachine.EndChange();
             }
         }
 

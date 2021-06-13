@@ -132,7 +132,7 @@ namespace SimpleStateMachineEditor.Generators
             string eventTypeNames = GenerateNameStrings(sortedEventTypes);
             string stateNames = GenerateNameStrings(sortedStates);
             string stateClassifications = GenerateStateTypes(sortedStates);
-            string actions = GenerateActions(stateMachine, stateMachine.Transitions);
+            string actions = GenerateActions(stateMachine, stateMachine.Transitions.Where(t => t.TransitionType == ViewModel.Transition.TransitionTypes.Normal));
             string transitions = GenerateTransitions(stateMachine, sortedEventTypes, sortedStates);
 
 
@@ -265,12 +265,12 @@ namespace {FileNamespace}
             {
                 //  Check if this state has a transition with a wild-card trigger. If so, use that for all events that don't have explicit transitions.
 
-                ViewModel.Transition defaultTransition = state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName).OfType<ViewModel.Transition>().FirstOrDefault();
+                ViewModel.Transition defaultTransition = state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName && t.TransitionType == ViewModel.Transition.TransitionTypes.Normal).OfType<ViewModel.Transition>().FirstOrDefault();
                 string defaultTransitionString = defaultTransition == null ? invalidTransitionString : GenerateTransition(defaultTransition, sortedStates);
 
                 //  Capture the transitions, order them by trigger event. Exclude any wildcard and transtions without a trigger.
 
-                ViewModel.Transition[] transitions = state.TransitionsFrom.Where(t => t.TriggerEvent != null && t.TriggerEvent.Name != ViewModel.EventType.WildcardEventTypeName).OrderBy(t => t.TriggerEvent.Name).OfType<ViewModel.Transition>().ToArray<ViewModel.Transition>();
+                ViewModel.Transition[] transitions = state.TransitionsFrom.Where(t => t.TriggerEvent != null && t.TriggerEvent.Name != ViewModel.EventType.WildcardEventTypeName && t.TransitionType == ViewModel.Transition.TransitionTypes.Normal).OrderBy(t => t.TriggerEvent.Name).OfType<ViewModel.Transition>().ToArray<ViewModel.Transition>();
 
                 //  Now we can generate the transitions for this state
 
@@ -359,7 +359,8 @@ namespace {FileNamespace}
             {
                 foreach (var state in model.StateMachine.States)
                 {
-                    if (state.TransitionsFrom.Count != model.StateMachine.EventTypes.Count && state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName).Count() == 0)
+                    if (state.TransitionsFrom.Where(t => t.TransitionType == ViewModel.Transition.TransitionTypes.Normal).Count() != model.StateMachine.EventTypes.Count && 
+                        state.TransitionsFrom.Where(t => t.TriggerEvent?.Name == ViewModel.EventType.WildcardEventTypeName && t.TransitionType == ViewModel.Transition.TransitionTypes.Normal).Count() == 0)
                     {
                         GeneratorErrorCallback(false, 1, $@"State {state.Name} is missing or more more transitions (some event types are missing as trigger events)", 0, 0);
                     }
@@ -375,7 +376,7 @@ namespace {FileNamespace}
         {
             HashSet<ViewModel.EventType> triggerEvents = new HashSet<ViewModel.EventType>();
 
-            foreach (var transition in state.TransitionsFrom)
+            foreach (var transition in state.TransitionsFrom.Where(t => t.TransitionType == ViewModel.Transition.TransitionTypes.Normal))
             {
                 if (transition.DestinationState == null)
                 {
@@ -395,7 +396,7 @@ namespace {FileNamespace}
                 }
             }
 
-            foreach (var transition in state.TransitionsTo)
+            foreach (var transition in state.TransitionsTo.Where(t => t.TransitionType == ViewModel.Transition.TransitionTypes.Normal))
             {
                 if (transition.SourceState == null)
                 {

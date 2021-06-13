@@ -23,22 +23,26 @@ namespace SimpleStateMachineEditor.ViewModel
             Finish,
             Error,
         }
+        [XmlAttribute]
         public StateTypes StateType
         {
             get => _stateType;
             set
             {
-                if (_stateType != value && IsChangeAllowed())
+                if (_stateType != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StateType", _stateType.ToString()));
-                    _stateType = value;
-                    OnPropertyChanged("StateType");
-                    EndChange();
+                    using (new ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StateType", _stateType.ToString()));
+                        _stateType = value;
+                        OnPropertyChanged("StateType");
+                    }
                 }
             }
         }
         StateTypes _stateType;
 
+        [ReadOnly(true)]
         [XmlIgnore]
         public bool IsStartState
         {
@@ -54,45 +58,6 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         bool _isStartState;
 
-
-        [XmlIgnore]
-        [Description("The group to which the state belongs")]
-        public override Group AssociatedGroup
-        {
-            get => _associatedGroup;
-            set
-            {
-                if (_associatedGroup != value && IsChangeAllowed())
-                {
-                    if (_associatedGroup != null)
-                    {
-                        _associatedGroup.Removing -= AssociatedGroupWasRemovedHandler;
-                    }
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "AssociatedGroup", (_associatedGroup?.Id ?? TrackableObject.NullId).ToString()));
-                    _associatedGroup = value;
-                    if (_associatedGroup != null)
-                    {
-                        _associatedGroup.Removing += AssociatedGroupWasRemovedHandler;
-                    }
-                    OnPropertyChanged("AssociatedGroup");
-                    Controller?.StateMachine.OnPropertyChanged(this, "AssociatedGroup");
-                    OnPropertyChanged("IsGrouped");
-                    EndChange();
-                }
-            }
-        }
-        Group _associatedGroup;
-
-        [Browsable(false)]
-        [XmlAttribute]
-        public int AssociatedGroupId
-        {
-            get => AssociatedGroup?.Id ?? _associatedGroupId;
-            set => _associatedGroupId = value;
-        }
-        int _associatedGroupId = ObjectModel.TrackableObject.NullId;
-
-        public override bool IsGrouped => AssociatedGroup != null;
 
 
 
@@ -130,11 +95,6 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        private void AssociatedGroupWasRemovedHandler(IRemovableObject item)
-        {
-            AssociatedGroup = null;
-        }
-
         internal static State Create(ViewModelController controller, IconControls.OptionsPropertiesPage optionsPage, ViewModel.Layer currentLayer)
         {
             using (new UndoRedo.DontLogBlock(controller))
@@ -143,22 +103,10 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
-        internal override void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModelController controller, StateMachine stateMachine)
-        {
-            base.DeserializeCleanup(phase, controller, stateMachine);
-            if (phase == DeserializeCleanupPhases.ObjectResolution)
-            {
-                AssociatedGroup = Find(_associatedGroupId) as ViewModel.Group;
-            }
-        }
-
         internal override void GetProperty(string propertyName, out string value)
         {
             switch (propertyName)
             {
-                case "AssociatedGroup":
-                    value = AssociatedGroupId.ToString();
-                    break;
                 case "StateType":
                     value = StateType.ToString();
                     break;
@@ -172,9 +120,6 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             switch (propertyName)
             {
-                case "AssociatedGroup":
-                    AssociatedGroup = Find(int.Parse(newValue)) as ViewModel.Group;
-                    break;
                 case "StateType":
                     StateType = (StateTypes)Enum.Parse(typeof(StateTypes), newValue);
                     break;

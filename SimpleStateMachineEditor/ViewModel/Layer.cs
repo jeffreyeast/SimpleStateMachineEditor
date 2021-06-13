@@ -37,7 +37,7 @@ namespace SimpleStateMachineEditor.ViewModel
 
         [Browsable(false)]
         [XmlIgnore]
-        public ObservableCollection<ITrackableObject> Members { get; private set; }
+        public ObservableCollection<ITransitionEndpoint> Members { get; private set; }
 
         [Browsable(false)]
         public List<int> MemberIds 
@@ -64,7 +64,8 @@ namespace SimpleStateMachineEditor.ViewModel
 
         public Layer()
         {
-            Members = new ObservableCollection<ITrackableObject>();
+            Members = new ObservableCollection<ITransitionEndpoint>();
+            Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = new List<int>();
         }
 
@@ -73,14 +74,16 @@ namespace SimpleStateMachineEditor.ViewModel
         private Layer(ViewModelController controller, string rootName, bool isDefaultLayer) : base(controller, controller.StateMachine.Layers, rootName)
         {
             IsDefaultLayer = isDefaultLayer;
-            Members = new ObservableCollection<ITrackableObject>();
+            Members = new ObservableCollection<ITransitionEndpoint>();
+            Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
         }
 
         private Layer(ViewModelController controller) : base(controller)
         {
             IsDefaultLayer = false;
-            Members = new ObservableCollection<ITrackableObject>();
+            Members = new ObservableCollection<ITransitionEndpoint>();
+            Members.CollectionChanged += Members_CollectionChanged;
             MemberIds = null;
         }
 
@@ -90,7 +93,8 @@ namespace SimpleStateMachineEditor.ViewModel
         {
             using (new UndoRedo.DontLogBlock(controller))
             {
-                Members = new ObservableCollection<ITrackableObject>();
+                Members = new ObservableCollection<ITransitionEndpoint>();
+                Members.CollectionChanged += Members_CollectionChanged;
                 LoadMembersFromIds(controller, controller.StateMachine, redoRecord.MemberIds);
             }
         }
@@ -127,11 +131,22 @@ namespace SimpleStateMachineEditor.ViewModel
 
                 foreach (int memberId in MemberIds)
                 {
-                    TrackableObject member = Find(memberId);
+                    ObjectModel.ITransitionEndpoint member = Find(memberId) as ObjectModel.ITransitionEndpoint;
                     Members.Add(member);
                 }
             }
             MemberIds = null;
+        }
+
+        private void Members_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            MemberIds = null;
+        }
+
+        protected override void OnRemoving()
+        {
+            Members.CollectionChanged -= Members_CollectionChanged;
+            base.OnRemoving();
         }
     }
 }

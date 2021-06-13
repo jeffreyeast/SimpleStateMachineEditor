@@ -40,11 +40,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddStateRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.State newState = new ViewModel.State(Controller, this);
                 Controller.StateMachine.States.Add(newState);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteStateRecord (Controller, newState));
             }
@@ -69,13 +68,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteStateRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.State targetState = Controller.StateMachine.States.Where(s => s.Id == Id).First();
+                AddStateRecord addStateRecord = new AddStateRecord(Controller, targetState);
                 Controller.StateMachine.States.Remove(targetState);
-                Controller.StateMachine.EndChange();
 
-                Controller.UndoManager.Add(new AddStateRecord (Controller, targetState));
+                Controller.UndoManager.Add(addStateRecord);
             }
         }
     }

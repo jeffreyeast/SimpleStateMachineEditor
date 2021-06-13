@@ -38,12 +38,14 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _generatedClassName;
             set
             {
-                if (_generatedClassName != value && IsChangeAllowed())
+                if (_generatedClassName != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "GeneratedClassName", _generatedClassName?.ToString() ?? ""));
-                    _generatedClassName = value;
-                    OnPropertyChanged("GeneratedClassName");
-                    EndChange();
+                    using (new ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "GeneratedClassName", _generatedClassName?.ToString() ?? ""));
+                        _generatedClassName = value;
+                        OnPropertyChanged("GeneratedClassName");
+                    }
                 }
             }
         }
@@ -55,12 +57,14 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _ignoreUnmatchedEvents;
             set
             {
-                if (_ignoreUnmatchedEvents != value && IsChangeAllowed())
+                if (_ignoreUnmatchedEvents != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "IgnoreUnmatchedEvents", _ignoreUnmatchedEvents.ToString()));
-                    _ignoreUnmatchedEvents = value;
-                    OnPropertyChanged("IgnoreUnmatchedEvents");
-                    EndChange();
+                    using (new ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "IgnoreUnmatchedEvents", _ignoreUnmatchedEvents.ToString()));
+                        _ignoreUnmatchedEvents = value;
+                        OnPropertyChanged("IgnoreUnmatchedEvents");
+                    }
                 }
             }
         }
@@ -72,12 +76,14 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _returnValue;
             set
             {
-                if (_returnValue != value && IsChangeAllowed())
+                if (_returnValue != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "ReturnValue", _returnValue?.ToString() ?? ""));
-                    _returnValue = value;
-                    OnPropertyChanged("ReturnValue");
-                    EndChange();
+                    using (new ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "ReturnValue", _returnValue?.ToString() ?? ""));
+                        _returnValue = value;
+                        OnPropertyChanged("ReturnValue");
+                    }
                 }
             }
         }
@@ -90,24 +96,26 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _startState;
             set
             {
-                if (_startState != value && IsChangeAllowed())
+                if (_startState != value)
                 {
-                    if (_startState != null)
+                    using (new ViewModelController.GuiChangeBlock(Controller))
                     {
-                        _startState.IsStartState = false;
+                        if (_startState != null)
+                        {
+                            _startState.IsStartState = false;
+                        }
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StartState", (_startState?.Id ?? ObjectModel.TrackableObject.NullId).ToString()));
+                        _startState = value;
+                        if (_startState == null)
+                        {
+                            _startStateId = ObjectModel.TrackableObject.NullId;
+                        }
+                        else
+                        {
+                            _startState.IsStartState = true;
+                        }
+                        OnPropertyChanged("StartState");
                     }
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "StartState", (_startState?.Id ?? ObjectModel.TrackableObject.NullId).ToString()));
-                    _startState = value;
-                    if (_startState == null)
-                    {
-                        _startStateId = ObjectModel.TrackableObject.NullId;
-                    }
-                    else
-                    {
-                        _startState.IsStartState = true;
-                    }
-                    OnPropertyChanged("StartState");
-                    EndChange();
                 }
             }
         }
@@ -127,12 +135,14 @@ namespace SimpleStateMachineEditor.ViewModel
             get => _requireCompleteEventCoverage;
             set
             {
-                if (_requireCompleteEventCoverage != value && IsChangeAllowed())
+                if (_requireCompleteEventCoverage != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "RequireCompleteEventCoverage", _requireCompleteEventCoverage.ToString()));
-                    _requireCompleteEventCoverage = value;
-                    OnPropertyChanged("RequireCompleteEventCoverage");
-                    EndChange();
+                    using (new ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "RequireCompleteEventCoverage", _requireCompleteEventCoverage.ToString()));
+                        _requireCompleteEventCoverage = value;
+                        OnPropertyChanged("RequireCompleteEventCoverage");
+                    }
                 }
             }
         }

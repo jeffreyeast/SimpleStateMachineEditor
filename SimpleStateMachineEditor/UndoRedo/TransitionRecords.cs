@@ -23,6 +23,7 @@ namespace SimpleStateMachineEditor.UndoRedo
         protected override string UnitDescription => "Add transition";
         protected override int UnitType => (int)ActionTypes.AddTransition;
 
+        public ViewModel.Transition.TransitionTypes TransitionType;
         public int DestinationStateId;
         public int SourceStateId;
         public int TriggerEventId;
@@ -32,6 +33,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 
         internal AddTransitionRecord(ViewModel.ViewModelController controller, ViewModel.Transition transition) : base(ActionTypes.AddTransition, controller, transition) 
         {
+            TransitionType = transition.TransitionType;
             DestinationStateId = transition.DestinationStateId;
             SourceStateId = transition.SourceStateId;
             TriggerEventId = transition.TriggerEvent?.Id ?? TrackableObject.NullId;
@@ -47,11 +49,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddTransitionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Transition newTransition = new ViewModel.Transition(Controller, this);
                 Controller.StateMachine.Transitions.Add(newTransition);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteTransitionRecord(Controller, newTransition));
             }
@@ -76,13 +77,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteTransitionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Transition targetTransition = Controller.StateMachine.Transitions.Where(s => s.Id == Id).First();
+                AddTransitionRecord addTransitionRecord = new AddTransitionRecord(Controller, targetTransition);
                 Controller.StateMachine.Transitions.Remove(targetTransition);
-                Controller.StateMachine.EndChange();
 
-                Controller.UndoManager.Add(new AddTransitionRecord(Controller, targetTransition));
+                Controller.UndoManager.Add(addTransitionRecord);
             }
         }
     }

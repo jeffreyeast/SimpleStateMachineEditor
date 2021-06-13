@@ -11,6 +11,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         event EventHandler EndpointPositionChanged;
         ObjectModel.ITransitionEndpoint SourceState { get; }
         ObjectModel.ITransitionEndpoint DestinationState { get; }
+        ViewModel.Transition.TransitionTypes TransitionType { get; }
         ViewModel.EventType TriggerEvent { get; }
     }
 }

@@ -36,11 +36,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddActionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Action newAction = new ViewModel.Action(Controller, this);
                 Controller.StateMachine.Actions.Add(newAction);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteActionRecord(Controller, newAction));
             }
@@ -72,11 +71,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddActionReferenceRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.ActionReference newActionReference = new ViewModel.ActionReference(Controller, this);
                 newActionReference.Transition.ActionReferences.Insert(Slot, newActionReference);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteActionReferenceRecord(Controller, newActionReference));
             }
@@ -101,13 +99,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteActionRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Action targetAction = Controller.StateMachine.Actions.Where(e => e.Id == Id).First();
+                AddActionRecord addActionRecord = new AddActionRecord(Controller, targetAction);
                 Controller.StateMachine.Actions.Remove(targetAction);
-                Controller.StateMachine.EndChange();
 
-                Controller.UndoManager.Add(new AddActionRecord(Controller, targetAction));
+                Controller.UndoManager.Add(addActionRecord);
             }
         }
     }
@@ -118,7 +116,6 @@ namespace SimpleStateMachineEditor.UndoRedo
         protected override int UnitType => (int)ActionTypes.DeleteActionReference;
 
         internal int TransitionId;
-        internal int ActionId;
         internal int Slot;
 
 
@@ -136,12 +133,11 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteActionReferenceRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Transition targetTransition = Controller.StateMachine.Find(TransitionId) as ViewModel.Transition;
                 ViewModel.ActionReference targetActionReference = targetTransition.ActionReferences[Slot];
                 targetTransition.ActionReferences.RemoveAt(Slot);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new AddActionReferenceRecord(Controller, targetActionReference, Slot));
             }

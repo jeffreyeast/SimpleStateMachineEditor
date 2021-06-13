@@ -17,7 +17,22 @@ namespace SimpleStateMachineEditor.Icons
     {
         public override int ContextMenuId => PackageIds.GroupIconContextMenuId;
         internal readonly static Size IconSize = new Size(122, 122);
-        internal readonly static double Radius = 60;
+        public override double Radius => 60;
+
+        public bool IsDropCandidate
+        {
+            get => _isDropCandidate;
+            set
+            {
+                if (_isDropCandidate != value)
+                {
+                    _isDropCandidate = value;
+                    OnPropertyChanged("IsDropCandidate");
+                }
+            }
+        }
+        bool _isDropCandidate;
+
 
 
 

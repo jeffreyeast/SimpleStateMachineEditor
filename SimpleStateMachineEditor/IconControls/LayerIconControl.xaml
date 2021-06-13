@@ -28,6 +28,9 @@
                 <DataTrigger Binding="{Binding Path=MembershipAction}" Value="Remove">
                     <Setter Property="Foreground" Value="Red"/>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding Path=MembershipAction}" Value="Forbidden">
+                    <Setter Property="Background" Value="Red"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 

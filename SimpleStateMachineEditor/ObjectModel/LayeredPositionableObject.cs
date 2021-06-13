@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ using System.Xml.Serialization;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    public abstract class LayeredPositionableObject : ObjectModel.NamedObject, ObjectModel.IPositionableObject
+    public abstract class LayeredPositionableObject : ObjectModel.NamedObject, ObjectModel.ILayeredPositionableObject
     {
         [XmlIgnore]
         [Description("Relative position of the icon in the display pane")]
@@ -19,20 +20,19 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             get
             {
-                if (CurrentLayer == null)
+                if (CurrentLayerPosition == null)
                 {
                     throw new InvalidOperationException();
                 }
-                return LayerPositions.Where(p => p.Layer == CurrentLayer).Single().LeftTopPosition;
+                return CurrentLayerPosition.LeftTopPosition;
             }
             set
             {
-                if (CurrentLayer == null)
+                if (CurrentLayerPosition == null)
                 {
                     throw new InvalidOperationException();
                 }
-                ObjectModel.LayerPosition layerPosition = LayerPositions.Where(p => p.Layer == CurrentLayer).Single();
-                layerPosition.LeftTopPosition = value;
+                CurrentLayerPosition.LeftTopPosition = value;
                 OnPropertyChanged("LeftTopPosition");
             }
         }
@@ -44,10 +44,37 @@ namespace SimpleStateMachineEditor.ObjectModel
         [Browsable(false)]
         public ObservableCollection<ObjectModel.LayerPosition> LayerPositions { get; private set; }
 
+        [Browsable(false)]
         [XmlIgnore]
-        internal ViewModel.Layer CurrentLayer { get; set; }
+        public ViewModel.Layer CurrentLayer 
+        {
+            get => _currentLayer;
+            set
+            {
+                if (_currentLayer != value)
+                {
+                    _currentLayer = value;
+                    _currentLayerPosition = null;
+                }
+            }
+        }
+        ViewModel.Layer _currentLayer;
 
-        
+        [Browsable(false)]
+        [XmlIgnore]
+        public ObjectModel.LayerPosition CurrentLayerPosition
+        {
+            get
+            {
+                if (_currentLayerPosition == null)
+                {
+                    _currentLayerPosition = LayerPositions.Where(lp => lp.Layer == CurrentLayer).FirstOrDefault();
+                }
+                return _currentLayerPosition;
+            }
+            set => _currentLayerPosition = value;
+        }
+        ObjectModel.LayerPosition _currentLayerPosition;
 
 
         //  Constructor for use by serialization ONLY
@@ -93,6 +120,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             foreach (LayerPosition layerPosition in LayerPositions)
             {
                 layerPosition.DeserializeCleanup(phase, controller, stateMachine);
+                layerPosition.PropertyChanged += LayerPositionPropertyChangedHandler;
             }
         }
 
@@ -110,6 +138,46 @@ namespace SimpleStateMachineEditor.ObjectModel
                     base.GetProperty(propertyName, out value);
                     break;
             }
+        }
+
+        private void LayerPositionPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "GroupStatus")
+            {
+                OnPropertyChanged("GroupStatus");
+            }
+        }
+
+        protected override void ObservableCollectionOfRemovableObjectsChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (LayerPosition layerPosition in e.NewItems)
+                    {
+                        layerPosition.PropertyChanged += LayerPositionPropertyChangedHandler;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (LayerPosition layerPosition in e.OldItems)
+                    {
+                        layerPosition.PropertyChanged -= LayerPositionPropertyChangedHandler;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            base.ObservableCollectionOfRemovableObjectsChangedHandler(sender, e);
+        }
+
+        protected override void OnRemoving()
+        {
+            foreach (LayerPosition layerPosition in LayerPositions)
+            {
+                layerPosition.PropertyChanged -= LayerPositionPropertyChangedHandler;
+                layerPosition.Remove();
+            }
+            base.OnRemoving();
         }
 
         internal override void SetProperty(string propertyName, string newValue)

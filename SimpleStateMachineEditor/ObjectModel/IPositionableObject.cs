@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleStateMachineEditor.ObjectModel
 {
-    interface IPositionableObject
+    public interface IPositionableObject
     {
         System.Windows.Point LeftTopPosition { get; set; }
     }

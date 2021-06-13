@@ -13,8 +13,6 @@ namespace SimpleStateMachineEditor.ObjectModel
 {
     public abstract class TrackableObject : INotifyPropertyChanged, IRemovableObject, ITrackableObject
     {
-        public bool IsChangeAllowed(){ return Controller?.CanGuiChangeBegin() ?? true; }
-
         [XmlAttribute]
         [Browsable(false)]
         public int Id
@@ -34,6 +32,7 @@ namespace SimpleStateMachineEditor.ObjectModel
         internal const int NullId = -2;
 
         [XmlIgnore]
+        [Browsable(false)]
         public ViewModel.ViewModelController Controller { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -43,6 +42,11 @@ namespace SimpleStateMachineEditor.ObjectModel
         [Browsable(false)]
         public int GID { get; private set; }
         static int _gid = 0;
+        [XmlIgnore]
+        [Browsable(false)]
+        public bool IsValid { get; set; }          //  Handy cell used for validating list membership
+
+
 
         //  Constructor for use by serializer ONLY
 
@@ -72,7 +76,7 @@ namespace SimpleStateMachineEditor.ObjectModel
             GID = System.Threading.Interlocked.Increment(ref _gid);
         }
 
-        protected void ObservableCollectionOfRemovableObjectsChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void ObservableCollectionOfRemovableObjectsChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -97,8 +101,9 @@ namespace SimpleStateMachineEditor.ObjectModel
             MissingIdAssignment,
             IdRegistration,
             ObjectResolution,
+            MembershipResolution,
 
-            Last = ObjectResolution,
+            Last = MembershipResolution,
         }
 
         internal virtual void DeserializeCleanup(DeserializeCleanupPhases phase, ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
@@ -121,15 +126,11 @@ namespace SimpleStateMachineEditor.ObjectModel
                     Controller.AllFindableObjects.Add(Id, this);
                     break;
                 case DeserializeCleanupPhases.ObjectResolution:
+                case DeserializeCleanupPhases.MembershipResolution:
                     break;
                 default:
                     throw new NotImplementedException();
             }
-        }
-
-        public void EndChange()
-        {
-            Controller?.NoteGuiChangeEnd();
         }
 
         internal ObjectModel.TrackableObject Find(int id)
@@ -213,7 +214,6 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         public void Remove()
         {
-            Debug.WriteLine($@">>>TrackableObject.Remove {GetType().ToString()}: {ToString()}");
             OnRemoving();
         }
     }

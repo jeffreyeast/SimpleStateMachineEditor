@@ -24,6 +24,7 @@ namespace SimpleStateMachineEditor.Icons
         public abstract int ContextMenuId { get; }
         internal DesignerControl Designer { get; set; }
         public virtual Size Size { get; set; }
+        public virtual double Radius => throw new NotImplementedException();
         public ObjectModel.ITrackableObject ReferencedObject { get; private set; }
         public virtual Control Body 
         {
@@ -253,7 +254,6 @@ namespace SimpleStateMachineEditor.Icons
 
         public virtual void Remove()
         {
-            Debug.WriteLine($@">>>IconBase.Remove {GetType().ToString()}: {ReferencedObject?.ToString() ?? "<unknown>"}");
             OnRemoving();
         }
 

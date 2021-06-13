@@ -362,3 +362,45 @@
  - you have to drop on the layer, not the group. but it feels natural to drop on the group. Similar problem when you add a state to group. Switching
    between layers should the transitions, but they don't initially show up.
 - OnHover that scans statemachine.transitions misses grouptransitions, because they're in the list
+
+6/8/2021
+
+ - You shouldn't be able to drop anything but a TransitionHost into a group's layer
+   DONE
+ - Should we show the layer icon for a group?  
+   YES
+ - BUG: RemoveGroup doesn't work when group is populated
+
+6/9/2021
+
+ - If you remove a layer for a group, make sure you remove the group, too
+   FIXED -- YOU MUST REMOVE THE GROUP, NOT THE LAYER
+
+6/10/2021
+
+ - Add error check for states with no incoming transitions (unreachable)
+ - Consider if there's a way to demark transitions into a group. If there's only one instance, should it show the actions?  If there's multiple
+   instances, should that be visible?
+   DONE
+ - If the .sfsa file is nonparseable at startup, we crash vs
+
+6/11/2021
+
+ - Review reconsiliation logic to make sure we're not serializing too often
+ - Merge ILayeredPositionableObject and ITransitionEndpoint
+ - Try to get X,Y of LeftTopPosition to be attributes, rather than elements
+
+6/12/2021
+
+ - Deletion of a state from a group window doesn't work
+ - You must not be able to remove an implicit member from a layer
+   FIXED
+ - The tracking beween groups, layers, states, layerpositions and the designer is convoluted and error-prone. It needs to be simplified.
+   DONE
+
+6/13/2021
+
+ - BUG: Removing an explicit state from a group MAY require keeping that state as implicit
+   FIXED
+ - When an ineligble object is attempted to drop on a layer (e.g., an event), it'd be nice if the layer showed red (forbidden)
+

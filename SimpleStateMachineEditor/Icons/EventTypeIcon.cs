@@ -39,27 +39,6 @@ namespace SimpleStateMachineEditor.Icons
         }
         DropStates _dropState;
 
-        TransitionIcon DropCandididate
-        {
-            get => _dropCandidate;
-            set
-            {
-                if (_dropCandidate != value)
-                {
-                    if (_dropCandidate != null)
-                    {
-                        _dropCandidate.IsDropCandidate = false;
-                    }
-                    _dropCandidate = value;
-                    if (_dropCandidate != null)
-                    {
-                        _dropCandidate.IsDropCandidate = true;
-                    }
-                }
-            }
-        }
-        TransitionIcon _dropCandidate;
-
         public DropStates TriggerUsageState
         {
             get => _triggerUsageStates;
@@ -92,12 +71,6 @@ namespace SimpleStateMachineEditor.Icons
             };
         }
 
-        public override void CancelDrag()
-        {
-            DropCandididate = null;
-            base.CancelDrag();
-        }
-
         protected override Control CreateIcon()
         {
             return new IconControls.EventTypeIconControl(false)
@@ -109,29 +82,29 @@ namespace SimpleStateMachineEditor.Icons
 
         public override void CommitDrag(Point dragTerminationPoint, Point offset)
         {
-            DropCandididate = null;
-
             //  If the event type icon is on top of a transition icon, then the user is asking us to associate
             //  the event as the trigger for the transition. Otherwise, they're just moving the event type icon.
 
             TransitionIcon transitionIcon = Designer.FindOccludedTransitionIcon(this, dragTerminationPoint);
-            if (transitionIcon == null || !transitionIcon.ReferencedObject.IsChangeAllowed())
+            if (transitionIcon == null)
             {
                 base.CommitDrag(dragTerminationPoint, offset);
             }
             else
             {
-                ViewModel.Transition transition = transitionIcon.ReferencedObject as ViewModel.Transition;
-
-                // Check if there's another transition for this event type. Refuse the drop if so.
-
-                if (!transition.SourceState.HasTransitionMatchingTrigger(ReferencedObject as ViewModel.EventType))
+                using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                 {
-                    transition.TriggerEvent = ReferencedObject as ViewModel.EventType;
-                }
+                    ViewModel.Transition transition = transitionIcon.ReferencedObject as ViewModel.Transition;
 
-                transition.EndChange();
-                CancelDrag();
+                    // Check if there's another transition for this event type. Refuse the drop if so.
+
+                    if (!transition.SourceState.HasTransitionMatchingTrigger(ReferencedObject as ViewModel.EventType))
+                    {
+                        transition.TriggerEvent = ReferencedObject as ViewModel.EventType;
+                    }
+
+                    CancelDrag();
+                }
             }
         }
 
@@ -150,7 +123,6 @@ namespace SimpleStateMachineEditor.Icons
                 ViewModel.Transition transition = transitionIcon.ReferencedObject as ViewModel.Transition;
                 DropState = transition.SourceState.HasTransitionMatchingTrigger(ReferencedObject as ViewModel.EventType) ? DropStates.NotAllowed : DropStates.Allowed;
             }
-            DropCandididate = DropState == DropStates.Allowed ? transitionIcon : null;
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)

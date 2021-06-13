@@ -83,7 +83,7 @@ namespace SimpleStateMachineEditor.Icons
             base(designer, transition, null, null)
         {
             ActionIcons = new ObservableCollection<ActionReferenceIcon>();
-            if (transition is ViewModel.Transition t)
+            if (transition is ViewModel.Transition t && t.ActionReferences != null)
             {
                 t.ActionReferences.CollectionChanged += TransitionActionsCollectionChangedHandler;
                 foreach (ViewModel.ActionReference actionReference in t.ActionReferences)
@@ -190,52 +190,54 @@ namespace SimpleStateMachineEditor.Icons
         {
             int slot = -1;
 
-            if (ReferencedObject is ViewModel.Transition transition && transition.IsChangeAllowed())
+            if (ReferencedObject is ViewModel.Transition transition)
             {
-                if (!inhibitDeletion && transition.ActionReferences.Any(ar => ar.Action == action))
+                using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                 {
-                    //  The action is already associated with the transition, so we interpret the request as "remove the action"
-
-                    ViewModel.ActionReference actionReference = transition.ActionReferences.Where(ar => ar.Action == action).Single();
-                    transition.ActionReferences.Remove(actionReference);
-                }
-                else
-                {
-                    //  This is a new action. We'll try to put it in the list of actions near where they clicked.
-
-                    //  Identify the existing action position closest to the click
-
-                    IconControls.StateIconControl originControl = Designer.LoadedIcons[originState].Body as IconControls.StateIconControl;
-                    List<double> segmentMidpointDistancesFromOrigin = new List<double>();
-
-                    foreach (ActionReferenceIcon actionReferenceIcon in ActionIcons)
+                    if (!inhibitDeletion && transition.ActionReferences.Any(ar => ar.Action == action))
                     {
-                        Point leftTop = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(0, 0));
-                        Point rightBottom = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(actionReferenceIcon.ListBoxItem.ActualWidth, actionReferenceIcon.ListBoxItem.ActualHeight));
-                        double distance = Utility.DrawingAids.Distance((leftTop.X + rightBottom.X) / 2, (leftTop.Y + rightBottom.Y) / 2, 0, 0);
-                        segmentMidpointDistancesFromOrigin.Add(distance);
+                        //  The action is already associated with the transition, so we interpret the request as "remove the action"
+
+                        ViewModel.ActionReference actionReference = transition.ActionReferences.Where(ar => ar.Action == action).Single();
+                        transition.ActionReferences.Remove(actionReference);
                     }
-
-                    segmentMidpointDistancesFromOrigin.Add(double.MaxValue);
-
-
-                    //  Now figure the insertion position of the new action into the list of actions for the transition
-
-                    double clickDistance = Utility.DrawingAids.Distance(clickPosition, new Point(0, 0));
-                    for (int i = 0; ; i++)
+                    else
                     {
-                        if (clickDistance <= segmentMidpointDistancesFromOrigin[i])
+                        //  This is a new action. We'll try to put it in the list of actions near where they clicked.
+
+                        //  Identify the existing action position closest to the click
+
+                        IconControls.StateIconControl originControl = Designer.LoadedIcons[originState].Body as IconControls.StateIconControl;
+                        List<double> segmentMidpointDistancesFromOrigin = new List<double>();
+
+                        foreach (ActionReferenceIcon actionReferenceIcon in ActionIcons)
                         {
-                            ViewModel.ActionReference newActionReference = new ViewModel.ActionReference(Designer.Model, transition, action);
-                            transition.ActionReferences.Insert(i, newActionReference);
-                            transition.Controller.LogUndoAction(new UndoRedo.DeleteActionReferenceRecord(transition.Controller, newActionReference));
-                            slot = i;
-                            break;
+                            Point leftTop = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(0, 0));
+                            Point rightBottom = Utility.DrawingAids.NormalizePoint(originControl, actionReferenceIcon.ListBoxItem, new Point(actionReferenceIcon.ListBoxItem.ActualWidth, actionReferenceIcon.ListBoxItem.ActualHeight));
+                            double distance = Utility.DrawingAids.Distance((leftTop.X + rightBottom.X) / 2, (leftTop.Y + rightBottom.Y) / 2, 0, 0);
+                            segmentMidpointDistancesFromOrigin.Add(distance);
+                        }
+
+                        segmentMidpointDistancesFromOrigin.Add(double.MaxValue);
+
+
+                        //  Now figure the insertion position of the new action into the list of actions for the transition
+
+                        double clickDistance = Utility.DrawingAids.Distance(clickPosition, new Point(0, 0));
+                        for (int i = 0; ; i++)
+                        {
+                            if (clickDistance <= segmentMidpointDistancesFromOrigin[i])
+                            {
+                                ViewModel.ActionReference newActionReference = new ViewModel.ActionReference(Designer.Model, transition, action);
+                                transition.ActionReferences.Insert(i, newActionReference);
+                                transition.Controller.LogUndoAction(new UndoRedo.DeleteActionReferenceRecord(transition.Controller, newActionReference));
+                                slot = i;
+                                break;
+                            }
                         }
                     }
+                    Designer.IconSurface.Focus();
                 }
-                transition.EndChange();
-                Designer.IconSurface.Focus();
             }
 
             return slot;
@@ -251,7 +253,7 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         case PackageIds.DeleteCommandId:
                             prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED;
-                            if (ReferencedObject is ViewModel.Transition)
+                            if (ReferencedObject is ViewModel.Transition transition && transition.TransitionType == ViewModel.Transition.TransitionTypes.Normal)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -259,7 +261,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewDestinationCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition && transition.SourceState != null && transition.DestinationState != null && IsSelectable)
+                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.TransitionType == ViewModel.Transition.TransitionTypes.Normal && transition1.SourceState != null && transition1.DestinationState != null && IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -268,7 +270,7 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewSourceCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.SourceState != null && transition1.DestinationState != null && IsSelectable)
+                            if (ReferencedObject is ViewModel.Transition transition2 && transition2.TransitionType == ViewModel.Transition.TransitionTypes.Normal && transition2.SourceState != null && transition2.DestinationState != null && IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }

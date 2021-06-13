@@ -39,11 +39,11 @@ namespace SimpleStateMachineEditor.Icons
 
                 if (layer.Members.Contains(ReferencedObject))
                 {
-                    Designer.RemoveLayerMember(layer, ReferencedObject as ObjectModel.LayeredPositionableObject);
+                    Designer.RemoveLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint);
                 }
                 else
                 {
-                    Designer.AddLayerMember(layer, ReferencedObject as ObjectModel.LayeredPositionableObject);
+                    Designer.AddLayerMember(layer, ReferencedObject as ObjectModel.ITransitionEndpoint);
                 }
             }
             else
@@ -73,9 +73,21 @@ namespace SimpleStateMachineEditor.Icons
 
                 if (layer.Members.Contains(ReferencedObject))
                 {
-                    if (!layer.IsDefaultLayer)
+                    if (layer.IsDefaultLayer)
                     {
-                        layerIcon.MembershipAction = LayerIcon.MembershipActions.Remove;
+                        layerIcon.MembershipAction = LayerIcon.MembershipActions.Forbidden;
+                    }
+                    else
+                    {
+                        if ((ReferencedObject as LayeredPositionableObject).CurrentLayerPosition.Layer == layer &&
+                            (ReferencedObject as LayeredPositionableObject).CurrentLayerPosition.GroupStatus == LayerPosition.GroupStatuses.Implicit)
+                        {
+                            layerIcon.MembershipAction = LayerIcon.MembershipActions.Forbidden;
+                        }
+                        else
+                        {
+                            layerIcon.MembershipAction = LayerIcon.MembershipActions.Remove;
+                        }
                     }
                 }
                 else

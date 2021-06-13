@@ -1,4 +1,5 @@
-﻿using SimpleStateMachineEditor.ObjectModel;
+﻿using Microsoft.VisualStudio.Shell;
+using SimpleStateMachineEditor.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,8 +18,44 @@ namespace SimpleStateMachineEditor.ViewModel
     //--
     public class Group : TransitionHost
     {
-        public override Group AssociatedGroup { get => null; set => throw new NotImplementedException(); }
-        public override bool IsGrouped => false;
+        internal Layer Layer => CoNamedObject as Layer;
+        internal ObservableCollection<ObjectModel.ITransitionEndpoint> Members => Layer.Members;
+        int ValidationPendingCount = 0;
+
+        internal enum MembershipChangeAction
+        {
+            Add,
+            Remove,
+            Change,
+            AddTransition,
+            RemoveTransition,
+        }
+
+        internal struct MembershipChangeArgument
+        {
+            internal MembershipChangeAction Action;
+            internal ObjectModel.ITransitionEndpoint Endpoint;
+            internal ObjectModel.ITransition Transition;
+
+            internal MembershipChangeArgument(MembershipChangeAction action, ObjectModel.ITransitionEndpoint endpoint)
+            {
+                Action = action;
+                Endpoint = endpoint;
+                Transition = null;
+            }
+
+            internal MembershipChangeArgument(MembershipChangeAction action, ObjectModel.ITransition transition)
+            {
+                Action = action;
+                Endpoint = null;
+                Transition = transition;
+            }
+        }
+
+        internal delegate void MembershipChangeHandler(Group sender, MembershipChangeArgument e);
+        internal event MembershipChangeHandler MembershipChanged;
+
+
 
 
 
@@ -42,30 +79,38 @@ namespace SimpleStateMachineEditor.ViewModel
 
         private void AddTransitionsForEndpoint(ObjectModel.ITransitionEndpoint endpoint)
         {
-            endpoint.TransitionsFrom.CollectionChanged += MemberTransitionsFromCollectionChangedHandler;
+            endpoint.TransitionsFrom.CollectionChanged += MemberTransitionsCollectionChangedHandler;
             foreach (ObjectModel.ITransition transition in endpoint.TransitionsFrom)
             {
-                if (!(CoNamedObject as Layer).Members.Contains(transition.DestinationState) &&
-                    (CoNamedObject as Layer).Members.Contains(transition.SourceState))
+                ObjectModel.LayerPosition layerPosition = transition.DestinationState.LayerPositions.Where(lp => lp.Layer == Layer).FirstOrDefault();
+                if (Members.Contains(transition.SourceState) &&
+                    this != transition.DestinationState &&
+                    (layerPosition == null || layerPosition.GroupStatus != LayerPosition.GroupStatuses.Explicit))
                 {
-                    GroupTransition groupTransition = TransitionsFrom.Where(t => t.SourceState == this && t.DestinationState == transition.DestinationState && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as GroupTransition;
+                    Transition groupTransition = TransitionsFrom.Where(t => t.SourceState == this && t.DestinationState == transition.DestinationState && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as Transition;
                     if (groupTransition == null)
                     {
-                        TransitionsFrom.Add(new GroupTransition(Controller, this, transition.DestinationState, transition.TriggerEvent));
+                        groupTransition = new Transition(Controller, this, transition.DestinationState, transition.TriggerEvent);
+                        MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.AddTransition, groupTransition));
                     }
+                    groupTransition.IsValid = true;
                 }
             }
-            endpoint.TransitionsTo.CollectionChanged += MemberTransitionsToCollectionChangedHandler;
+            endpoint.TransitionsTo.CollectionChanged += MemberTransitionsCollectionChangedHandler;
             foreach (ObjectModel.ITransition transition in endpoint.TransitionsTo)
             {
-                if (!(CoNamedObject as Layer).Members.Contains(transition.SourceState) &&
-                    (CoNamedObject as Layer).Members.Contains(transition.DestinationState))
+                ObjectModel.LayerPosition layerPosition = transition.SourceState.LayerPositions.Where(lp => lp.Layer == Layer).FirstOrDefault();
+                if (Members.Contains(transition.DestinationState) &&
+                    this != transition.SourceState &&
+                    (layerPosition == null || layerPosition.GroupStatus != LayerPosition.GroupStatuses.Explicit))
                 {
-                    GroupTransition groupTransition = TransitionsFrom.Where(t => t.SourceState == transition.SourceState && t.DestinationState == this && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as GroupTransition;
+                    Transition groupTransition = TransitionsTo.Where(t => t.SourceState == transition.SourceState && t.DestinationState == this && t.TriggerEvent == transition.TriggerEvent).FirstOrDefault() as Transition;
                     if (groupTransition == null)
                     {
-                        TransitionsTo.Add(new GroupTransition(Controller, transition.SourceState, this, transition.TriggerEvent));
+                        groupTransition = new Transition(Controller, transition.SourceState, this, transition.TriggerEvent);
+                        MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.AddTransition, groupTransition));
                     }
+                    groupTransition.IsValid = true;
                 }
             }
         }
@@ -78,19 +123,118 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        private void DeleteInvalidTransitions(ObservableCollection<ObjectModel.ITransition> transitionList)
+        {
+            IEnumerable<ObjectModel.ITransition> invalidTransitions = transitionList.Where(t => t.TransitionType == ViewModel.Transition.TransitionTypes.Group && !t.IsValid).ToArray();
+            foreach (Transition groupTransition in invalidTransitions)
+            {
+                groupTransition.Remove();
+                MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.RemoveTransition, groupTransition));
+            }
+        }
+
         private void Members_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            ValidateTransitions();
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems.Count == 1 && e.NewItems[0] is ObjectModel.ITransitionEndpoint endpoint)
+                    {
+                        endpoint.PropertyChanged += MemberPropertyChangedHandler;
+                        endpoint.TransitionsFrom.CollectionChanged += MemberTransitionsCollectionChangedHandler;
+                        endpoint.TransitionsTo.CollectionChanged += MemberTransitionsCollectionChangedHandler;
+                        System.Threading.Interlocked.Increment(ref ValidationPendingCount);
+                        ThreadHelper.Generic.BeginInvoke(new System.Action(() =>
+                        {
+                            if (System.Threading.Interlocked.Exchange(ref ValidationPendingCount, 0) > 0)
+                            {
+                                ValidateTransitions();
+                            }
+                            MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.Add, endpoint));
+                        }));
+                        break;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems.Count == 1 && e.OldItems[0] is ObjectModel.ITransitionEndpoint endpoint1)
+                    {
+                        endpoint1.PropertyChanged -= MemberPropertyChangedHandler;
+                        endpoint1.TransitionsFrom.CollectionChanged -= MemberTransitionsCollectionChangedHandler;
+                        endpoint1.TransitionsTo.CollectionChanged -= MemberTransitionsCollectionChangedHandler;
+                        System.Threading.Interlocked.Increment(ref ValidationPendingCount);
+                        ThreadHelper.Generic.BeginInvoke(new System.Action(() =>
+                        {
+                            if (System.Threading.Interlocked.Exchange(ref ValidationPendingCount, 0) > 0)
+                            {
+                                ValidateTransitions();
+                            }
+                            MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.Remove, endpoint1));
+                        }));
+                        break;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-        private void MemberTransitionsFromCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        private void MemberPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            ValidateTransitions();
+            switch (e.PropertyName)
+            {
+                case "GroupStatus":
+                    if (sender is ObjectModel.ITransitionEndpoint endpoint)
+                    {
+                        ValidateTransitions();
+                        MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.Change, endpoint));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
-        private void MemberTransitionsToCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
+        private void MemberTransitionsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
-            ValidateTransitions();
+            System.Threading.Interlocked.Increment(ref ValidationPendingCount);
+            ThreadHelper.Generic.BeginInvoke(new System.Action(() =>
+            {
+                if (System.Threading.Interlocked.Exchange(ref ValidationPendingCount, 0) > 0)
+                {
+                    ValidateTransitions();
+                }
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        if (e.NewItems.Count == 1 && e.NewItems[0] is ObjectModel.ITransition transition)
+                        {
+                            MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.AddTransition, transition));
+                            break;
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                    case NotifyCollectionChangedAction.Remove:
+                        if (e.OldItems.Count == 1 && e.OldItems[0] is ObjectModel.ITransition transition1)
+                        {
+                            MembershipChanged?.Invoke(this, new MembershipChangeArgument(MembershipChangeAction.RemoveTransition, transition1));
+                            break;
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                    default:
+                        throw new NotImplementedException();
+                }
+            }));
         }
 
         protected override void OnCoNamedObjectChange(NamedObject preValue, NamedObject postValue)
@@ -98,26 +242,58 @@ namespace SimpleStateMachineEditor.ViewModel
             if (preValue != null)
             {
                 (preValue as Layer).Members.CollectionChanged -= Members_CollectionChanged;
-                foreach (ViewModel.State member in (preValue as Layer).Members)
+                foreach (ViewModel.TransitionHost endpoint in (preValue as Layer).Members)
                 {
-                    member.AssociatedGroup = null;
+                    endpoint.PropertyChanged -= MemberPropertyChangedHandler;
+                    endpoint.TransitionsFrom.CollectionChanged -= MemberTransitionsCollectionChangedHandler;
+                    endpoint.TransitionsTo.CollectionChanged -= MemberTransitionsCollectionChangedHandler;
                 }
             }
             if (postValue != null)
             {
                 (postValue as Layer).Members.CollectionChanged += Members_CollectionChanged;
-                foreach (ViewModel.State member in (postValue as Layer).Members)
+                foreach (ViewModel.TransitionHost endpoint in (postValue as Layer).Members)
                 {
-                    member.AssociatedGroup = null;
+                    endpoint.PropertyChanged += MemberPropertyChangedHandler;
+                    endpoint.TransitionsFrom.CollectionChanged += MemberTransitionsCollectionChangedHandler;
+                    endpoint.TransitionsTo.CollectionChanged += MemberTransitionsCollectionChangedHandler;
                 }
             }
-            ValidateTransitions();
+//            ValidateTransitions();
             base.OnCoNamedObjectChange(preValue, postValue);
         }
 
         private void ValidateTransitions()
         {
+            using (new UndoRedo.DontLogBlock(Controller))
+            {
+                //  First, mark all the transitions for potential removal
 
+                foreach (Transition groupTransition in TransitionsFrom.Where(t => t.TransitionType == Transition.TransitionTypes.Group))
+                {
+                    groupTransition.IsValid = false;
+                }
+                foreach (Transition groupTransition in TransitionsTo.Where(t => t.TransitionType == Transition.TransitionTypes.Group))
+                {
+                    groupTransition.IsValid = false;
+                }
+
+                //  Now figure what transitions we actually need
+
+                if (Members != null)
+                {
+                    foreach (ObjectModel.ITransitionEndpoint endpoint in Members.Where(m => m.LayerPositions.Any(lp => lp.Layer == Layer && lp.GroupStatus == LayerPosition.GroupStatuses.Explicit)))
+                    {
+                        AddTransitionsForEndpoint(endpoint);
+                    }
+                }
+
+                //  And finally, get rid of those not needed
+
+                DeleteInvalidTransitions(TransitionsFrom);
+                DeleteInvalidTransitions(TransitionsTo);
+            }
+            System.Threading.Interlocked.Exchange(ref ValidationPendingCount, 0);
         }
     }
 }

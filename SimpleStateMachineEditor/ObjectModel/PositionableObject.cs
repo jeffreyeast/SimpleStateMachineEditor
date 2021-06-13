@@ -17,15 +17,17 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _leftTopPosition.HasValue ? _leftTopPosition.Value : new System.Windows.Point(0, 0);
             set
             {
-                if ((!_leftTopPosition.HasValue || _leftTopPosition.Value.X != value.X || _leftTopPosition.Value.Y != value.Y) && IsChangeAllowed())
+                if ((!_leftTopPosition.HasValue || _leftTopPosition.Value.X != value.X || _leftTopPosition.Value.Y != value.Y))
                 {
-                    if (_leftTopPosition.HasValue)
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
                     {
-                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
+                        if (_leftTopPosition.HasValue)
+                        {
+                            Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", _leftTopPosition.ToString()));
+                        }
+                        _leftTopPosition = value;
+                        OnPropertyChanged("LeftTopPosition");
                     }
-                    _leftTopPosition = value;
-                    OnPropertyChanged("LeftTopPosition");
-                    EndChange();
                 }
             }
         }

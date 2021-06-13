@@ -79,6 +79,16 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
         }
 
+        public override bool Equals(object obj)
+        {
+            return this == obj as EditableString;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override string ToString()
         {
             return Value;

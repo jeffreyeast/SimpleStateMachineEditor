@@ -181,17 +181,15 @@ namespace SimpleStateMachineEditor.IconControls
                 switch (e.PropertyName)
                 {
                     case "Description":
-                        if (Designer.Model.StateMachine.IsChangeAllowed())
+                        using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                         {
                             icon.Action.Description = icon.Description;
-                            Designer.Model.StateMachine.EndChange();
                         }
                         break;
                     case "Name":
-                        if (Designer.Model.StateMachine.IsChangeAllowed())
+                        using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                         {
                             icon.Action.Name = icon.Name;
-                            Designer.Model.StateMachine.EndChange();
                         }
                         break;
                     default:
@@ -205,7 +203,7 @@ namespace SimpleStateMachineEditor.IconControls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (Designer.Model.StateMachine.IsChangeAllowed())
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                     {
                         using (new UndoRedo.AtomicBlock(Designer.Model, "Add action"))
                         {
@@ -216,11 +214,10 @@ namespace SimpleStateMachineEditor.IconControls
                                 Designer.Model.StateMachine.Actions.Add(icon.Action);
                             }
                         }
-                        Designer.Model.StateMachine.EndChange();
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    if (Designer.Model.StateMachine.IsChangeAllowed())
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                     {
                         using (new UndoRedo.AtomicBlock(Designer.Model, "Delete action"))
                         {
@@ -231,7 +228,6 @@ namespace SimpleStateMachineEditor.IconControls
                                 Designer.Model.LogUndoAction(new UndoRedo.AddActionRecord(Designer.Model, icon.Action));
                             }
                         }
-                        Designer.Model.StateMachine.EndChange();
                     }
                     break;
                 case NotifyCollectionChangedAction.Replace:

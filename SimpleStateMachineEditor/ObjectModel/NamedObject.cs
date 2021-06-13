@@ -20,24 +20,25 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _name;
             set
             {
-                if (_name != value && IsChangeAllowed())
+                if (_name != value)
                 {
-                    if (Controller?.UndoManager == null)
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
                     {
-                        _name = value;
-                        OnPropertyChanged("Name");
-                        EndChange();
-                        WrappedName = WrapName(_name);
-                    }
-                    else
-                    {
-                        using (new UndoRedo.AtomicBlock(Controller, "Change Name property"))
+                        if (Controller?.UndoManager == null)
                         {
-                            Controller.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
                             _name = value;
                             OnPropertyChanged("Name");
-                            EndChange();
                             WrappedName = WrapName(_name);
+                        }
+                        else
+                        {
+                            using (new UndoRedo.AtomicBlock(Controller, "Change Name property"))
+                            {
+                                Controller.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Name", _name));
+                                _name = value;
+                                OnPropertyChanged("Name");
+                                WrappedName = WrapName(_name);
+                            }
                         }
                     }
                 }
@@ -86,18 +87,29 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 if (_coNamedObject != value)
                 {
-                    if (_coNamedObject != null)
+                    NamedObject oldCoNamedObject = _coNamedObject;
+
+                    if (oldCoNamedObject != null)
                     {
-                        _coNamedObject.PropertyChanged -= CoNamedObjectPropertyChangedHandler;
-                        _coNamedObject.Removing -= CoNamedObjectIsBeingRemovedHandler;
+                        oldCoNamedObject.PropertyChanged -= CoNamedObjectPropertyChangedHandler;
+                        oldCoNamedObject.Removing -= CoNamedObjectIsBeingRemovedHandler;
                     }
-                    OnCoNamedObjectChange(_coNamedObject, value);
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "CoNamedObject", (_coNamedObject?.Id ?? TrackableObject.NullId).ToString()));
+                    OnCoNamedObjectChange(oldCoNamedObject, value);
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "CoNamedObject", (oldCoNamedObject?.Id ?? TrackableObject.NullId).ToString()));
                     _coNamedObject = value;
-                    if (_coNamedObject != null)
+                    if (oldCoNamedObject != null)
+                    {
+                        oldCoNamedObject.CoNamedObject = null;
+                    }
+                    if (_coNamedObject == null)
+                    {
+                        CoNamedObjectId = TrackableObject.NullId;
+                    }
+                    else
                     {
                         _coNamedObject.PropertyChanged += CoNamedObjectPropertyChangedHandler;
                         _coNamedObject.Removing -= CoNamedObjectIsBeingRemovedHandler;
+                        _coNamedObject.CoNamedObject = this;
                     }
                     OnPropertyChanged("CoNamedObject");
                 }
@@ -113,6 +125,8 @@ namespace SimpleStateMachineEditor.ObjectModel
             set => _coNamedObjectId = value;
         }
         int _coNamedObjectId = TrackableObject.NullId;
+
+
 
 
         //  Constructor for use by serialization ONLY
@@ -217,10 +231,7 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         protected override void OnRemoving()
         {
-            using (new UndoRedo.DontLogBlock(Controller))
-            {
-                CoNamedObject = null;
-            }
+            CoNamedObject = null;
             base.OnRemoving();
         }
 

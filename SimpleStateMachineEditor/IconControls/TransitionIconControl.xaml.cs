@@ -121,7 +121,7 @@ namespace SimpleStateMachineEditor.IconControls
 
         internal void Draw()
         {
-            if (Transition.SourceState == null || Transition.DestinationState == null)
+            if (!Designer.LoadedIcons.ContainsKey(Transition.SourceState) || !Designer.LoadedIcons.ContainsKey(Transition.DestinationState))
             {
                 return;
             }
@@ -203,8 +203,8 @@ namespace SimpleStateMachineEditor.IconControls
             pathGeometry.GetPointAtFractionLength(0.5, out Point midpointOfArc, out Point uselessTangent);
             MidpointOfArc = midpointOfArc;
             ConnectorPath.Data = pathGeometry;
-            pathGeometry.GetPointAtFractionLength((arcLength - Icons.StateIcon.Radius * 1.5) / arcLength, out Point startPoint, out uselessTangent);
-            pathGeometry.GetPointAtFractionLength((arcLength - Icons.StateIcon.Radius) / arcLength, out Point endPoint, out uselessTangent);
+            pathGeometry.GetPointAtFractionLength((arcLength - Designer.LoadedIcons[Transition.DestinationState].Radius * 1.5) / arcLength, out Point startPoint, out uselessTangent);
+            pathGeometry.GetPointAtFractionLength((arcLength - Designer.LoadedIcons[Transition.DestinationState].Radius) / arcLength, out Point endPoint, out uselessTangent);
             pathGeometry.Figures.Add(Utility.DrawingAids.DrawArrowHead(startPoint, endPoint));
             ConnectorPath.Data = pathGeometry;
         }

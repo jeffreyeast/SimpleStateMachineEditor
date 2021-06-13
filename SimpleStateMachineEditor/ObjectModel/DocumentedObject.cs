@@ -16,12 +16,14 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _description;
             set
             {
-                if (_description != value && IsChangeAllowed())
+                if (_description != value)
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
-                    _description = value;
-                    OnPropertyChanged("Description");
-                    EndChange();
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "Description", _description));
+                        _description = value;
+                        OnPropertyChanged("Description");
+                    }
                 }
             }
         }

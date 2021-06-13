@@ -28,6 +28,7 @@ namespace SimpleStateMachineEditor.UndoRedo
     {
         internal int CurrentLayerId;
 
+
         protected LayeredPositionableObjectRecord(ActionTypes actionType, ViewModel.ViewModelController controller, ObjectModel.LayeredPositionableObject positionableObject) : base(actionType, controller, positionableObject)
         {
             CurrentLayerId = positionableObject.CurrentLayer.Id;

@@ -26,14 +26,16 @@ namespace SimpleStateMachineEditor.UndoRedo
         internal int LayerId;
         int NewMemberId;
         internal System.Windows.Point LeftTopPosition;
+        internal LayerPosition.GroupStatuses GroupStatus;
 
 
 
-        internal AddLayerMemberRecord(ViewModel.ViewModelController controller, ObjectModel.LayerPosition layerPosition, ObjectModel.LayeredPositionableObject newMember) : base(ActionTypes.AddLayerMember, controller, layerPosition)
+        internal AddLayerMemberRecord(ViewModel.ViewModelController controller, ObjectModel.LayerPosition layerPosition, ObjectModel.ILayeredPositionableObject newMember) : base(ActionTypes.AddLayerMember, controller, layerPosition)
         {
             LayerId = layerPosition.LayerId;
             NewMemberId = newMember.Id;
             LeftTopPosition = layerPosition.LeftTopPosition;
+            GroupStatus = layerPosition.GroupStatus;
 #if DEBUGUNDOREDO
             Debug.WriteLine($@">>> AddLayerMemberRecord.AddLayerMemberRecord: Created {UnitDescription} record, ID: {Id}, LayerID: {LayerId}, NewMemberId: {NewMemberId}");
 #endif
@@ -44,14 +46,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddLayerMemberRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Layer layer = Controller.StateMachine.Find(LayerId) as ViewModel.Layer;
-                ObjectModel.LayeredPositionableObject newMember = Controller.StateMachine.Find(NewMemberId) as ObjectModel.LayeredPositionableObject;
+                ObjectModel.ITransitionEndpoint newMember = Controller.StateMachine.Find(NewMemberId) as ObjectModel.ITransitionEndpoint;
                 ObjectModel.LayerPosition layerPosition = new ObjectModel.LayerPosition(Controller, this);
                 newMember.LayerPositions.Add(layerPosition);
                 layer.Members.Add(newMember);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteLayerMemberRecord(Controller, layerPosition, newMember));
             }
@@ -63,7 +64,6 @@ namespace SimpleStateMachineEditor.UndoRedo
         protected override string UnitDescription => "Add layer";
         protected override int UnitType => (int)ActionTypes.AddLayer;
 
-        public int AssociatedGroupId;
         public int[] MemberIds;
 
 
@@ -81,11 +81,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddLayerRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Layer newLayer = new Layer(Controller, this);
                 Controller.StateMachine.Layers.Add(newLayer);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteLayerRecord(Controller, newLayer));
             }
@@ -102,7 +101,7 @@ namespace SimpleStateMachineEditor.UndoRedo
 
 
 
-        internal DeleteLayerMemberRecord(ViewModel.ViewModelController controller, ObjectModel.LayerPosition layerPosition, ObjectModel.TrackableObject member) : base(ActionTypes.RemoveLayerMember, controller, layerPosition)
+        internal DeleteLayerMemberRecord(ViewModel.ViewModelController controller, ObjectModel.LayerPosition layerPosition, ObjectModel.ITransitionEndpoint member) : base(ActionTypes.RemoveLayerMember, controller, layerPosition)
         {
             LayerId = layerPosition.LayerId;
             MemberId = member.Id;
@@ -116,15 +115,14 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteLayerMemberRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Layer layer = Controller.StateMachine.Find(LayerId) as ViewModel.Layer;
-                ObjectModel.LayeredPositionableObject member = Controller.StateMachine.Find(MemberId) as ObjectModel.LayeredPositionableObject;
+                ObjectModel.ITransitionEndpoint member = Controller.StateMachine.Find(MemberId) as ObjectModel.ITransitionEndpoint;
                 ObjectModel.LayerPosition layerPosition = Controller.StateMachine.Find(Id) as ObjectModel.LayerPosition;
                 Controller.UndoManager.Add(new AddLayerMemberRecord(Controller, layerPosition, member));
-                layer.Members.Remove(member);
                 member.LayerPositions.Remove(layerPosition);
-                Controller.StateMachine.EndChange();
+                layer.Members.Remove(member);
             }
         }
     }
@@ -147,13 +145,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteLayerRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Layer targetLayer = Controller.StateMachine.Layers.Where(r => r.Id == Id).First();
+                AddLayerRecord addLayerRecord = new AddLayerRecord(Controller, targetLayer);
                 Controller.StateMachine.Layers.Remove(targetLayer);
-                Controller.StateMachine.EndChange();
 
-                Controller.UndoManager.Add(new AddLayerRecord(Controller, targetLayer));
+                Controller.UndoManager.Add(addLayerRecord);
             }
         }
     }

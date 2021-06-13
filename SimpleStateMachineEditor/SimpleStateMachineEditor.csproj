@@ -114,6 +114,7 @@
     </Compile>
     <Compile Include="ObjectModel\DocumentedObject.cs" />
     <Compile Include="ObjectModel\EditableString.cs" />
+    <Compile Include="ObjectModel\ILayeredPositionableObject.cs" />
     <Compile Include="ObjectModel\INamedObject.cs" />
     <Compile Include="ObjectModel\IPositionableObject.cs" />
     <Compile Include="ObjectModel\IRemovableObject.cs" />
@@ -164,13 +165,13 @@
     <Compile Include="ViewModelCoordinator.cs" />
     <Compile Include="ViewModel\Action.cs" />
     <Compile Include="ViewModel\ActionReference.cs" />
+    <Compile Include="ViewModel\GuiChangeBlock.cs" />
     <Compile Include="ViewModel\EventType.cs" />
     <Compile Include="ObjectModel\PositionableObject.cs" />
     <Compile Include="ViewModel\Layer.cs" />
     <Compile Include="ViewModel\Group.cs" />
     <Compile Include="ViewModel\State.cs" />
     <Compile Include="ViewModel\StateMachine.cs" />
-    <Compile Include="ViewModel\GroupTransition.cs" />
     <Compile Include="ViewModel\Transition.cs" />
     <Compile Include="ViewModel\TransitionHost.cs" />
     <Compile Include="ViewModel\ViewModelController.cs" />

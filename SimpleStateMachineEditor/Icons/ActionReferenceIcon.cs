@@ -132,59 +132,61 @@ namespace SimpleStateMachineEditor.Icons
 
             TransitionIcon closestTransitionIcon = FindClosestTransitionIcon(dragTerminationPoint);
 
-            if (closestTransitionIcon != null && Transition.IsChangeAllowed())
+            if (closestTransitionIcon != null)
             {
-                int oldSlot = TransitionIcon.ActionIcons.IndexOf(this);
-                ViewModel.Action action = (ReferencedObject as ViewModel.ActionReference).Action;
-
-                if (closestTransitionIcon == TransitionIcon)
+                using (new ViewModel.ViewModelController.GuiChangeBlock(Designer.Model))
                 {
-                    //  The user is attempting to re-order the actions for the transition
+                    int oldSlot = TransitionIcon.ActionIcons.IndexOf(this);
+                    ViewModel.Action action = (ReferencedObject as ViewModel.ActionReference).Action;
 
-                    ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
-
-                    using (new UndoRedo.AtomicBlock(Transition.Controller, "Move action"))
+                    if (closestTransitionIcon == TransitionIcon)
                     {
-                        int newSlot = TransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
-                        if (newSlot <= oldSlot)
+                        //  The user is attempting to re-order the actions for the transition
+
+                        ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[Transition.SourceState].CenterPosition.X < Designer.LoadedIcons[Transition.DestinationState].CenterPosition.X ? Transition.SourceState : Transition.DestinationState;
+
+                        using (new UndoRedo.AtomicBlock(Transition.Controller, "Move action"))
                         {
-                            oldSlot++;
-                        }
-                        Designer.Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Designer.Model, Transition.ActionReferences[oldSlot], oldSlot));
-                        Transition.ActionReferences.RemoveAt(oldSlot);
-                    }
-                }
-                else
-                {
-                    ViewModel.Transition closestTransition = closestTransitionIcon.ReferencedObject as ViewModel.Transition;
-
-                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-                    {
-                        //  The user is copying this action to another transition
-
-                        ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
-
-                        using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Copy action"))
-                        {
-                            closestTransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
-                        }
-                    }
-                    else
-                    {
-                        // The user is moving this action from this transition to another
-
-                        ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
-
-                        using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Move action"))
-                        {
-                            closestTransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
+                            int newSlot = TransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
+                            if (newSlot <= oldSlot)
+                            {
+                                oldSlot++;
+                            }
                             Designer.Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Designer.Model, Transition.ActionReferences[oldSlot], oldSlot));
                             Transition.ActionReferences.RemoveAt(oldSlot);
                         }
                     }
+                    else
+                    {
+                        ViewModel.Transition closestTransition = closestTransitionIcon.ReferencedObject as ViewModel.Transition;
+
+                        if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                        {
+                            //  The user is copying this action to another transition
+
+                            ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
+
+                            using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Copy action"))
+                            {
+                                closestTransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
+                            }
+                        }
+                        else
+                        {
+                            // The user is moving this action from this transition to another
+
+                            ObjectModel.ITransitionEndpoint originState = Designer.LoadedIcons[closestTransition.SourceState].CenterPosition.X < Designer.LoadedIcons[closestTransition.DestinationState].CenterPosition.X ? closestTransition.SourceState : closestTransition.DestinationState;
+
+                            using (new UndoRedo.AtomicBlock(closestTransition.Controller, "Move action"))
+                            {
+                                closestTransitionIcon.ProcessDroppedAction(action, originState, Utility.DrawingAids.NormalizePoint(Designer.LoadedIcons[originState].Body, Designer.IconSurface, dragTerminationPoint), true);
+                                Designer.Model.LogUndoAction(new UndoRedo.AddActionReferenceRecord(Designer.Model, Transition.ActionReferences[oldSlot], oldSlot));
+                                Transition.ActionReferences.RemoveAt(oldSlot);
+                            }
+                        }
+                    }
+                    Designer.ClearSelectedItems();
                 }
-                Designer.ClearSelectedItems();
-                Transition.EndChange();
             }
         }
 
@@ -211,11 +213,14 @@ namespace SimpleStateMachineEditor.Icons
 
             foreach (TransitionIcon transitionIcon in Designer.LoadedIcons.Values.OfType<TransitionIcon>())
             {
-                double distance = Utility.DrawingAids.TangentalDistance((transitionIcon.Body as IconControls.TransitionIconControl).ConnectorPath.Data, mousePosition);
-                if (distance < minDistance)
+                if ((transitionIcon.ReferencedObject as ViewModel.Transition).TransitionType == ViewModel.Transition.TransitionTypes.Normal)
                 {
-                    minDistance = distance;
-                    closestTransitionIcon = transitionIcon;
+                    double distance = Utility.DrawingAids.TangentalDistance((transitionIcon.Body as IconControls.TransitionIconControl).ConnectorPath.Data, mousePosition);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        closestTransitionIcon = transitionIcon;
+                    }
                 }
             }
             return closestTransitionIcon;

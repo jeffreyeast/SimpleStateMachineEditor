@@ -17,8 +17,28 @@ namespace SimpleStateMachineEditor.Icons
     {
         public override int ContextMenuId => PackageIds.StateIconContextMenuId;
         internal readonly static Size IconSize = new Size(62, 62);
-        internal readonly static double Radius = 30;
+        public override double Radius => 30;
 
+        GroupIcon DropCandidateIcon
+        {
+            get => _dropCandidate;
+            set
+            {
+                if (_dropCandidate != value)
+                {
+                    if (_dropCandidate != null)
+                    {
+                        _dropCandidate.IsDropCandidate = false;
+                    }
+                    _dropCandidate = value;
+                    if (_dropCandidate != null)
+                    {
+                        _dropCandidate.IsDropCandidate = true;
+                    }
+                }
+            }
+        }
+        GroupIcon _dropCandidate;
 
 
         internal StateIcon(DesignerControl designer, ViewModel.State state, System.Windows.Point? center, System.Windows.Point? leftTop) :
@@ -26,6 +46,23 @@ namespace SimpleStateMachineEditor.Icons
         {
         }
 
+        public override void CommitDrag(Point dragTerminationPoint, Point offset)
+        {
+            //  If the mouse is over a group icon, then the user is trying to add the state to the group.
+
+            IEnumerable<GroupIcon> occludedGroupIcons = Utility.DrawingAids.FindOccludedIcons<GroupIcon>(Designer.IconSurface, dragTerminationPoint);
+            DropCandidateIcon = occludedGroupIcons.FirstOrDefault();
+
+            if (DropCandidateIcon != null)
+            {
+                Designer.AddGroupMember(DropCandidateIcon.ReferencedObject as ViewModel.Group, ReferencedObject as ViewModel.State);
+                CancelDrag();
+            }
+            else
+            {
+                base.CommitDrag(dragTerminationPoint, offset);
+            }
+        }
 
         protected override FrameworkElement CreateDraggableShape()
         {
@@ -43,6 +80,14 @@ namespace SimpleStateMachineEditor.Icons
                 DataContext = this,
                 Style = Designer.Resources["StateIconStyle"] as Style,
             };
+        }
+
+        public override void Drag(Point mousePosition, Point offset)
+        {
+            base.Drag(mousePosition, offset);
+
+            IEnumerable<GroupIcon> occludedGroupIcons = Utility.DrawingAids.FindOccludedIcons<GroupIcon>(Designer.IconSurface, mousePosition);
+            DropCandidateIcon = occludedGroupIcons.FirstOrDefault();
         }
 
         public override int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -71,6 +116,15 @@ namespace SimpleStateMachineEditor.Icons
                 }
             }
             return base.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        protected override void OnEndDrag()
+        {
+            if (DropCandidateIcon != null)
+            {
+                DropCandidateIcon = null;
+            }
+            base.OnEndDrag();
         }
 
         protected override void OnHover(object sender, EventArgs e)
@@ -120,6 +174,13 @@ namespace SimpleStateMachineEditor.Icons
                         case PackageIds.AddTransitionCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
                             if (IsSelectable)
+                            {
+                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
+                            }
+                            break;
+                        case PackageIds.DeleteCommandId:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
+                            if (IsSelectable && (ReferencedObject as ViewModel.State).CurrentLayerPosition.GroupStatus != LayerPosition.GroupStatuses.Implicit)
                             {
                                 prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
                             }

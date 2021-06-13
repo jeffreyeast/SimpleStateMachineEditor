@@ -436,7 +436,7 @@ namespace SimpleStateMachineEditor
         {
             if (_vsDesignerControl != null)
             {
-                if (_vsDesignerControl.DoIdle(_textBuffer))
+                if (_vsDesignerControl.DoIdle())
                 {
                     IVsUIShell uiShell = ((System.IServiceProvider)_thisPackage).GetService(typeof(SVsUIShell)) as IVsUIShell;
                     uiShell.RefreshPropertyBrowser(Utility.OleAutomation.DISPID_UNKNOWN);

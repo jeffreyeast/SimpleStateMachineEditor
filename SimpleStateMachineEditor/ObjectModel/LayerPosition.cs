@@ -30,16 +30,44 @@ namespace SimpleStateMachineEditor.ObjectModel
             get => _leftTopPosition;
             set
             {
-                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y) && IsChangeAllowed())
+                if ((_leftTopPosition.X != value.X || _leftTopPosition.Y != value.Y))
                 {
-                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", LeftTopPosition.ToString()));
-                    _leftTopPosition = value;
-                    OnPropertyChanged("LeftTopPosition");
-                    EndChange();
+                    using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
+                    {
+                        Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "LeftTopPosition", LeftTopPosition.ToString()));
+                        _leftTopPosition = value;
+                        OnPropertyChanged("LeftTopPosition");
+                    }
                 }
             }
         }
         Point _leftTopPosition;
+
+        //  The relative ordinal position of the members of GroupStatuses must be maintained
+
+        public enum GroupStatuses
+        {
+            NotGrouped,
+            Implicit,
+            Explicit,
+        }
+
+        [XmlAttribute]
+        [Browsable(false)]
+        public GroupStatuses GroupStatus
+        {
+            get => _groupStatus;
+            set
+            {
+                if (_groupStatus != value)
+                {
+                    Controller?.LogUndoAction(new UndoRedo.PropertyChangedRecord(Controller, this, "GroupStatus", GroupStatus.ToString()));
+                    _groupStatus = value;
+                    OnPropertyChanged("GroupStatus");
+                }
+            }
+        }
+        GroupStatuses _groupStatus;
 
         //  Legacy save files used Position, not LeftTopPosition
 
@@ -55,13 +83,18 @@ namespace SimpleStateMachineEditor.ObjectModel
 
         public LayerPosition()
         {
+            GroupStatus = GroupStatuses.NotGrouped;
         }
 
         //  Constructor for new object creation through commands
 
-        private LayerPosition(ViewModel.ViewModelController controller, ViewModel.Layer layer) : base(controller)
+        private LayerPosition(ViewModel.ViewModelController controller, ViewModel.Layer layer, GroupStatuses groupStatus) : base(controller)
         {
-            Layer = layer;
+            using (new UndoRedo.DontLogBlock(controller))
+            {
+                Layer = layer;
+                GroupStatus = groupStatus;
+            }
         }
 
         //  Constructor for use by Redo
@@ -72,12 +105,13 @@ namespace SimpleStateMachineEditor.ObjectModel
             {
                 Layer = Find(redoRecord.LayerId) as ViewModel.Layer;
                 LeftTopPosition = redoRecord.LeftTopPosition;
+                GroupStatus = redoRecord.GroupStatus;
             }
         }
 
-        internal static LayerPosition Create(ViewModel.ViewModelController controller, ViewModel.Layer layer)
+        internal static LayerPosition Create(ViewModel.ViewModelController controller, ViewModel.Layer layer, GroupStatuses groupStatus)
         {
-            return new LayerPosition(controller, layer);
+            return new LayerPosition(controller, layer, groupStatus);
         }
 
         internal override void DeserializeCleanup(TrackableObject.DeserializeCleanupPhases phase, ViewModel.ViewModelController controller, ViewModel.StateMachine stateMachine)
@@ -98,6 +132,9 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             switch (propertyName)
             {
+                case "GroupStatus":
+                    value = GroupStatus.ToString();
+                    break;
                 case "LeftTopPosition":
                     value = LeftTopPosition.ToString();
                     break;
@@ -111,6 +148,9 @@ namespace SimpleStateMachineEditor.ObjectModel
         {
             switch (propertyName)
             {
+                case "GroupStatus":
+                    GroupStatus = (GroupStatuses)Enum.Parse(typeof(GroupStatuses), newValue);
+                    break;
                 case "LeftTopPosition":
                     LeftTopPosition = System.Windows.Point.Parse(newValue);
                     break;

@@ -189,9 +189,8 @@ namespace SimpleStateMachineEditor
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Debug.WriteLine("Can not get IVsCfgProviderEventsHelper" + ex.Message);
                     throw;
                 }
             }

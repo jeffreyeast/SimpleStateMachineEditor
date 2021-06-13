@@ -37,11 +37,10 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> AddGroupRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Group newGroup = new ViewModel.Group(Controller, this);
                 Controller.StateMachine.Groups.Add(newGroup);
-                Controller.StateMachine.EndChange();
 
                 Controller.UndoManager.Add(new DeleteGroupRecord (Controller, newGroup));
             }
@@ -66,13 +65,13 @@ namespace SimpleStateMachineEditor.UndoRedo
 #if DEBUGUNDOREDO
             Debug.WriteLine(">>> DeleteGroupRecord.Do");
 #endif
-            if (Controller.StateMachine.IsChangeAllowed())
+            using (new ViewModel.ViewModelController.GuiChangeBlock(Controller))
             {
                 ViewModel.Group targetGroup = Controller.StateMachine.Groups.Where(s => s.Id == Id).First();
+                AddGroupRecord addGroupRecord = new AddGroupRecord(Controller, targetGroup);
                 Controller.StateMachine.Groups.Remove(targetGroup);
-                Controller.StateMachine.EndChange();
 
-                Controller.UndoManager.Add(new AddGroupRecord (Controller, targetGroup));
+                Controller.UndoManager.Add(addGroupRecord);
             }
         }
     }
