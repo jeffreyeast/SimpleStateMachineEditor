@@ -1132,6 +1132,14 @@ namespace SimpleStateMachineEditor
             }
         }
 
+        internal void MouseDoubleClickHandler(Icons.ISelectableIcon selectedIcon)
+        {
+            if (selectedIcon is Icons.GroupIcon groupIcon)
+            {
+                SelectLayer((groupIcon.ReferencedObject as ViewModel.Group).Layer);
+            }
+        }
+
         internal void MouseEnterHandler(object sender, MouseEventArgs e)
         {
             if (OldKeyboardFocus == IconSurface)

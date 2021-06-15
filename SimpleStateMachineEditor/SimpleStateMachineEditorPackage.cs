@@ -166,7 +166,7 @@ namespace SimpleStateMachineEditor
             await Commands.AlignmentCommand.InitializeAsync(this, PackageIds.DistributeVerticallyCommandId);
 
             OptionsPropertiesPage = (IconControls.OptionsPropertiesPage)GetDialogPage(typeof(IconControls.OptionsPropertiesPage));
-            await SimpleStateMachineEditor.IconControls.ActionsToolWindowCommand.InitializeAsync(this);
+            await SimpleStateMachineEditor.Commands.ActionsToolWindowCommand.InitializeAsync(this);
         }
 
         private void WindowActivatedHandler(Window GotFocus, Window LostFocus)

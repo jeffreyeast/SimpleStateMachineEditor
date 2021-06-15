@@ -7,23 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 
-namespace SimpleStateMachineEditor.IconControls
+namespace SimpleStateMachineEditor.Commands
 {
     /// <summary>
     /// Command handler
     /// </summary>
     internal sealed class ActionsToolWindowCommand
     {
-        /// <summary>
-        /// Command ID.
-        /// </summary>
-        public const int CommandId = 4183;
-
-        /// <summary>
-        /// Command menu group (command set GUID).
-        /// </summary>
-        public static readonly Guid CommandSet = new Guid("676801a7-f00d-4e83-89eb-a85e3c47f64a");
-
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
@@ -40,7 +30,7 @@ namespace SimpleStateMachineEditor.IconControls
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
+            var menuCommandID = new CommandID(PackageGuids.guidSimpleStateMachineEditorPackageCmdSet, PackageIds.cmdidActionsToolWindowCommand);
             var menuItem = new MenuCommand(this.Execute, menuCommandID);
             commandService.AddCommand(menuItem);
         }
@@ -88,7 +78,7 @@ namespace SimpleStateMachineEditor.IconControls
         {
             this.package.JoinableTaskFactory.RunAsync(async delegate
             {
-                ToolWindowPane window = await this.package.ShowToolWindowAsync(typeof(ActionsToolWindow), 0, true, this.package.DisposalToken);
+                ToolWindowPane window = await this.package.ShowToolWindowAsync(typeof(IconControls.ActionsToolWindow), 0, true, this.package.DisposalToken);
                 if ((null == window) || (null == window.Frame))
                 {
                     throw new NotSupportedException("Cannot create tool window");

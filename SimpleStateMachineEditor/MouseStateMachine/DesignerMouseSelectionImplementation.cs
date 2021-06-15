@@ -17,6 +17,7 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         Point MousePosition;
         internal Point DragOrigin;
         Icons.ISelectableIcon SelectedIcon;
+        DateTime[] TimesOfSave = new DateTime[] { default, default };
 
 
 
@@ -211,6 +212,11 @@ namespace SimpleStateMachineEditor.MouseStateMachine
             Designer.UiShell.ShowContextMenu(0, ref contextMenuGuid, PackageIds.StateMachineContextMenuId, points, Designer);
         }
 
+        protected override void DoubleClick()
+        {
+            Designer.MouseDoubleClickHandler(SelectedIcon);
+        }
+
         protected override void DragSelectionBox()
         {
             Designer.SelectionBoxIcon.Drag(MousePosition, new Point(MousePosition.X - DragOrigin.X, MousePosition.Y - DragOrigin.Y));
@@ -229,6 +235,8 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         protected override void SaveDragOrigin()
         {
             DragOrigin = MousePosition;
+            TimesOfSave[0] = TimesOfSave[1];
+            TimesOfSave[1] = DateTime.Now;
         }
 
         protected override void SelectDraggingIcon()
@@ -277,6 +285,12 @@ namespace SimpleStateMachineEditor.MouseStateMachine
         protected override void TestIsIconSelected()
         {
             PostHighPriorityEvent(Designer.SelectedIcons.ContainsKey(SelectedIcon.ReferencedObject) ? EventTypes.Yes : EventTypes.No);
+        }
+
+        protected override void TestIfDblClick()
+        {
+            int doubleClickInterval = System.Windows.Forms.SystemInformation.DoubleClickTime;
+            PostHighPriorityEvent((DateTime.Now - TimesOfSave[0]).TotalMilliseconds < doubleClickInterval ? EventTypes.Yes : EventTypes.No);
         }
 
         protected override void TestShiftKeyState()

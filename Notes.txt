@@ -413,4 +413,12 @@
  - The "business logic" for maintaining the integrity of the view model is spread between the model and the designer (e.g., group membership
    management). It ought to be in the view model.
  - Consider double clicking on a group to open its layer
+   DONE
  - Note that VS doesn't like us to pass exceptions onto it. We should catch more.
+
+6/15/2021
+
+ - View ActionsToolWindow is still hard to get the actions window up. Looks like you have to have the Properties group visible.
+   FIXED - REGRESSION
+ - Git undo changes doesn't update editor pane
+

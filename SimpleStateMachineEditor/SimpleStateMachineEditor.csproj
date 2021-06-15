@@ -80,7 +80,7 @@
     <Compile Include="Icons\LayeredPositionableIcon.cs" />
     <Compile Include="Icons\ToolWindowActionIcon.cs" />
     <Compile Include="IconControls\ActionsToolWindow.cs" />
-    <Compile Include="IconControls\ActionsToolWindowCommand.cs" />
+    <Compile Include="Commands\ActionsToolWindowCommand.cs" />
     <Compile Include="IconControls\ActionsToolWindowControl.xaml.cs">
       <DependentUpon>ActionsToolWindowControl.xaml</DependentUpon>
     </Compile>
