@@ -220,6 +220,7 @@
     <Content Include="Images\HelloWorld_Designer.png" />
     <Content Include="Images\HelloWorld_Designer_Window.png" />
     <Content Include="Images\LexicalAnalyzerDefaultLayer.png" />
+    <Content Include="Images\LexicalAnalyzerGroups.png" />
     <Content Include="Images\LexicalAnalyzerStringLayer.png" />
     <Content Include="Images\MoreInfo.PNG" />
     <Content Include="Images\MouseSelection.png" />

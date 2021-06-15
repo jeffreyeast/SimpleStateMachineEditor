@@ -126,11 +126,11 @@ The Actions Tool Window is only visible when a Simple State Machine Designer win
 
 
 ### Display Layers
-Complex state machines can be difficult to view in the designer. Too many states, too many event types and too many transitions. Consider the sample Lexical Analyer's default designer view:
+Complex state machines can be difficult to view in the designer. Too many states, too many event types and too many transitions. Consider the sample Lexical Analyer's initial designer view:
 
 ![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerDefaultLayer.png)
 
-It is hard to distinguish exactly what is going on.  But the portion of the state machine dedicated to a particular lexeme type is easy to follow. Here is a view of the states involved in scanning string tokens:
+It is hard to distinguish exactly what is going on.  But the portion of the state machine dedicated to a particular lexeme type is easier to follow. Here is a view of the states involved in scanning string tokens:
 
 ![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerStringLayer.png)
 
@@ -157,6 +157,10 @@ icons. Each group has a layer associated with it. Opening the group's layer disp
 So in the default layer, you see the group icon, but in the group's layer, you see the states within the group.
 The idea is that the transitions between the members of the group can be ignored when viewing the big picture of the overall state machine. You manipulate the members of the group from within it's associated layer.
 
+Below is the lexical analyzer after its states have been moved to appropriate groups.
+
+![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerGroupsLayer.png)
+
 | To... | Do this... |
 | ----- | ---------- |
 | Create a group | Right click from within the designer window and choose *Add new group* |
@@ -170,6 +174,10 @@ The idea is that the transitions between the members of the group can be ignored
 When you open a group's layer, you will see the states within the group as well as their transitions.
 You will also see all the event types associated with the state machine -- event types are not members of a group, they are common
 across the entire state machine. This lets you create transitions within the group for any event type. 
+
+This image is of the *Strings* group within the lexical analyzer.
+
+![Image of Lexical Analyzer designer](https://github.com/jeffreyeast/SimpleStateMachineEditor/blob/master/SimpleStateMachineEditor/Images/LexicalAnalyzerStringLayer.png)
 
 Opening a group, you will see the states you have added to the group, and you will also see states which share transitions between those states. This allows you to view the transitions affecting the states in the 
 group. Explicitly added states have solid backgrounds, implicit members are cross-hatched. You can fully manipulate the explicitly added states (move them, rename them, add transitions, even remove them from the 
