@@ -112,7 +112,7 @@ namespace SimpleStateMachineEditor.Icons
         {
             base.Drag(mousePosition, offset);
 
-            TransitionIcon transitionIcon = Designer.FindOccludedTransitionIcon(this, new Point((ReferencedObject as ViewModel.EventType).LeftTopPosition.X + offset.X, (ReferencedObject as ViewModel.EventType).LeftTopPosition.Y + offset.Y));
+            TransitionIcon transitionIcon = Designer.FindOccludedTransitionIcon(this, mousePosition);
 
             if (transitionIcon == null)
             {
