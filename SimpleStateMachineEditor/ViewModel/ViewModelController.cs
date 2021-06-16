@@ -310,6 +310,7 @@ namespace SimpleStateMachineEditor.ViewModel
             try
             {
                 State = States.Reconciling;
+                Debug.WriteLine(">>>ViewModelController.ReconcileModelFromGui() start");
 
                 using (StringWriter writer = new StringWriter())
                 {
@@ -343,6 +344,7 @@ namespace SimpleStateMachineEditor.ViewModel
                         }
 
                         State = States.ParsedAndNotModified;
+                        Debug.WriteLine(">>>ViewModelController.ReconcileModelFromGui() succeeded");
                     }
                     finally
                     {
@@ -352,6 +354,7 @@ namespace SimpleStateMachineEditor.ViewModel
             }
             catch
             {
+                Debug.WriteLine(">>>ViewModelController.ReconcileModelFromGui() failed");
                 State = States.NotParsable;
             }
         }
@@ -361,7 +364,7 @@ namespace SimpleStateMachineEditor.ViewModel
             try
             {
                 State = States.Reconciling;
-
+                Debug.WriteLine(">>>ViewModelController.ReconcileFromText() start");
                 using (Utility.IVsTextLinesReader reader = new Utility.IVsTextLinesReader(TextBuffer))
                 {
                     _nextId = 0;
@@ -369,10 +372,12 @@ namespace SimpleStateMachineEditor.ViewModel
                 }
                 StateMachine?.ApplyDefaults(FileName);
                 State = States.ParsedAndNotModified;
+                Debug.WriteLine(">>>ViewModelController.ReconcileFromText() succeeded");
             }
             catch (Exception e)
             {
                 ErrorMessage = e.Message;
+                Debug.WriteLine(">>>ViewModelController.ReconcileFromText() failed: " + e.Message);
                 State = States.NotParsable;
             }
         }
