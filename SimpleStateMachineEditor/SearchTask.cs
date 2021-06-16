@@ -36,7 +36,8 @@ namespace SimpleStateMachineEditor
 
         private IEnumerable<ObjectModel.TrackableObject> GatherObjects()
         {
-            List<ObjectModel.TrackableObject> objects = new List<ObjectModel.TrackableObject>(Designer.Model.StateMachine.EventTypes.Count +
+            List<ObjectModel.TrackableObject> objects = new List<ObjectModel.TrackableObject>(Designer.Model.StateMachine.Actions.Count +
+                                                                                              Designer.Model.StateMachine.EventTypes.Count +
                                                                                               Designer.Model.StateMachine.States.Count +
                                                                                               Designer.Model.StateMachine.Transitions.Count);
 
@@ -64,14 +65,18 @@ namespace SimpleStateMachineEditor
             Status = (uint)__VSSEARCHTASKSTATUS.STS_STARTED;
             StringCount = 0;
             StopRequested = false;
-            SearchableObjects = GatherObjects();
 
-            foreach (ObjectModel.TrackableObject o in SearchableObjects)
+            if (Designer.Model.StateMachine != null)
             {
-                StringCount += o.Search(SearchQuery.SearchString);
-                if (StopRequested)
+                SearchableObjects = GatherObjects();
+
+                foreach (ObjectModel.TrackableObject o in SearchableObjects)
                 {
-                    break;
+                    StringCount += o.Search(SearchQuery.SearchString);
+                    if (StopRequested)
+                    {
+                        break;
+                    }
                 }
             }
 

@@ -73,9 +73,9 @@ namespace SimpleStateMachineEditor
                     {
                         _currentLayer.Members.CollectionChanged += CurrentLayerMembersCollectionChangedHandler;
                         _currentLayer.IsCurrentLayer = true;
+                        SetCurrentLayer();
                     }
                     ClearSelectedItems();
-                    SetCurrentLayer();
                     LoadViewModelIcons();
                 }
             }
@@ -639,7 +639,13 @@ namespace SimpleStateMachineEditor
             Loaded -= DesignerControl_Loaded;
             Unloaded += DesignerControl_Unloaded;
 
-            if (Model.StateMachine.Layers.Count == 0)
+            Package.ErrorList.Clear();
+
+            if (Model.StateMachine == null)
+            {
+                Package.ErrorList.WriteVisualStudioErrorList(Utility.ErrorList.MessageCategory.Severe, Model.ErrorMessage, Model.FileName, 1, 1);
+            }
+            else if (Model.StateMachine.Layers.Count == 0)
             {
                 BuildDefaultLayer();
             }
@@ -675,7 +681,12 @@ namespace SimpleStateMachineEditor
             Loaded += DesignerControl_Loaded;
             Unloaded -= DesignerControl_Unloaded;
 
-            MonitorStateMachineForChanges(true);
+            using (new UndoRedo.DontLogBlock(Model))
+            {
+                MonitorStateMachineForChanges(true);
+                ClearSelectedItems();
+                CurrentLayer = DefaultLayer = null;
+            }
         }
 
         internal bool DoIdle()
@@ -1189,7 +1200,32 @@ namespace SimpleStateMachineEditor
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
-            return VSConstants.S_OK;
+            if (pguidCmdGroup == PackageGuids.guidSimpleStateMachineEditorPackageCmdSet)
+            {
+                for (int i = 0; i < cCmds; i++)
+                {
+                    switch (prgCmds[i].cmdID)
+                    {
+                        case PackageIds.AddEventTypeCommandId:
+                        case PackageIds.AddGroupCommandId:
+                        case PackageIds.AddStateCommandId:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
+                            if (Model.StateMachine != null)
+                            {
+                                prgCmds[i].cmdf = prgCmds[i].cmdf | (uint)(OLECMDF.OLECMDF_ENABLED);
+                            }
+                            break;
+                        default:
+                            prgCmds[i].cmdf = 0;
+                            break;
+                    }
+                }
+                return VSConstants.S_OK;
+            }
+            else
+            {
+                return (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_UNKNOWNGROUP;
+            }
         }
 
         private void ReloadModel()
@@ -1198,7 +1234,13 @@ namespace SimpleStateMachineEditor
             IconSurface.Children.Clear();
             MonitorStateMachineForChanges(false);
 
-            if (Model.StateMachine != null)
+            Package.ErrorList.Clear();
+
+            if (Model.StateMachine == null)
+            {
+                Package.ErrorList.WriteVisualStudioErrorList(Utility.ErrorList.MessageCategory.Severe, Model.ErrorMessage, Model.FileName, 1, 1);
+            }
+            else
             {
                 if (CurrentLayer != null)
                 {

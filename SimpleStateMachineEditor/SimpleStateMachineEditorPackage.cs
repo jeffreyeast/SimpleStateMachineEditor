@@ -74,6 +74,7 @@ namespace SimpleStateMachineEditor
     {
         IVsMonitorSelection SelectionMonitorSvc;
         internal IconControls.OptionsPropertiesPage OptionsPropertiesPage;
+        internal Utility.ErrorList ErrorList;
         DTE DTE;
 
         internal DesignerControl ActiveDesignerControl
@@ -148,6 +149,8 @@ namespace SimpleStateMachineEditor
 
             //Create Editor Factory. Note that the base Package class will call Dispose on it.
             base.RegisterEditorFactory(new EditorFactory(this));
+
+            ErrorList = new Utility.ErrorList(this);
 
             //  Register the commands on the toolbar
 

@@ -155,6 +155,7 @@
     <Compile Include="UndoRedo\AtomicBlock.cs" />
     <Compile Include="Utility\BrushesToList.cs" />
     <Compile Include="Utility\DrawingAids.cs" />
+    <Compile Include="Utility\ErrorList.cs" />
     <Compile Include="Utility\IVsTextLinesReader.cs" />
     <Compile Include="ObjectModel\NamedObject.cs" />
     <Compile Include="ObjectModel\TrackableObject.cs" />

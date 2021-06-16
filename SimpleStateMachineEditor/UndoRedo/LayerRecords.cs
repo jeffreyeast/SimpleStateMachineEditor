@@ -169,9 +169,9 @@ namespace SimpleStateMachineEditor.UndoRedo
         internal SetLayerActiveRecord(ViewModel.ViewModelController controller, DesignerControl designer, ViewModel.Layer newLayer, ViewModel.Layer oldLayer) : base(ActionTypes.AddLayer, controller, newLayer)
         {
             Designer = designer;
-            OldLayerId = oldLayer.Id;
+            OldLayerId = oldLayer?.Id ?? TrackableObject.NullId;
 #if DEBUGUNDOREDO
-            Debug.WriteLine($@">>> SetLayerActiveRecord.SetLayerActiveRecord: Created {UnitDescription} record, ID: {Id}, Name: {newLayer.Name}, Old Layer ID: {oldLayer.Id}, Old Layer Name: {oldLayer.Name}");
+            Debug.WriteLine($@">>> SetLayerActiveRecord.SetLayerActiveRecord: Created {UnitDescription} record, ID: {Id}, Name: {newLayer.Name}, Old Layer ID: {OldLayerId}, Old Layer Name: {oldLayer?.Name ?? "<null>"}");
 #endif
         }
 

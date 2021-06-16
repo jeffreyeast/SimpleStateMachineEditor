@@ -406,6 +406,7 @@
  - BUG: Removing an explicit state from a group MAY require keeping that state as implicit
    FIXED
  - When an ineligble object is attempted to drop on a layer (e.g., an event), it'd be nice if the layer showed red (forbidden)
+   WON'T FIX
  - If the current layer is a group and you create a state, ensure the state is an explicit member of the group.
    FIXED
  - Can you add transitions to implicit members of a group?

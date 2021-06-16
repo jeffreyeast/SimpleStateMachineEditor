@@ -86,7 +86,19 @@ namespace SimpleStateMachineEditor.ViewModel
         }
         StateMachine _stateMachine;
         int GuiChangeCount = 0;
-
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set
+            {
+                if (_errorMessage != value)
+                {
+                    _errorMessage = value;
+                    OnPropertyChanged("ErrorMessage");
+                }    
+            }
+        }
+        string _errorMessage;
         internal int NextId => Interlocked.Increment (ref _nextId);
         int _nextId = 0;
         internal Dictionary<int, ObjectModel.TrackableObject> AllFindableObjects;
@@ -358,8 +370,9 @@ namespace SimpleStateMachineEditor.ViewModel
                 StateMachine?.ApplyDefaults(FileName);
                 State = States.ParsedAndNotModified;
             }
-            catch
+            catch (Exception e)
             {
+                ErrorMessage = e.Message;
                 State = States.NotParsable;
             }
         }

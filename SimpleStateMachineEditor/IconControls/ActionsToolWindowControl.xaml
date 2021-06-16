@@ -24,7 +24,7 @@
             <DataGrid.Style>
                 <Style TargetType="DataGrid">
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=local:ActionsToolWindowControl}, Path=ToolWindow.Designer}" Value="{x:Null}">
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=local:ActionsToolWindowControl}, Path=ToolWindow.Designer.Model.StateMachine}" Value="{x:Null}">
                             <Setter Property="Visibility" Value="Hidden"/>
                         </DataTrigger>
                     </Style.Triggers>
