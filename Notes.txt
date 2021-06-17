@@ -294,6 +294,7 @@
 5/25/2021
 
  - The IsChangeAllowed() tests are a little bogus -- when would change not be allowed (during startup and something to do with editting in the text window). But in DeleteIcon, it'll yield a notimplementedexception.
+   FIXED
  - Right click should not clear the selection
    FIXED -- mouse selection now matches (or is closer to) that of VS
  - Should regions be members of layers?
