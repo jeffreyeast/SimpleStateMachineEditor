@@ -39,7 +39,26 @@ namespace SimpleStateMachineEditor
         const string ChangeTransitionDestinationDescription = "Change transition end state";
         const string ChangeTransitionSourceDescription = "Change transition start state";
 
-        public ViewModel.ViewModelController Model { get; set; }
+        public ViewModel.ViewModelController Model
+        {
+            get => _model;
+            set
+            {
+                if (_model != value)
+                {
+                    if (_model != null)
+                    {
+                        _model.PropertyChanged -= ModelPropertyChangedHandler;
+                    }
+                    _model = value;
+                    if (_model != null)
+                    {
+                        _model.PropertyChanged += ModelPropertyChangedHandler;
+                    }
+                }
+            }
+        }
+        ViewModel.ViewModelController _model;
         ViewModel.StateMachine StateMachine;
         internal IVsUIShell UiShell;
         ITrackSelection SelectionTracker;

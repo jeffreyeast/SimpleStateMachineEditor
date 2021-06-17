@@ -361,7 +361,6 @@ namespace SimpleStateMachineEditor.ViewModel
             try
             {
                 State = States.Reconciling;
-
                 using (Utility.IVsTextLinesReader reader = new Utility.IVsTextLinesReader(TextBuffer))
                 {
                     _nextId = 0;

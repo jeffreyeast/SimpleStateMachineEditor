@@ -116,6 +116,15 @@ namespace SimpleStateMachineEditor.ViewModel
             }
         }
 
+        protected override void OnRemoving()
+        {
+            if (IsStartState)
+            {
+                Controller.StateMachine.StartState = null;
+            }
+            base.OnRemoving();
+        }
+
         internal override void SetProperty(string propertyName, string newValue)
         {
             switch (propertyName)
