@@ -336,32 +336,41 @@
 5/30/2021
 
  - BUG: Undo of deletion of a start state doesn't cause the start state designation to be preserved
+   FIXED
  - Moving an action, the math for the destination is funky. Seems like the closest transition computation is in error.
    FIXED -- algorithm was using distance from a (infinite) line, not a line segment
 
 6/1/2021
 
  - Consider groups of states
+   IMPLEMENTED
 
 6/3/2021
 
  - Consolidate the colectionchanged handlers in the designer.cs file
+   DONE
  - Is it time to have a dictionary make statemachine.find faster?
 
 6/5/2021
 
  - groups are half in and very fragile. lastest is that the GroupTransition has one endpoint as a Group, not a state (possibly
    both, if both ends are grouped)
+   DONE
 
 6/6/2021
 
  - why is there a grouptransition from s1<>s2?
+   FIXED
   - grouptransitions are being loaded, but not displayed. Also, one endpoint should be the group, not the original endpoint.
+   FIXED
   - on initial load of icons, moving a state and undoing the move doesn't redraw the state at the old location. But displaying a different
     layer and going back to the original, then it works.
+	FIXED
  - you have to drop on the layer, not the group. but it feels natural to drop on the group. Similar problem when you add a state to group. Switching
    between layers should the transitions, but they don't initially show up.
+   FIXED
 - OnHover that scans statemachine.transitions misses grouptransitions, because they're in the list
+  FIXED
 
 6/8/2021
 
@@ -380,6 +389,7 @@
 6/10/2021
 
  - Add error check for states with no incoming transitions (unreachable)
+   DONE
  - Consider if there's a way to demark transitions into a group. If there's only one instance, should it show the actions?  If there's multiple
    instances, should that be visible?
    DONE
@@ -388,6 +398,7 @@
 6/11/2021
 
  - Review reconsiliation logic to make sure we're not serializing too often
+   WON'T CHANGE
  - Merge ILayeredPositionableObject and ITransitionEndpoint
  - Try to get X,Y of LeftTopPosition to be attributes, rather than elements
    IMPRACTICAL
@@ -422,4 +433,5 @@
  - View ActionsToolWindow is still hard to get the actions window up. Looks like you have to have the Properties group visible.
    FIXED - REGRESSION
  - Git undo changes doesn't update editor pane
+   FIXED
 
