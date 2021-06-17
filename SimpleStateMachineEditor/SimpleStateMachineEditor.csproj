@@ -178,12 +178,20 @@
     <Compile Include="ViewModel\ViewModelController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CPOL .md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="MouseStateMachine\MouseSelection.sfsa">
       <Generator>SfsaGenerator</Generator>
       <LastGenOutput>MouseSelection1.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\template-builder.props" />
+    <Content Include="ReadMe.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -217,7 +225,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Images\HelloWorld.png" />
+    <Content Include="Images\HelloWorld.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Images\HelloWorld_Designer.png" />
     <Content Include="Images\HelloWorld_Designer_Window.png" />
     <Content Include="Images\LexicalAnalyzerDefaultLayer.png" />

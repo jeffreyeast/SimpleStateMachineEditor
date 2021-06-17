@@ -3,10 +3,13 @@
     <Metadata>
         <Identity Id="SimpleStateMachineEditor.4e3ac6e7-89c2-41da-bbd8-67b2bb9e227d" Version="1.0" Language="en-US" Publisher="Jeff East" />
         <DisplayName>Simple State Machine Editor</DisplayName>
-        <Description xml:space="preserve">GUI for developing and maintaining simple deterministic finite state automata. Examples include lexical analysis, fast file copy, parsing, string decoration and so on.</Description>
-        <License>CPOL.htm</License>
+        <Description xml:space="preserve">GUI for developing and maintaining simple deterministic finite state automata. Examples include lexical analysis,  parsing, string decoration and so on.</Description>
+        <License>CPOL .md</License>
+        <GettingStartedGuide>ReadMe.md</GettingStartedGuide>
         <Icon>StateMachineEditor_16x.png</Icon>
-        <Tags>Coding,Editor,State,Transition,Automata</Tags>
+        <PreviewImage>Images\HelloWorld.png</PreviewImage>
+        <Tags>Coding;Editor;StateMachine;Transition;Automata;C#;Event</Tags>
+        <Preview>true</Preview>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
