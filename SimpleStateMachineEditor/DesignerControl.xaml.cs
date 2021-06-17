@@ -1037,8 +1037,6 @@ namespace SimpleStateMachineEditor
 
         internal void LoadViewModelIcons()
         {
-            Debug.WriteLine(">>>DesignerControl.LoadViewModelIcons()");
-
             Mouse.OverrideCursor = Cursors.Wait;
 
             IconSurface.Children.Clear();
@@ -1131,7 +1129,6 @@ namespace SimpleStateMachineEditor
 
         private void ModelPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine(">>>DesignerControl.ModelPropertyChangedHandler()");
             if (e.PropertyName == "StateMachine")
             {
                 ReloadModel();
