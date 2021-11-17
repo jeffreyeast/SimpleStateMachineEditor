@@ -22,6 +22,7 @@
             <Setter Property="Fill" Value="Pink"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ReferencedObject.CurrentLayerPosition.GroupStatus}" Value="Implicit">
+                    <Setter Property="Opacity" Value="0.4"/>
                     <Setter Property="Fill">
                         <Setter.Value>
                             <LinearGradientBrush MappingMode="Absolute"  StartPoint="0,0" EndPoint="8,8" SpreadMethod="Repeat">
@@ -122,6 +123,9 @@
 
             <Border BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{DynamicResource SelectedObjectBorderStyle}">
                 <Grid>
+                    <Ellipse Width="60" Height="60"
+                         Fill="{x:Static SystemColors.WindowBrush}"
+                         Style="{StaticResource StateIconEllipseVisibilityStyle}"/>
                     <Ellipse Width="60" Height="60" Style="{StaticResource StateIconEllipseBackgroundStyle}"/>
                     <Ellipse Width="60" Height="60" Style="{StaticResource StateIconEllipseVisibilityStyle}">
                         <Ellipse.Fill>

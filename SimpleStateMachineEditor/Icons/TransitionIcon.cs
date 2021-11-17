@@ -253,7 +253,10 @@ namespace SimpleStateMachineEditor.Icons
                     {
                         case PackageIds.DeleteCommandId:
                             prgCmds[i].cmdf = (uint)OLECMDF.OLECMDF_SUPPORTED;
-                            if (ReferencedObject is ViewModel.Transition transition && transition.TransitionType == ViewModel.Transition.TransitionTypes.Normal)
+                            if (ReferencedObject is ViewModel.Transition transition && 
+                                transition.TransitionType == ViewModel.Transition.TransitionTypes.Normal &&
+                                (transition.SourceState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit ||
+                                 transition.DestinationState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit))
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -261,7 +264,11 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewDestinationCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition1 && transition1.TransitionType == ViewModel.Transition.TransitionTypes.Normal && transition1.SourceState != null && transition1.DestinationState != null && IsSelectable)
+                            if (ReferencedObject is ViewModel.Transition transition1 && 
+                                transition1.TransitionType == ViewModel.Transition.TransitionTypes.Normal && 
+                                (transition1.SourceState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit ||
+                                 transition1.DestinationState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit) &&
+                                IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }
@@ -270,7 +277,11 @@ namespace SimpleStateMachineEditor.Icons
 
                         case PackageIds.SelectNewSourceCommandId:
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_SUPPORTED);
-                            if (ReferencedObject is ViewModel.Transition transition2 && transition2.TransitionType == ViewModel.Transition.TransitionTypes.Normal && transition2.SourceState != null && transition2.DestinationState != null && IsSelectable)
+                            if (ReferencedObject is ViewModel.Transition transition2 && 
+                                transition2.TransitionType == ViewModel.Transition.TransitionTypes.Normal && 
+                                (transition2.SourceState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit ||
+                                 transition2.DestinationState?.CurrentLayerPosition?.GroupStatus != LayerPosition.GroupStatuses.Implicit) &&
+                                IsSelectable)
                             {
                                 prgCmds[i].cmdf |= (uint)(OLECMDF.OLECMDF_ENABLED);
                             }

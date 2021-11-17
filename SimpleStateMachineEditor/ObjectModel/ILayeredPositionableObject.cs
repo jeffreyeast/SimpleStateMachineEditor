@@ -11,5 +11,6 @@ namespace SimpleStateMachineEditor.ObjectModel
     {
         ObservableCollection<ObjectModel.LayerPosition> LayerPositions { get; }
         ViewModel.Layer CurrentLayer { get; set; }
+        ObjectModel.LayerPosition CurrentLayerPosition { get; }
     }
 }

@@ -436,3 +436,17 @@
  - Git undo changes doesn't update editor pane
    FIXED
 
+8/5/2021
+
+ - How do you remove a state from a group??
+ - Would it be better to use opacity to denote states that are implied members of a group, rather (or in addition to)
+   cross-hatching?
+   DONE
+ - We show [some of] the transitions between implied members of a group...should we show any of them? Note we're not
+   showing ones that lead to non-members, so the argument that we're showing the events recognized by the implied member
+   is weak.
+   DONE
+
+8/10/2021
+
+ - State type menu item isn't showing...

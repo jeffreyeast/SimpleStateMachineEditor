@@ -49,6 +49,13 @@
             <Setter Property="Stroke" Value="Black"/>
             <Setter Property="StrokeThickness" Value="1"/>
             <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=ReferencedObject.SourceState.CurrentLayerPosition.GroupStatus}" Value="Implicit"/>
+                        <Condition Binding="{Binding Path=ReferencedObject.DestinationState.CurrentLayerPosition.GroupStatus}" Value="Implicit"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="StrokeDashArray" Value="3 4"/>
+                </MultiDataTrigger>
                 <DataTrigger Binding="{Binding Path=IsHovering}" Value="True">
                     <Setter Property="StrokeThickness" Value="3"/>
                 </DataTrigger>
